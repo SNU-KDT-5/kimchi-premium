@@ -1,0 +1,276 @@
+/* ============================================================
+   USDT 김치프리미엄 관측소 — 공용 디자인 시스템
+   ============================================================
+   AI 어시스턴트 필독 (Claude Code 등)
+
+   이 파일을 읽은 뒤 아래 규칙을 반드시 따라 HTML/CSS를 작성하세요.
+
+   1. 색상은 아래 CSS 변수(--bg, --accent, --frog 등)만 사용합니다.
+      새로운 색상 값을 임의로 만들지 마세요.
+   2. 폰트는 'Pretendard'(본문), 숫자는 'JetBrains Mono'만 사용합니다.
+   3. 버튼/카드/배지/스탯 등은 아래 정의된 클래스를 최대한 재사용하세요.
+      (.btn, .card, .badge, .stat-card, .chart-wrap 등)
+      두 계열 선을 비교하는 차트는 .compare-chart-wrap을,
+      "제목+설명+그래프+통계"로 구성된 카드는 .info-card를 우선 사용하세요.
+      새 컴포넌트가 꼭 필요하면, 기존 네이밍 규칙(BEM 느낌: .comp-name)을
+      따라 이 파일 맨 아래에 추가하고 변수(색상/radius/spacing)만 가져다 쓰세요.
+   4. 그린(--frog 계열)을 브랜드 프라이머리로, 버건디(--accent)는
+      데이터 강조(프리미엄 수치, "과열" 배지 등)에만 좁게 사용합니다.
+      그린을 "매수/하락" 같은 기능색으로 소비하지 마세요.
+   5. 매수/매도, 투자 권유로 읽히는 문구·색상 대비(예: 초록=사세요,
+      빨강=파세요 식의 신호등 프레이밍)는 사용하지 않습니다.
+   6. radius/spacing/shadow는 아래 토큰만 사용하고 임의 px 값을 넣지 마세요.
+   ============================================================ */
+
+/* ── 1. 컬러 토큰 ── */
+:root {
+  /* 배경 / 표면 */
+  --bg: #f2f7ee;
+  --panel: #ffffff;
+  --panel2: #f7fbf4;
+  --border: #e0ecdf;
+  --border2: #c9ddc6;
+
+  /* 텍스트 */
+  --text: #1f2b21;
+  --mut: #4a5a4d;
+  --dim: #7c9080;
+
+  /* 브랜드 프라이머리 (개구리 그린, 밝은 톤) */
+  --frog: #3fa15e;
+  --frog-light: #8fd39e;
+  --frog-bg: rgba(63, 161, 94, 0.12);
+  --frog-line: rgba(63, 161, 94, 0.28);
+
+  /* 데이터 강조 (버건디) — 좁게, 프리미엄 수치·경고에만 */
+  --accent: #b3372a;
+  --accent-bg: rgba(179, 55, 42, 0.1);
+  --accent-line: rgba(179, 55, 42, 0.25);
+
+  /* 보조 */
+  --amber: #c48a1f;
+  --amber-bg: rgba(196, 138, 31, 0.12);
+
+  /* ── 2. 타이포 토큰 ── */
+  --font-body: 'Pretendard', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* ── 3. Spacing 토큰 (4px 배수) ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ── 4. Radius 토큰 ── */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* ── 5. Shadow 토큰 ── */
+  --shadow-sm: 0 1px 2px rgba(20, 30, 20, 0.04);
+  --shadow-md: 0 1px 2px rgba(20, 30, 20, 0.04), 0 6px 20px rgba(20, 30, 20, 0.06);
+  --shadow-lg: 0 4px 12px rgba(20, 30, 20, 0.08), 0 12px 32px rgba(20, 30, 20, 0.08);
+}
+
+/* ============================================================
+   기본 리셋
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+}
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   타이포그래피
+   ============================================================ */
+.h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+.h2 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.01em; }
+.h3 { font-size: 1rem; font-weight: 700; }
+.eyebrow {
+  font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--frog); text-transform: uppercase; margin-bottom: var(--sp-3);
+}
+.body-text { font-size: 0.9rem; color: var(--text); }
+.mut-text { font-size: 0.85rem; color: var(--mut); }
+.caption { font-size: 0.76rem; color: var(--dim); }
+
+/* ============================================================
+   레이아웃
+   ============================================================ */
+.wrap { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+.section { margin-top: var(--sp-12); }
+.section-title { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.section-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--frog); }
+.section-title h2 { font-size: 1.15rem; font-weight: 800; }
+.section-desc { font-size: 0.84rem; color: var(--mut); margin-bottom: var(--sp-5); }
+
+/* ============================================================
+   버튼
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 20px; border-radius: var(--r-md);
+  font-size: 0.86rem; font-weight: 700; border: none; cursor: pointer;
+}
+.btn-primary { background: var(--frog); color: #fff; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border2); color: var(--text); }
+
+/* ============================================================
+   카드
+   ============================================================ */
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--sp-6);
+  box-shadow: var(--shadow-md);
+}
+.card-sm { padding: var(--sp-4); border-radius: var(--r-md); }
+.card-title {
+  font-size: 0.74rem; font-weight: 700; color: var(--mut);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3);
+}
+
+/* ============================================================
+   배지
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; padding: 4px 12px;
+  border-radius: var(--r-pill); font-size: 0.74rem; font-weight: 700;
+}
+.badge-accent { background: var(--accent-bg); color: var(--accent); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-frog { background: var(--frog-bg); color: var(--frog); }
+.badge-neutral { background: var(--panel2); color: var(--dim); border: 1px solid var(--border); }
+
+/* ============================================================
+   스탯 카드
+   ============================================================ */
+.stat-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.stat-card {
+  flex: 1; min-width: 130px; background: var(--panel2);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: var(--sp-4); text-align: center;
+}
+.stat-card .label { font-size: 0.72rem; color: var(--mut); font-weight: 600; margin-bottom: var(--sp-2); }
+.stat-card .value { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; }
+.stat-card .value.accent { color: var(--accent); }
+.stat-card .value.frog { color: var(--frog); }
+.stat-card .hint { font-size: 0.68rem; color: var(--dim); margin-top: var(--sp-1); line-height: 1.4; }
+
+/* ============================================================
+   차트 래퍼 / 범례
+   ============================================================ */
+.chart-wrap {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--sp-5);
+}
+.chart-svg { width: 100%; display: block; }
+.legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); }
+.legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+
+/* ============================================================
+   탭
+   ============================================================ */
+.tabs {
+  display: flex; gap: var(--sp-1); background: var(--panel2);
+  border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px;
+}
+.tab {
+  flex: 1; text-align: center; padding: 9px 6px; border-radius: var(--r-sm);
+  font-size: 0.82rem; font-weight: 600; color: var(--mut); cursor: pointer; border: none; background: none;
+}
+.tab.active { background: var(--text); color: #fff; }
+
+/* ============================================================
+   로딩 / 에러 상태
+   ============================================================ */
+.status-box { text-align: center; padding: var(--sp-12) var(--sp-5); color: var(--dim); font-size: 0.88rem; }
+.spinner {
+  width: 32px; height: 32px; margin: 0 auto var(--sp-4);
+  border: 3px solid var(--border); border-top-color: var(--frog);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-box {
+  background: var(--accent-bg); border: 1px solid var(--accent-line);
+  border-radius: var(--r-lg); padding: var(--sp-5) var(--sp-6);
+  font-size: 0.84rem; color: var(--mut); line-height: 1.7;
+}
+.error-box h4 { color: var(--accent); margin-bottom: var(--sp-2); font-size: 0.88rem; }
+
+/* ============================================================
+   경고/원칙 문구 박스 (투자조언 아님 등)
+   ============================================================ */
+.disclaim {
+  background: var(--accent-bg); border: 1px solid var(--accent-line);
+  border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4);
+  font-size: 0.83rem; color: var(--accent); line-height: 1.65;
+}
+.disclaim b { color: var(--accent); }
+
+/* ============================================================
+   겹친 라인차트 (2계열 비교) — 대시보드/패턴분석 등에서 공용
+   ============================================================ */
+.compare-chart-wrap {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--sp-4);
+}
+.compare-chart-svg { width: 100%; display: block; }
+.compare-legend { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-2); flex-wrap: wrap; }
+.compare-legend-line {
+  display: inline-block; width: 14px; height: 2px; margin-right: 5px; vertical-align: middle;
+}
+.compare-legend-line.solid-a { background: var(--dim); }
+.compare-legend-line.solid-b { background: var(--accent); }
+.compare-legend-line.solid-c { background: var(--frog); }
+.compare-legend-line.dashed { background: var(--frog); opacity: 0.7; }
+.compare-marker-line { stroke: var(--frog); stroke-width: 1.5; stroke-dasharray: 4,3; }
+.compare-caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
+
+/* ============================================================
+   정보 카드 (제목 + 설명 + 그래프 + 통계) — 사건 카드, 결과 카드 등 공용
+   ============================================================ */
+.info-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: var(--sp-6); box-shadow: var(--shadow-md);
+}
+.info-card + .info-card { margin-top: var(--sp-4); }
+.info-card-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3);
+  margin-bottom: var(--sp-2); flex-wrap: wrap;
+}
+.info-card-head .name { font-size: 1.02rem; font-weight: 800; }
+.info-card-head .date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--dim); }
+.info-card-tag {
+  font-size: 0.66rem; font-weight: 800; padding: 3px 10px; border-radius: var(--r-pill);
+}
+.info-card-tag.accent { background: var(--accent-bg); color: var(--accent); }
+.info-card-tag.frog { background: var(--frog-bg); color: var(--frog); }
+.info-card-tag.amber { background: var(--amber-bg); color: var(--amber); }
+.info-card-desc { font-size: 0.85rem; color: var(--mut); line-height: 1.7; margin-bottom: var(--sp-4); }
+.info-card-stat-row { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); flex-wrap: wrap; }
+.info-card-stat {
+  flex: 1; min-width: 100px; background: var(--panel2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3);
+}
+.info-card-stat .l { font-size: 0.66rem; color: var(--mut); margin-bottom: 3px; }
+.info-card-stat .v { font-family: var(--font-mono); font-weight: 800; font-size: 0.88rem; }
+.info-card-stat .v.accent { color: var(--accent); }
+.info-card-stat .v.frog { color: var(--frog); }
+.info-card-stat .v.dim { color: var(--dim); }
+
+/* ============================================================
+   신규 컴포넌트를 추가할 경우, 아래에 이어서 작성하세요.
+   반드시 위에 정의된 색상/spacing/radius 변수만 사용합니다.
+   ============================================================ */

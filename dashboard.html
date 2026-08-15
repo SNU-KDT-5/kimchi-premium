@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>일별 관측 대시보드</title>
+<title>현황 대시보드</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
@@ -20,13 +20,19 @@
   .section-intro b.frog-text { color: var(--frog); }
   .section-intro b.accent-text { color: var(--accent); }
 
-  /* ① 데이터 기준일 + 새로고침 */
+  /* ① 데이터 기준일 + 갱신 */
   .kpi-meta-row {
     display: flex; align-items: center; justify-content: space-between;
     gap: var(--sp-3); margin-bottom: var(--sp-3); flex-wrap: wrap;
   }
   .kpi-meta-row .btn { padding: var(--sp-1) var(--sp-3); font-size: 0.78rem; }
   .kpi-meta-row .btn:disabled { opacity: 0.5; cursor: default; }
+  .kpi-meta-sep { color: var(--dim); margin: 0 var(--sp-2); }
+
+  /* ① 스탯 카드 — 배경보다 밝게 (--panel) */
+  .stat-card { background: var(--panel); }
+  .stat-card.is-focus { border-color: var(--accent-line); }
+  .stat-card .hint.accent-text { color: var(--accent); font-weight: 600; }
 
   /* ① 더 알아보기 아코디언 */
   .more-info-toggle {
@@ -39,89 +45,68 @@
   .more-info-detail.show { display: block; }
   .more-info-detail .section-intro { margin-bottom: var(--sp-3); }
 
-  /* ② 환율 분해 수식 */
-  .formula-box {
-    background: linear-gradient(135deg, var(--frog-bg), var(--amber-bg));
-    border: 1px solid var(--frog-line); border-radius: var(--r-lg); padding: var(--sp-6);
-  }
-  .formula-eq { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; text-align: center; margin-bottom: var(--sp-5); letter-spacing: 0.02em; }
-  .formula-eq .op { color: var(--dim); margin: 0 6px; }
-  .formula-parts { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
-  .formula-part { flex: 1; min-width: 150px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); text-align: center; }
-  .formula-part .l { font-size: 0.7rem; color: var(--mut); margin-bottom: var(--sp-2); }
-  .formula-part .l .sym { font-family: var(--font-mono); font-weight: 700; }
-  .formula-part .v { font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; }
-  .formula-part .v.accent { color: var(--accent); }
-  .formula-part .v.frog { color: var(--frog); }
-  .formula-note { font-size: 0.78rem; color: var(--mut); margin-top: var(--sp-4); text-align: center; line-height: 1.6; }
-  .formula-note b { color: var(--text); }
-  .formula-note b.frog-text { color: var(--frog); }
-  .formula-note b.accent-text { color: var(--accent); }
-
-  .simple-breakdown { background: var(--panel); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
-  .sb-row { display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3) 0; }
-  .sb-label { font-size: 0.88rem; color: var(--text); }
-  .sb-val { font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; }
-  .sb-val.frog { color: var(--frog); }
-  .sb-val.accent { color: var(--accent); }
-  .sb-divider { height: 1px; background: var(--border2); margin: var(--sp-1) 0; }
-  .sb-total .sb-label { font-weight: 700; }
-  .sb-total .sb-val { font-size: 1.3rem; color: var(--text); }
-
-  .formula-toggle {
-    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: var(--sp-2);
-    background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
-    font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
-  }
-  .formula-toggle:hover { background: var(--panel); }
-  .formula-detail { display: none; margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px dashed var(--border2); }
-  .formula-detail.show { display: block; }
-
-  /* ③ 시계열 */
+  /* ② 시계열 */
   .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-4); }
   .period-tab { flex: 1; text-align: center; padding: var(--sp-2); border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 600; color: var(--mut); cursor: pointer; }
   .period-tab.active { background: var(--text); color: #fff; }
-  .chart-svg { width: 100%; height: 180px; display: block; }
+  .chart-svg { width: 100%; height: 190px; display: block; }
   .legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); }
   .legend-line { display: inline-block; width: 14px; height: 2px; margin-right: 5px; vertical-align: middle; }
+  .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
 
-  /* ④ 분해 막대그래프 */
+  /* ③ 게이지 + 히트맵 나란히 */
+  .split-row { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); gap: var(--sp-4); align-items: start; }
+  @media (max-width: 720px) { .split-row { grid-template-columns: minmax(0, 1fr); } }
+
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--sp-2) 0 0; }
+  .gauge-label { font-size: 1.02rem; font-weight: 800; padding: 6px 20px; margin-top: calc(-1 * var(--sp-4)); }
+  .gauge-score { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; margin-top: var(--sp-3); }
+  .gauge-sub { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; line-height: 1.6; }
+
+  /* ③ 히트맵 */
+  .hm-nav { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+  .hm-nav-btn {
+    width: 28px; height: 28px; flex: none; border-radius: var(--r-sm);
+    border: 1px solid var(--border2); background: var(--panel);
+    color: var(--mut); cursor: pointer; font-size: 0.9rem; line-height: 1;
+    font-family: var(--font-body);
+  }
+  .hm-nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--frog); }
+  .hm-nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .hm-select {
+    flex: 1; padding: 6px var(--sp-3); border-radius: var(--r-sm);
+    border: 1px solid var(--border2); background: var(--panel); color: var(--text);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  }
+  .hm-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--sp-1); max-width: 260px; margin: 0 auto; }
+  .hm-dow { font-size: 10px; color: var(--dim); text-align: center; font-weight: 600; padding-bottom: var(--sp-1); }
+  .hm-cell { aspect-ratio: 1; border-radius: var(--r-sm); position: relative; cursor: default; transition: transform .1s; }
+  .hm-cell:hover { transform: scale(1.25); z-index: 3; }
+  .hm-cell.empty { background: transparent; }
+  .hm-cell.blank { background: var(--panel2); border: 1px dashed var(--border); }
+  .hm-cell .hm-tip {
+    display: none; position: absolute; bottom: calc(100% + var(--sp-2)); left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3); font-size: 11px;
+    white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5;
+  }
+  .hm-cell:hover .hm-tip { display: block; }
+  .hm-legend { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-4); font-size: 11px; color: var(--dim); justify-content: center; }
+  .hm-legend .bar { flex: 1; height: 6px; border-radius: var(--r-pill); max-width: 130px;
+    background: linear-gradient(90deg, var(--border2), var(--amber), var(--accent)); }
+
+  /* ④ 환율 리스크 — 수치선 */
+  .bridge-svg { width: 100%; height: 170px; display: block; }
+  .bridge-note {
+    font-size: 0.78rem; color: var(--mut); text-align: center;
+    border-top: 1px solid var(--border); padding-top: var(--sp-3); margin-top: var(--sp-2);
+  }
+  .bridge-note b { font-family: var(--font-mono); color: var(--text); }
+
+  /* ④ 두 선 비교 */
   .decomp-svg { width: 100%; height: 200px; display: block; }
   .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
 
-  /* ⑤ 워터폴 (사례) */
-  .waterfall { display: flex; align-items: flex-end; gap: var(--sp-2); height: 160px; margin: var(--sp-5) 0 var(--sp-2); }
-  .wf-bar { flex: 1; border-radius: var(--r-sm) var(--r-sm) 0 0; position: relative; min-height: 2px; }
-  .wf-bar .lbl { position: absolute; top: calc(-1 * var(--sp-5)); left: 50%; transform: translateX(-50%); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-family: var(--font-mono); }
-  .wf-bar .nm { position: absolute; bottom: calc(-1 * var(--sp-6)); left: 50%; transform: translateX(-50%); font-size: 0.68rem; color: var(--dim); white-space: nowrap; }
-  .case-desc { font-size: 0.82rem; color: var(--mut); margin-top: var(--sp-8); line-height: 1.7; }
-
   .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
-
-  /* ⑥ 게이지 */
-  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--sp-3) 0 0; }
-  .gauge-score { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 800; margin-top: calc(-1 * var(--sp-3)); }
-  .gauge-label { font-size: 0.82rem; margin-top: var(--sp-2); }
-  .gauge-sub { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
-
-  /* ⑦ 히트맵 */
-  .heatmap-wrap { margin-top: var(--sp-1); }
-  .hm-months { display: flex; gap: var(--sp-4); flex-wrap: wrap; }
-  .hm-month {}
-  .hm-month-label { font-size: 0.72rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2); }
-  .hm-day-labels { display: grid; grid-template-columns: repeat(7, 22px); gap: var(--sp-1); margin-bottom: var(--sp-1); }
-  .hm-day-labels span { font-size: 9px; color: var(--dim); text-align: center; font-weight: 600; }
-  .hm-week { display: grid; grid-template-columns: repeat(7, 22px); gap: var(--sp-1); margin-bottom: var(--sp-1); }
-  .hm-cell { width: 22px; height: 22px; border-radius: var(--r-sm); position: relative; cursor: default; transition: transform .1s; }
-  .hm-cell:hover { transform: scale(1.3); z-index: 3; }
-  .hm-cell.empty { background: var(--panel2); }
-  .hm-cell .hm-tip { display: none; position: absolute; bottom: calc(var(--sp-3) + var(--sp-4)); left: 50%; transform: translateX(-50%);
-    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3); font-size: 11px;
-    white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5; }
-  .hm-cell:hover .hm-tip { display: block; }
-  .hm-legend { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-3); font-size: 11px; color: var(--dim); }
-  .hm-legend .bar { flex: 1; height: 6px; border-radius: var(--r-pill); max-width: 160px;
-    background: linear-gradient(90deg, var(--border2), var(--amber), var(--accent)); }
 </style>
 </head>
 <body>
@@ -145,10 +130,10 @@
   <div class="header">
     <div class="eyebrow mono">현황 대시보드</div>
     <h1>지금 이 순간의 숫자들</h1>
-    <p>USDT(테더) 투자의 가장 큰 방해물은 환율입니다. 프리미엄이 아무리 벌어져도, 환율이 함께 흔들리면 실질 수익은 달라집니다.</p>
+    <p>김프가 지금 얼마나 벌어져 있는지, 그리고 그중 얼마가 실제로 손에 남는지를 함께 봅니다.</p>
   </div>
 
-  <!-- ① 게시판 -->
+  <!-- ① 현재 지표 -->
   <div class="section-block">
     <div class="section-label">① 현재 지표</div>
     <div class="status-box" id="kpiLoading"><div class="spinner"></div>현재 지표를 불러오는 중…</div>
@@ -156,12 +141,12 @@
     <div id="kpiContent" style="display:none;">
       <div class="kpi-meta-row">
         <span class="mut-text mono" id="kpiAsOf"></span>
-        <button class="btn btn-outline" id="refreshBtn" type="button">새로고침</button>
+        <button class="btn btn-outline" id="refreshBtn" type="button">갱신</button>
       </div>
       <div class="stat-row">
-        <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div><div class="hint">오늘 기준</div></div>
-        <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div><div class="hint">오늘 기준</div></div>
-        <div class="stat-card"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint">오늘 기준</div></div>
+        <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div><div class="hint" id="stUsdtHint">&nbsp;</div></div>
+        <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div><div class="hint" id="stFxHint">&nbsp;</div></div>
+        <div class="stat-card is-focus"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint accent-text" id="stPremHint">&nbsp;</div></div>
       </div>
     </div>
 
@@ -176,534 +161,602 @@
     </div>
   </div>
 
-  <!-- ② 환율 분해 -->
+  <!-- ② 프리미엄 추이 -->
   <div class="section-block">
-    <div class="section-label">② 번 돈 중 환율과 함께 사라진 몫</div>
-    <div class="formula-box">
-      <div class="status-box" id="fxLoading"><div class="spinner"></div>환율 분해 데이터를 불러오는 중…</div>
-      <div class="error-box" id="fxError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-      <div id="fxContent" style="display:none;">
-        <div class="simple-breakdown">
-          <div class="sb-row">
-            <span class="sb-label">프리미엄으로 벌었어야 할 돈</span>
-            <span class="sb-val frog" id="sbSpread">–</span>
-          </div>
-          <div class="sb-row">
-            <span class="sb-label">환율이 가져간 몫</span>
-            <span class="sb-val accent" id="sbFx">–</span>
-          </div>
-          <div class="sb-divider"></div>
-          <div class="sb-row sb-total">
-            <span class="sb-label">실제로 남은 돈</span>
-            <span class="sb-val" id="sbNet">–</span>
-          </div>
-        </div>
-        <div class="formula-note">프리미엄이 크더라도, 환율이 반대 방향으로 크게 움직인 구간에서는 실제로 남은 수익이 함께 줄어든 모습이 나타납니다. 반대로 환율이 같은 방향으로 움직인 구간에서는 실질 수익이 프리미엄보다 커진 모습도 나타납니다.</div>
-
-        <button class="formula-toggle" id="formulaToggle">계산 방식이 궁금하다면 ▾</button>
-        <div class="formula-detail" id="formulaDetail">
-          <div class="formula-eq">(1 + R<sub>krw</sub>)<span class="op">=</span>(1 + R<sub>usd</sub>)<span class="op">×</span>(1 + fx)</div>
-          <div class="formula-parts">
-            <div class="formula-part"><div class="l">원화 기준 실질수익 <span class="sym">R_krw</span></div><div class="v" id="fKrw">–</div></div>
-            <div class="formula-part"><div class="l">프리미엄 스프레드 <span class="sym">R_usd</span></div><div class="v frog" id="fUsd">–</div></div>
-            <div class="formula-part"><div class="l">환율 변동분 <span class="sym">fx</span></div><div class="v accent" id="fFx">–</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ③ 시계열 -->
-  <div class="section-block">
-    <div class="section-label">③ USDT(테더) 프리미엄 추이</div>
+    <div class="section-label">② USDT(테더) 프리미엄 추이</div>
     <div class="card">
       <div class="status-box" id="premLoading"><div class="spinner"></div>프리미엄 추이를 불러오는 중…</div>
       <div class="error-box" id="premError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
       <div id="premContent" style="display:none;">
-        <div class="period-tabs" id="periodTabs">
-          <div class="period-tab" data-p="90">90일</div>
-          <div class="period-tab active" data-p="365">1년</div>
-          <div class="period-tab" data-p="1095">3년</div>
+        <div class="period-tabs" id="periodTabs"></div>
+        <div class="legend-row">
+          <span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span>
+          <span><span class="legend-swatch" style="background:var(--accent-bg);"></span>0% 아래 (역프)</span>
+          <span id="legendRecent" style="display:none;"><span class="legend-swatch" style="background:var(--panel2); border:1px solid var(--border2);"></span>최근 90일</span>
         </div>
-        <div class="legend-row"><span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span></div>
-        <svg class="chart-svg" id="premChart" viewBox="0 0 760 180" preserveAspectRatio="none"></svg>
+        <svg class="chart-svg" id="premChart" viewBox="0 0 760 190" preserveAspectRatio="none"></svg>
+        <div class="caption" id="premRangeNote"></div>
       </div>
     </div>
   </div>
 
-  <!-- ④ 두 선 비교 -->
+  <!-- ③ 지금 김프 위치 + 월별 히트맵 -->
   <div class="section-block">
-    <div class="section-label">④ 프리미엄만큼 벌었다면 vs 실제로 번 것</div>
-    <div class="card">
-      <p class="section-intro">만약 처음부터 계속 투자했다면, <b class="frog-text">녹색 선</b>은 프리미엄만으로 쌓였을 누적 수익이고 <b class="accent-text">붉은 선</b>은 환율까지 반영한 실제 누적 수익입니다. 두 선 사이가 벌어질수록, 그 구간에서 환율 변동이 함께 크게 나타난 것입니다.</p>
-      <div class="status-box" id="decompLoading"><div class="spinner"></div>누적수익 데이터를 불러오는 중…</div>
-      <div class="error-box" id="decompError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-      <div id="decompContent" style="display:none;">
+    <div class="section-label">③ 지금 김프 위치</div>
+    <div class="status-box" id="gaugeLoading"><div class="spinner"></div>분포 데이터를 불러오는 중…</div>
+    <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+    <div class="split-row" id="gaugeContent" style="display:none;">
+      <div class="card card-sm">
+        <div class="gauge-wrap">
+          <svg id="gaugeSvg" viewBox="0 0 320 168" style="width:100%;max-width:280px;display:block;margin:0 auto"></svg>
+          <div class="gauge-label badge" id="gaugeLabel">–</div>
+          <div class="gauge-score" id="gaugeScore">–</div>
+          <div class="gauge-sub" id="gaugeSub"></div>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="hm-nav">
+          <button class="hm-nav-btn" id="hmPrev" type="button" aria-label="이전 달">‹</button>
+          <select class="hm-select" id="hmMonth" aria-label="월 선택"></select>
+          <button class="hm-nav-btn" id="hmNext" type="button" aria-label="다음 달">›</button>
+        </div>
+        <div class="hm-grid" id="heatgrid"></div>
+        <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
+        <div class="caption" id="hmNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 환율 리스크 -->
+  <div class="section-block">
+    <div class="section-label">④ 환율 리스크</div>
+    <p class="section-intro">김프는 사는 순간의 웃돈이지만, 환율은 파는 순간까지 계속 움직입니다. 그래서 벌어진 김프가 그대로 손에 남지는 않습니다. <b id="fxWindowLabel">최근 60일</b> 동안 실제로 어떤 일이 있었는지 봅니다.</p>
+    <div class="status-box" id="fxLoading"><div class="spinner"></div>환율 분해 데이터를 불러오는 중…</div>
+    <div class="error-box" id="fxError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+    <div id="fxContent" style="display:none;">
+      <div class="card">
+        <svg class="bridge-svg" id="bridgeChart" viewBox="0 0 760 170"></svg>
+        <div class="bridge-note" id="bridgeNote"></div>
+      </div>
+    </div>
+
+    <div class="status-box" id="decompLoading" style="margin-top:var(--sp-4);"><div class="spinner"></div>누적수익 데이터를 불러오는 중…</div>
+    <div class="error-box" id="decompError" style="display:none; margin-top:var(--sp-4);"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+    <div id="decompContent" style="display:none; margin-top:var(--sp-4);">
+      <div class="card">
+        <p class="section-intro">언제부터 벌어졌는지를 봅니다. <b class="frog-text">녹색 선</b>은 프리미엄만으로 쌓였을 누적 수익이고, <b class="accent-text">붉은 선</b>은 환율까지 반영한 실질 누적 수익입니다.</p>
         <div class="decomp-legend-row">
           <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
           <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
         </div>
         <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
-        <div class="caption">두 선 사이 옅은 음영은 그 시점까지 환율 변동과 함께 나타난 누적 차이입니다. 선이 벌어질수록 그 차이가 큽니다.</div>
+        <div class="caption">두 선 사이 음영이 넓어질수록 그 구간에서 환율이 가져간 몫이 큽니다.</div>
       </div>
     </div>
   </div>
 
-  <!-- ⑤ 워터폴 사례 -->
-  <div class="section-block">
-    <div class="section-label">⑤ 평상시라면 어떻게 될까</div>
-    <div class="card">
-      <div class="waterfall" id="waterfallChart"></div>
-      <div class="case-desc" id="caseDesc">-</div>
-    </div>
-  </div>
-
-  <!-- ⑥ 게이지 -->
-  <div class="section-block">
-    <div class="section-label">⑥ 지금 투자 안정성 게이지</div>
-    <div class="card">
-      <p class="section-intro">오늘의 실질 김프가 지난 1년 중 몇 번째로 높은지를 점수로 보여줍니다. 이 점수가 최근 며칠 동안 어떻게 이어져왔는지는 바로 아래 히트맵에서 확인할 수 있습니다.</p>
-      <div class="status-box" id="gaugeLoading"><div class="spinner"></div>게이지 데이터를 불러오는 중…</div>
-      <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-      <div class="gauge-wrap" id="gaugeContent" style="display:none;">
-        <svg id="gaugeSvg" viewBox="0 0 320 178" style="width:100%;max-width:320px;display:block;margin:0 auto"></svg>
-        <div class="gauge-score" id="gaugeScore">–</div>
-        <div class="gauge-label badge" id="gaugeLabel">–</div>
-        <div class="gauge-sub">지난 1년 실질 김프 분포 대비 현재 위치</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ⑦ 히트맵 -->
-  <div class="section-block">
-    <div class="section-label">⑦ 일별 투자 안정성 히트맵</div>
-    <div class="card">
-      <p class="section-intro">최근 91일 동안 매일의 실질 김프가 지난 1년 중 상위 30%, 중간 40%, 하위 30% 중 어디에 속했는지를 색으로 나타낸 달력입니다. 각 칸에 마우스를 올리면 그 날짜의 정확한 수치를 확인할 수 있습니다.</p>
-      <div class="status-box" id="heatLoading"><div class="spinner"></div>히트맵 데이터를 불러오는 중…</div>
-      <div class="error-box" id="heatError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-      <div class="heatmap-wrap" id="heatContent" style="display:none;">
-        <div class="hm-months" id="heatgrid"></div>
-        <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="caption">데이터 출처: 업비트 종가, 환율은 ECB 기준 (주말·공휴일은 직전 거래일 환율 적용)</div>
+  <div class="caption" style="margin-top:var(--sp-8);">데이터 출처: 업비트 종가(KRW-USDT, 2024-06-07 상장), 환율은 ECB 기준 (주말·공휴일은 직전 거래일 환율 적용)</div>
 
 </div>
 
 <script>
-document.getElementById('formulaToggle').addEventListener('click', function(){
-  const detail = document.getElementById('formulaDetail');
-  const isShown = detail.classList.toggle('show');
-  this.textContent = isShown ? '계산 방식 접기 ▴' : '계산 방식이 궁금하다면 ▾';
-});
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
-document.getElementById('moreInfoToggle').addEventListener('click', function(){
+// 환율 리스크 섹션이 기준으로 삼는 보유 기간
+const LOOKBACK_DAYS = 60;
+
+let REAL = null;
+let HEAT = null; // { months: [...], byMonth: Map }
+
+const fmtWon = n => n.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '원';
+const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtMoney = n => Math.round(n).toLocaleString('ko-KR') + '원';
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function svgText(x, y, content, opts = {}) {
+  const t = svgEl('text', {
+    x, y,
+    'font-size': opts.size || 10,
+    'text-anchor': opts.anchor || 'middle',
+    style: `fill:${opts.fill || 'var(--dim)'}`
+  });
+  if (opts.weight) t.setAttribute('font-weight', opts.weight);
+  if (opts.mono) t.setAttribute('font-family', 'JetBrains Mono, monospace');
+  t.textContent = content;
+  return t;
+}
+
+// ══════════ 아코디언 ══════════
+document.getElementById('moreInfoToggle').addEventListener('click', function () {
   const detail = document.getElementById('moreInfoDetail');
   const isShown = detail.classList.toggle('show');
   this.textContent = isShown ? '접기 ▴' : '더 알아보기 — 지금 시장 상황 ▾';
 });
 
-// 공통: X축에 날짜 라벨을 고르게 count개 배치 (양 끝은 바깥쪽 정렬, 중간은 가운데 정렬)
-function addDateLabels(g, dates, xAt, H, count){
+// 공통: X축 날짜 라벨을 고르게 count개 배치
+function addDateLabels(g, dates, xAt, H, count) {
   const n = dates.length;
   const shown = new Set();
-  for(let k=0;k<count;k++){
-    const idx = Math.round((k/(count-1))*(n-1));
-    if(shown.has(idx)) continue;
+  for (let k = 0; k < count; k++) {
+    const idx = Math.round((k / (count - 1)) * (n - 1));
+    if (shown.has(idx)) continue;
     shown.add(idx);
-    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
-    label.setAttribute('x', xAt(idx));
-    label.setAttribute('y', H-4);
-    label.setAttribute('text-anchor', k===0 ? 'start' : (k===count-1 ? 'end' : 'middle'));
-    label.setAttribute('font-size','10');
-    label.setAttribute('style','fill:var(--dim)');
-    label.textContent = dates[idx];
-    g.appendChild(label);
+    g.appendChild(svgText(xAt(idx), H - 4, dates[idx], {
+      anchor: k === 0 ? 'start' : (k === count - 1 ? 'end' : 'middle')
+    }));
   }
 }
 
-// ══════════ ③ 시계열 데이터 (실데이터: REAL.premiumPct) ══════════
-function drawPremChart(days){
+// ══════════ ② 프리미엄 추이 ══════════
+function renderPeriodTabs() {
+  const N = REAL.dates.length;
+  const tabs = document.getElementById('periodTabs');
+  const opts = [];
+  if (N > 90) opts.push({ label: '최근 90일', d: 90 });
+  opts.push({ label: `전체 · ${N}일`, d: N });
+
+  tabs.innerHTML = opts
+    .map((o, i) => `<div class="period-tab${i === opts.length - 1 ? ' active' : ''}" data-p="${o.d}">${o.label}</div>`)
+    .join('');
+
+  tabs.querySelectorAll('.period-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      drawPremChart(parseInt(tab.dataset.p, 10));
+    });
+  });
+}
+
+function drawPremChart(days) {
   const svg = document.getElementById('premChart');
   svg.innerHTML = '';
+
   const series = REAL.premiumPct.slice(-days);
   const dates = REAL.dates.slice(-days);
-  const W=760,H=180,PL=44,PR=14,PT=14,PB=20;
-  const pw=W-PL-PR, ph=H-PT-PB;
-  const minY=Math.min(...series)-0.4, maxY=Math.max(...series)+0.4;
-  const xAt = i => PL + (i/(series.length-1))*pw;
-  const yAt = v => PT + ph - ((v-minY)/(maxY-minY))*ph;
+  const W = 760, H = 190, PL = 46, PR = 14, PT = 14, PB = 20;
+  const pw = W - PL - PR, ph = H - PT - PB;
+  const minY = Math.min(...series) - 0.4, maxY = Math.max(...series) + 0.4;
+  const xAt = i => PL + (i / (series.length - 1)) * pw;
+  const yAt = v => PT + ph - ((v - minY) / (maxY - minY)) * ph;
 
-  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-  for(let s=0;s<=3;s++){
-    const y = PT + ph - (s/3)*ph;
-    const val = minY + (s/3)*(maxY-minY);
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
-    line.setAttribute('stroke','var(--border)');
-    g.appendChild(line);
+  const g = svgEl('g', {});
 
-    const yLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
-    yLabel.setAttribute('x', PL-6); yLabel.setAttribute('y', y+3);
-    yLabel.setAttribute('text-anchor','end'); yLabel.setAttribute('font-size','10');
-    yLabel.setAttribute('style','fill:var(--dim)');
-    yLabel.textContent = val.toFixed(1) + '%';
-    g.appendChild(yLabel);
+  // 최근 90일 음영 (전체 보기일 때만)
+  const showRecentBand = series.length > 90;
+  document.getElementById('legendRecent').style.display = showRecentBand ? '' : 'none';
+  if (showRecentBand) {
+    const bandX = xAt(series.length - 90);
+    g.appendChild(svgEl('rect', {
+      x: bandX, y: PT, width: (W - PR) - bandX, height: ph,
+      fill: 'var(--panel2)', stroke: 'var(--border)'
+    }));
   }
 
-  // 0% 기준선 강조 (프리미엄이 마이너스로 갈 때 구분되도록)
-  if(minY < 0 && maxY > 0){
-    const zeroLine = document.createElementNS('http://www.w3.org/2000/svg','line');
-    zeroLine.setAttribute('x1',PL); zeroLine.setAttribute('x2',W-PR); zeroLine.setAttribute('y1',yAt(0)); zeroLine.setAttribute('y2',yAt(0));
-    zeroLine.setAttribute('stroke','var(--dim)'); zeroLine.setAttribute('stroke-width','1.5');
-    g.appendChild(zeroLine);
+  // 가로 눈금
+  for (let s = 0; s <= 3; s++) {
+    const y = PT + ph - (s / 3) * ph;
+    const val = minY + (s / 3) * (maxY - minY);
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y, y2: y, stroke: 'var(--border)' }));
+    g.appendChild(svgText(PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
   }
 
-  // X축: 기간에 맞춰 3~5개 날짜를 고르게 표시 (데이터를 4등분한 지점)
+  // 0% 아래(역프) 영역 채우기 + 기준선 강조
+  if (minY < 0 && maxY > 0) {
+    const y0 = yAt(0);
+    const negPts = series.map((v, i) => `${xAt(i).toFixed(1)},${yAt(Math.min(v, 0)).toFixed(1)}`).join(' L');
+    g.appendChild(svgEl('path', {
+      d: `M${PL},${y0} L${negPts} L${W - PR},${y0} Z`,
+      fill: 'var(--accent-bg)'
+    }));
+    g.appendChild(svgEl('line', {
+      x1: PL, x2: W - PR, y1: y0, y2: y0,
+      stroke: 'var(--mut)', 'stroke-width': 1.5
+    }));
+  }
+
   addDateLabels(g, dates, xAt, H, 5);
-
   svg.appendChild(g);
 
-  const pts = series.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
-  const poly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
-  poly.setAttribute('points',pts); poly.setAttribute('fill','none'); poly.setAttribute('stroke','var(--accent)'); poly.setAttribute('stroke-width','2');
-  svg.appendChild(poly);
+  svg.appendChild(svgEl('polyline', {
+    points: series.map((v, i) => `${xAt(i)},${yAt(v)}`).join(' '),
+    fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2,
+    'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+  }));
+
+  // 현재값 마커
+  const lastX = xAt(series.length - 1), lastY = yAt(series[series.length - 1]);
+  svg.appendChild(svgEl('circle', {
+    cx: lastX, cy: lastY, r: 4,
+    fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 2
+  }));
+
+  document.getElementById('premRangeNote').textContent =
+    `${dates[0]} ~ ${dates[dates.length - 1]} · 이 시작일 이전은 상장 전이라 기록이 없습니다`;
 }
 
-document.querySelectorAll('.period-tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    drawPremChart(parseInt(tab.dataset.p));
-  });
-});
-
-// ══════════ ④ 두 선 비교 (프리미엄 누적 vs 실질 누적, 최근 60일 실데이터 기준) ══════════
-// premium: 시작일 대비 프리미엄(%)의 누적 변화 (그대로 프리미엄만 따라간 경우)
-// real: 위 값에 같은 구간 환율 누적 변화(%)를 더한 값 (실제로 환율까지 반영된 경우)
-// 두 값의 formula-note 관계(1+R_krw = (1+R_usd)(1+fx))와 같은 원리로,
-// 두 선 사이 음영은 그 구간 환율 누적 변화분과 같다.
-function buildDecompSeries(){
-  const n = Math.min(60, REAL.dates.length);
-  const start = REAL.dates.length - n;
-  const p0 = REAL.premiumPct[start];
-  const fx0 = REAL.fxRate[start];
-  const data = [];
-  for(let i=start;i<REAL.dates.length;i++){
-    const premium = REAL.premiumPct[i] - p0;
-    const fxCum = (REAL.fxRate[i]/fx0 - 1) * 100;
-    data.push({ premium, real: premium + fxCum });
-  }
-  return data;
+// ══════════ ③ 게이지 + 월별 히트맵 ══════════
+function hexToRgb(hex) {
+  hex = hex.trim().replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const n = parseInt(hex, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function drawDecompChart(){
-  const svg = document.getElementById('decompChart');
-  svg.innerHTML = '';
-  const data = buildDecompSeries();
-  const dates = REAL.dates.slice(-data.length);
-  const W=760,H=200,PL=44,PR=14,PT=14,PB=20;
-  const pw=W-PL-PR, ph=H-PT-PB;
-  const allVals = data.flatMap(d=>[d.premium, d.real]);
-  const minY = Math.min(...allVals, 0) - 0.5, maxY = Math.max(...allVals, 0) + 0.5;
-  const xAt = i => PL + (i/(data.length-1))*pw;
-  const yAt = v => PT + ph - ((v-minY)/(maxY-minY))*ph;
+let heatColor = () => 'var(--border2)';
 
-  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-  for(let s=0;s<=3;s++){
-    const y = PT + ph - (s/3)*ph;
-    const val = minY + (s/3)*(maxY-minY);
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
-    line.setAttribute('stroke','var(--border)');
-    g.appendChild(line);
-
-    const yLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
-    yLabel.setAttribute('x', PL-6); yLabel.setAttribute('y', y+3);
-    yLabel.setAttribute('text-anchor','end'); yLabel.setAttribute('font-size','10');
-    yLabel.setAttribute('style','fill:var(--dim)');
-    yLabel.textContent = val.toFixed(1) + '%';
-    g.appendChild(yLabel);
-  }
-
-  // 0% 기준선 강조
-  if(minY < 0 && maxY > 0){
-    const zeroLine = document.createElementNS('http://www.w3.org/2000/svg','line');
-    zeroLine.setAttribute('x1',PL); zeroLine.setAttribute('x2',W-PR); zeroLine.setAttribute('y1',yAt(0)); zeroLine.setAttribute('y2',yAt(0));
-    zeroLine.setAttribute('stroke','var(--dim)'); zeroLine.setAttribute('stroke-width','1.5');
-    g.appendChild(zeroLine);
-  }
-
-  // X축: 고정 60일이므로 시작/중간/끝 3개만 표시
-  addDateLabels(g, dates, xAt, H, 3);
-
-  svg.appendChild(g);
-
-  // 두 선 사이 음영
-  const premiumLine = data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' L');
-  const realLineRev = data.slice().reverse().map((d,i)=>`${xAt(data.length-1-i)},${yAt(d.real)}`).join(' L');
-  const fillPath = `M${premiumLine} L${realLineRev} Z`;
-
-  const fill = document.createElementNS('http://www.w3.org/2000/svg','path');
-  fill.setAttribute('d', fillPath);
-  fill.setAttribute('fill', 'var(--accent-bg)');
-  svg.appendChild(fill);
-
-  const premPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
-  premPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' '));
-  premPoly.setAttribute('fill','none'); premPoly.setAttribute('stroke','var(--frog)'); premPoly.setAttribute('stroke-width','2');
-  svg.appendChild(premPoly);
-
-  const realPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
-  realPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.real)}`).join(' '));
-  realPoly.setAttribute('fill','none'); realPoly.setAttribute('stroke','var(--accent)'); realPoly.setAttribute('stroke-width','2.2');
-  svg.appendChild(realPoly);
-}
-
-// ══════════ ⑤ 워터폴 사례 (평상시 한 가지만) ══════════
-const CASES = [
-  {
-    id:'normal', label:'평상시',
-    spread: 3.2, fee: -0.8, fx: -0.6,
-    desc:'평상시에는 환율 변동이 크지 않은 구간에서, 프리미엄 스프레드와 실질 수익의 차이가 크지 않게 나타납니다.'
-  },
-];
-
-function renderWaterfall(c){
-  const net = c.spread + c.fee + c.fx;
-  const steps = [
-    { name:'프리미엄 스프레드', val:c.spread, color:'var(--frog)' },
-    { name:'수수료', val:c.fee, color:'var(--amber)' },
-    { name:'환율분', val:c.fx, color:'var(--accent)' },
-    { name:'실질 수익', val:net, color:'var(--text)', isTotal:true },
-  ];
-  const wf = document.getElementById('waterfallChart');
-  wf.innerHTML = '';
-  const maxV = Math.max(c.spread, Math.abs(net), 1);
-  steps.forEach(s=>{
-    const bar = document.createElement('div');
-    bar.className = 'wf-bar';
-    const hpct = Math.max(6, (Math.abs(s.val)/maxV)*100);
-    bar.style.height = hpct + '%';
-    bar.style.background = s.color;
-    bar.innerHTML = `<span class="lbl" style="color:${s.color};">${s.val>=0?'+':''}${s.val.toFixed(2)}%</span><span class="nm">${s.name}</span>`;
-    wf.appendChild(bar);
-  });
-  document.getElementById('caseDesc').textContent = c.desc;
-}
-renderWaterfall(CASES[0]);
-
-
-// ══════════ ⑥ 게이지 + ⑦ 히트맵 (실질 김프 백분위 기준, 최근 1년) ══════════
-function renderGaugeAndHeatmap(){
-  // section-intro/gauge-sub 문구의 "지난 1년"과 맞춘 계산 기간
-  const GAUGE_WINDOW_DAYS = 365;
-  // 실질 김프 시계열 = REAL.premiumPct 그 자체 (usdtPrice/fxRate로 이미 계산된 값)를 최근 1년으로 제한
-  const realPrems = REAL.premiumPct.slice(-GAUGE_WINDOW_DAYS);
-
-  // 최근 1년 정렬 → 백분위 계산
-  const sorted = [...realPrems].sort((a,b)=>a-b);
-  const cur = realPrems[realPrems.length-1];
-  const daysLowerOrEqual = sorted.filter(v=>v<=cur).length;
-  const daysHigher = realPrems.length - daysLowerOrEqual;
-  const pc = daysLowerOrEqual / sorted.length;
-  const score = Math.round(pc*100);
-
-  // 색상 스케일: --border2 → --amber → --accent (수치의 상대적 높낮이만 표현하는 단일 방향 스케일,
-  // 그린(--frog)은 기능색으로 쓰지 않고 디자인시스템 토큰만 사용)
-  function hexToRgb(hex){
-    hex = hex.trim().replace('#','');
-    if(hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
-    const n = parseInt(hex,16);
-    return [(n>>16)&255,(n>>8)&255,n&255];
-  }
+function buildColorScale() {
   const rootStyle = getComputedStyle(document.documentElement);
-  const scaleLow = hexToRgb(rootStyle.getPropertyValue('--border2'));
-  const scaleMid = hexToRgb(rootStyle.getPropertyValue('--amber'));
-  const scaleHigh = hexToRgb(rootStyle.getPropertyValue('--accent'));
-  function mixRgb(a,b,f){ return a.map((v,i)=>Math.round(v+(b[i]-v)*f)); }
-  function heatColor(t){
-    t = Math.max(0, Math.min(1, t));
-    const rgb = t < 0.5 ? mixRgb(scaleLow, scaleMid, t/0.5) : mixRgb(scaleMid, scaleHigh, (t-0.5)/0.5);
-    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-  }
+  const low = hexToRgb(rootStyle.getPropertyValue('--border2'));
+  const mid = hexToRgb(rootStyle.getPropertyValue('--amber'));
+  const high = hexToRgb(rootStyle.getPropertyValue('--accent'));
+  const mix = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
 
-  // 라벨 결정 (상위30%=높음, 하위30%=낮음, 중간=보통) — 매수/매도 프레이밍 대신 중립 서술,
-  // 기존 .badge-* 클래스를 재사용
-  function getLabel(t){
-    if(t >= 0.7) return { txt:'높음', cls:'badge-accent', swatch:'var(--accent)' };
-    if(t >= 0.3) return { txt:'보통', cls:'badge-amber', swatch:'var(--amber)' };
-    return { txt:'낮음', cls:'badge-neutral', swatch:'var(--dim)' };
-  }
+  heatColor = (t) => {
+    t = Math.max(0, Math.min(1, t));
+    const rgb = t < 0.5 ? mix(low, mid, t / 0.5) : mix(mid, high, (t - 0.5) / 0.5);
+    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+  };
+}
+
+// 상위 30% = 높음 / 중간 40% = 보통 / 하위 30% = 낮음 (중립 서술)
+function getLabel(t) {
+  if (t >= 0.7) return { txt: '높음', cls: 'badge-accent', swatch: 'var(--accent)' };
+  if (t >= 0.3) return { txt: '보통', cls: 'badge-amber', swatch: 'var(--amber)' };
+  return { txt: '낮음', cls: 'badge-neutral', swatch: 'var(--dim)' };
+}
+
+function renderGaugeAndHeatmap() {
+  buildColorScale();
+
+  // 상장 이후 전체 기간 분포를 기준으로 백분위를 계산한다.
+  // (게이지와 히트맵이 같은 자를 써야 색이 서로 어긋나지 않는다)
+  const all = REAL.premiumPct;
+  const sorted = [...all].sort((a, b) => a - b);
+  const pctOf = v => sorted.filter(x => x <= v).length / sorted.length;
+
+  const cur = all[all.length - 1];
+  const pc = pctOf(cur);
+  const score = Math.round(pc * 100);
+  const daysLowerOrEqual = Math.round(pc * sorted.length);
+  const daysHigher = sorted.length - daysLowerOrEqual;
 
   // ── 게이지 ──
   const svg = document.getElementById('gaugeSvg');
-  const cx=160, cy=148, R=118, r2=102;
-  const ang = Math.PI-(score/100)*Math.PI;
-  const nx = cx+r2*Math.cos(ang), ny = cy-r2*Math.sin(ang);
-  let arcs='';
-  for(let s=0;s<100;s+=2){
-    const a0=Math.PI-s/100*Math.PI, a1=Math.PI-(s+2.4)/100*Math.PI;
-    const x0=cx+R*Math.cos(a0),y0=cy-R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy-R*Math.sin(a1);
-    arcs+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s/100)}" stroke-width="16" stroke-linecap="round"/>`;
+  const cx = 160, cy = 140, R = 112, r2 = 96;
+  const ang = Math.PI - (score / 100) * Math.PI;
+  const nx = cx + r2 * Math.cos(ang), ny = cy - r2 * Math.sin(ang);
+
+  let arcs = '';
+  for (let s = 0; s < 100; s += 2) {
+    const a0 = Math.PI - s / 100 * Math.PI, a1 = Math.PI - (s + 2.4) / 100 * Math.PI;
+    const x0 = cx + R * Math.cos(a0), y0 = cy - R * Math.sin(a0);
+    const x1 = cx + R * Math.cos(a1), y1 = cy - R * Math.sin(a1);
+    arcs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s / 100)}" stroke-width="15" stroke-linecap="round"/>`;
   }
+
   svg.innerHTML = `${arcs}
-    <text x="24" y="172" font-size="11" style="fill:var(--dim)">낮음</text>
+    <text x="30" y="164" font-size="11" style="fill:var(--dim)">낮음</text>
     <text x="160" y="22" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
-    <text x="296" y="172" text-anchor="end" font-size="11" style="fill:var(--dim)">높음</text>
+    <text x="290" y="164" text-anchor="end" font-size="11" style="fill:var(--dim)">높음</text>
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" style="stroke:var(--text)" stroke-width="3" stroke-linecap="round"/>
     <circle cx="${cx}" cy="${cy}" r="6" style="fill:var(--text)"/>`;
 
-  const gs = document.getElementById('gaugeScore');
-  const topPct = 100 - score;
-  gs.textContent = `상위 ${topPct}%`;
-  gs.style.color = heatColor(pc);
-  gs.style.fontSize = '1.8rem';
-  gs.style.letterSpacing = '-0.5px';
-
+  // 배지를 크게(주인공), 백분위 숫자를 그 아래 작게
   const lbl = getLabel(pc);
   const gl = document.getElementById('gaugeLabel');
   gl.textContent = lbl.txt;
   gl.className = `gauge-label badge ${lbl.cls}`;
 
-  const sub = document.querySelector('.gauge-sub');
-  sub.innerHTML = `현재 실질 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> — 지난 1년 대비 상위 <b>${100-score}%</b> 수준. 지난 1년 중 ${daysLowerOrEqual}일이 오늘과 같거나 낮았고, ${daysHigher}일이 오늘보다 높았습니다.`;
+  const gs = document.getElementById('gaugeScore');
+  gs.textContent = `백분위 ${score}`;
+  gs.style.color = heatColor(pc);
 
-  // ── 히트맵 (최근 91일 표시, REAL.dates 실제 날짜 사용) ──
-  const N = Math.min(91, REAL.dates.length);
-  // 'YYYY-MM-DD'는 UTC 기준 날짜 키(shared.js 주석 참고)이므로,
-  // 로컬 타임존 영향을 받지 않도록 UTC getter만 사용한다.
-  const DATES = REAL.dates.slice(-N).map(s => new Date(s + 'T00:00:00Z'));
-  const recent = realPrems.slice(-N);
-  const pcAll = recent.map(v => sorted.filter(x=>x<=v).length/sorted.length);
+  document.getElementById('gaugeSub').innerHTML =
+    `현재 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> · 상장 이후 ${sorted.length}일 중 ` +
+    `${daysLowerOrEqual}일이 오늘과 같거나 낮았고, ${daysHigher}일이 오늘보다 높았습니다.`;
 
-  const months={};
-  DATES.forEach((d,i)=>{
-    const key=d.getUTCFullYear()+'-'+(d.getUTCMonth()+1);
-    if(!months[key])months[key]={label:d.getUTCFullYear()+'년 '+(d.getUTCMonth()+1)+'월',days:[]};
-    months[key].days.push({d, t:pcAll[i], prem:recent[i]});
-  });
-
-  const DOW=['일','월','화','수','목','금','토'];
-  let html='';
-  Object.values(months).forEach(mo=>{
-    html+=`<div class="hm-month"><div class="hm-month-label">${mo.label}</div>`;
-    html+=`<div class="hm-day-labels">${DOW.map(d=>`<span>${d}</span>`).join('')}</div>`;
-    const weeks=[];let week=[];
-    const fd=mo.days[0].d.getUTCDay();
-    for(let pp=0;pp<fd;pp++)week.push(null);
-    mo.days.forEach(day=>{week.push(day);if(week.length===7){weeks.push(week);week=[];}});
-    if(week.length){while(week.length<7)week.push(null);weeks.push(week);}
-    weeks.forEach(wk=>{
-      html+='<div class="hm-week">';
-      wk.forEach(day=>{
-        if(!day)html+='<div class="hm-cell empty"></div>';
-        else{
-          const col=heatColor(day.t);
-          const lbl2=getLabel(day.t);
-          const dd=day.d;
-          const dateStr=(dd.getUTCMonth()+1)+'/'+(dd.getUTCDate());
-          html+=`<div class="hm-cell" style="background:${col}"><span class="hm-tip">${dateStr}<br>실질 김프 ${day.prem.toFixed(2)}%<br><span style="color:${lbl2.swatch};font-weight:700">${lbl2.txt}</span></span></div>`;
-        }
-      });
-      html+='</div>';
+  // ── 월별 히트맵 데이터 ──
+  const byMonth = new Map();
+  REAL.dates.forEach((s, i) => {
+    const key = s.slice(0, 7); // YYYY-MM
+    if (!byMonth.has(key)) byMonth.set(key, []);
+    byMonth.get(key).push({
+      date: s,
+      day: Number(s.slice(8, 10)),
+      prem: REAL.premiumPct[i],
+      t: pctOf(REAL.premiumPct[i])
     });
-    html+='</div>';
   });
-  document.getElementById('heatgrid').innerHTML=html;
+
+  HEAT = { months: [...byMonth.keys()].sort(), byMonth };
+
+  const select = document.getElementById('hmMonth');
+  select.innerHTML = HEAT.months
+    .map(m => `<option value="${m}">${Number(m.slice(0, 4))}년 ${Number(m.slice(5, 7))}월</option>`)
+    .join('');
+  select.value = HEAT.months[HEAT.months.length - 1];
+
+  drawHeatmapMonth(select.value);
 }
 
-// ══════════ ① 현재 지표 (REAL의 마지막 값) ══════════
-function renderKpi(){
-  const fmtWon = n => n.toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + '원';
-  const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+function drawHeatmapMonth(monthKey) {
+  const days = HEAT.byMonth.get(monthKey) || [];
+  const grid = document.getElementById('heatgrid');
+  const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 
-  const lastUsdt = REAL.usdtPrice[REAL.usdtPrice.length - 1];
-  const lastFx = REAL.fxRate[REAL.fxRate.length - 1];
-  const lastPrem = REAL.premiumPct[REAL.premiumPct.length - 1];
+  const year = Number(monthKey.slice(0, 4));
+  const month = Number(monthKey.slice(5, 7));
+  const firstDow = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const byDay = new Map(days.map(d => [d.day, d]));
+
+  let html = DOW.map(d => `<div class="hm-dow">${d}</div>`).join('');
+  for (let i = 0; i < firstDow; i++) html += '<div class="hm-cell empty"></div>';
+
+  for (let day = 1; day <= lastDay; day++) {
+    const info = byDay.get(day);
+    if (!info) {
+      html += `<div class="hm-cell blank"><span class="hm-tip">${month}/${day}<br>데이터 없음</span></div>`;
+      continue;
+    }
+    const lbl = getLabel(info.t);
+    html += `<div class="hm-cell" style="background:${heatColor(info.t)}">` +
+      `<span class="hm-tip">${month}/${day}<br>김프 ${info.prem.toFixed(2)}%<br>` +
+      `<span style="color:${lbl.swatch};font-weight:700">${lbl.txt}</span></span></div>`;
+  }
+
+  grid.innerHTML = html;
+
+  const idx = HEAT.months.indexOf(monthKey);
+  document.getElementById('hmPrev').disabled = idx <= 0;
+  document.getElementById('hmNext').disabled = idx >= HEAT.months.length - 1;
+  document.getElementById('hmNote').textContent =
+    `${days.length}일 기록 · 색은 상장 이후 전체 분포에서의 위치입니다`;
+}
+
+document.getElementById('hmMonth').addEventListener('change', e => drawHeatmapMonth(e.target.value));
+document.getElementById('hmPrev').addEventListener('click', () => {
+  const select = document.getElementById('hmMonth');
+  const idx = HEAT.months.indexOf(select.value);
+  if (idx > 0) { select.value = HEAT.months[idx - 1]; drawHeatmapMonth(select.value); }
+});
+document.getElementById('hmNext').addEventListener('click', () => {
+  const select = document.getElementById('hmMonth');
+  const idx = HEAT.months.indexOf(select.value);
+  if (idx < HEAT.months.length - 1) { select.value = HEAT.months[idx + 1]; drawHeatmapMonth(select.value); }
+});
+
+// ══════════ ④ 환율 리스크 ══════════
+// 보유 기간(LOOKBACK_DAYS) 동안:
+//   spread = 프리미엄이 벌어진 만큼 (프리미엄만 봤다면 남았을 몫)
+//   fxImpact = 같은 기간 환율이 움직인 만큼
+//   net = 실제로 손에 남은 몫
+function computeFxBreakdown() {
+  const lastIdx = REAL.dates.length - 1;
+  const baseIdx = Math.max(0, lastIdx - LOOKBACK_DAYS);
+  const spread = REAL.premiumPct[lastIdx] - REAL.premiumPct[baseIdx];
+  const fxImpact = (REAL.fxRate[lastIdx] / REAL.fxRate[baseIdx] - 1) * 100;
+  return { spread, fxImpact, net: spread + fxImpact, baseIdx, lastIdx, days: lastIdx - baseIdx };
+}
+
+function drawBridgeChart() {
+  const { spread, net, days } = computeFxBreakdown();
+  const svg = document.getElementById('bridgeChart');
+  svg.innerHTML = '';
+
+  const W = 760, H = 170, PL = 60, PR = 60;
+  const axisY = 100, arrowY = 62;
+
+  const vals = [spread, net, 0];
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max((hi - lo) * 0.22, 0.4);
+  const domLo = lo - pad, domHi = hi + pad;
+  const xAt = v => PL + ((v - domLo) / (domHi - domLo)) * (W - PL - PR);
+
+  const lost = net < spread; // 환율이 가져갔는가, 더해줬는가
+  const arrowColor = lost ? 'var(--accent)' : 'var(--frog)';
+  const gap = Math.abs(spread - net);
+
+  // 0% 기준선
+  const zx = xAt(0);
+  svg.appendChild(svgEl('line', {
+    x1: zx, x2: zx, y1: 30, y2: axisY + 8,
+    stroke: 'var(--border2)', 'stroke-dasharray': '3 3'
+  }));
+  svg.appendChild(svgText(zx, 24, '0%', {}));
+
+  // 수치선
+  svg.appendChild(svgEl('line', {
+    x1: PL - 20, x2: W - PR + 20, y1: axisY, y2: axisY, stroke: 'var(--border2)'
+  }));
+
+  // 이동 화살표
+  const from = xAt(spread), to = xAt(net);
+  const dir = to < from ? 1 : -1;
+  svg.appendChild(svgEl('path', {
+    d: `M${from - dir * 6} ${arrowY} L${to + dir * 12} ${arrowY}`,
+    stroke: arrowColor, 'stroke-width': 2.5, fill: 'none'
+  }));
+  svg.appendChild(svgEl('path', {
+    d: `M${to} ${arrowY} L${to + dir * 12} ${arrowY - 6} L${to + dir * 12} ${arrowY + 6} Z`,
+    fill: arrowColor
+  }));
+  svg.appendChild(svgText((from + to) / 2, arrowY - 14,
+    `${lost ? '환율이 가져간' : '환율이 더해준'} ${gap.toFixed(2)}%p`,
+    { size: 13, fill: arrowColor, weight: 700 }));
+
+  // 두 점
+  const dot = (x, color) => svgEl('circle', {
+    cx: x, cy: axisY, r: 6, fill: color, stroke: 'var(--panel)', 'stroke-width': 2
+  });
+  svg.appendChild(dot(from, 'var(--frog)'));
+  svg.appendChild(dot(to, lost ? 'var(--accent)' : 'var(--frog)'));
+
+  svg.appendChild(svgText(from, axisY + 26, fmtPct(spread), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(from, axisY + 44, '프리미엄만 봤다면', { size: 11, fill: 'var(--mut)' }));
+  svg.appendChild(svgText(to, axisY + 26, fmtPct(net), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(to, axisY + 44, '실제로 남은 것', { size: 11, fill: 'var(--mut)' }));
+
+  // 금액 환산
+  const base = 1000000;
+  document.getElementById('bridgeNote').innerHTML =
+    `100만원을 넣었다면 · <b>${fmtMoney(base * (1 + spread / 100))}</b>이 됐어야 할 돈이 ` +
+    `<b>${fmtMoney(base * (1 + net / 100))}</b>으로`;
+
+  document.getElementById('fxWindowLabel').textContent = `최근 ${days}일`;
+}
+
+// ══════════ ④ 두 선 비교 ══════════
+function buildDecompSeries() {
+  const n = Math.min(LOOKBACK_DAYS, REAL.dates.length);
+  const start = REAL.dates.length - n;
+  const p0 = REAL.premiumPct[start];
+  const fx0 = REAL.fxRate[start];
+  const data = [];
+  for (let i = start; i < REAL.dates.length; i++) {
+    const premium = REAL.premiumPct[i] - p0;
+    const fxCum = (REAL.fxRate[i] / fx0 - 1) * 100;
+    data.push({ premium, real: premium + fxCum });
+  }
+  return data;
+}
+
+function drawDecompChart() {
+  const svg = document.getElementById('decompChart');
+  svg.innerHTML = '';
+
+  const data = buildDecompSeries();
+  const dates = REAL.dates.slice(-data.length);
+  const W = 760, H = 200, PL = 46, PR = 14, PT = 14, PB = 20;
+  const pw = W - PL - PR, ph = H - PT - PB;
+  const allVals = data.flatMap(d => [d.premium, d.real]);
+  const minY = Math.min(...allVals, 0) - 0.5, maxY = Math.max(...allVals, 0) + 0.5;
+  const xAt = i => PL + (i / (data.length - 1)) * pw;
+  const yAt = v => PT + ph - ((v - minY) / (maxY - minY)) * ph;
+
+  const g = svgEl('g', {});
+  for (let s = 0; s <= 3; s++) {
+    const y = PT + ph - (s / 3) * ph;
+    const val = minY + (s / 3) * (maxY - minY);
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y, y2: y, stroke: 'var(--border)' }));
+    g.appendChild(svgText(PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
+  }
+
+  if (minY < 0 && maxY > 0) {
+    g.appendChild(svgEl('line', {
+      x1: PL, x2: W - PR, y1: yAt(0), y2: yAt(0),
+      stroke: 'var(--mut)', 'stroke-width': 1.5
+    }));
+  }
+
+  addDateLabels(g, dates, xAt, H, 3);
+  svg.appendChild(g);
+
+  const premiumLine = data.map((d, i) => `${xAt(i)},${yAt(d.premium)}`).join(' L');
+  const realLineRev = data.slice().reverse().map((d, i) => `${xAt(data.length - 1 - i)},${yAt(d.real)}`).join(' L');
+  svg.appendChild(svgEl('path', { d: `M${premiumLine} L${realLineRev} Z`, fill: 'var(--accent-bg)' }));
+
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((d, i) => `${xAt(i)},${yAt(d.premium)}`).join(' '),
+    fill: 'none', stroke: 'var(--frog)', 'stroke-width': 2
+  }));
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((d, i) => `${xAt(i)},${yAt(d.real)}`).join(' '),
+    fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.2
+  }));
+}
+
+// ══════════ ① 현재 지표 ══════════
+function renderKpi() {
+  const last = REAL.dates.length - 1;
+  const lastUsdt = REAL.usdtPrice[last];
+  const lastFx = REAL.fxRate[last];
+  const lastPrem = REAL.premiumPct[last];
 
   document.getElementById('stUsdt').textContent = fmtWon(lastUsdt);
   document.getElementById('stFx').textContent = fmtWon(lastFx);
   document.getElementById('stPrem').textContent = fmtPct(lastPrem);
-  document.getElementById('kpiAsOf').textContent = REAL.dates[REAL.dates.length - 1] + ' 기준';
+
+  // 전일 대비
+  if (last > 0) {
+    const dUsdt = lastUsdt - REAL.usdtPrice[last - 1];
+    const dFx = lastFx - REAL.fxRate[last - 1];
+    const arrow = v => (v > 0 ? '▲' : v < 0 ? '▼' : '–');
+    document.getElementById('stUsdtHint').textContent = `${arrow(dUsdt)} ${Math.abs(dUsdt).toFixed(1)}원`;
+    document.getElementById('stFxHint').textContent = `${arrow(dFx)} ${Math.abs(dFx).toFixed(1)}원`;
+  }
+
+  // 프리미엄 카드에는 환율까지 반영한 실질 수치를 미리 얹어둔다 (④로 이어지는 실마리)
+  const { net } = computeFxBreakdown();
+  document.getElementById('stPremHint').textContent = `환율 반영 시 ${fmtPct(net)}`;
+
+  const fetched = new Date(REAL.fetchedAt || Date.now());
+  const hh = String(fetched.getHours()).padStart(2, '0');
+  const mm = String(fetched.getMinutes()).padStart(2, '0');
+  const ss = String(fetched.getSeconds()).padStart(2, '0');
+  document.getElementById('kpiAsOf').innerHTML =
+    `${REAL.dates[last]} 기준<span class="kpi-meta-sep">·</span>${hh}:${mm}:${ss} 갱신`;
 }
 
-// ══════════ ② 환율 분해 (최근 LOOKBACK_DAYS일 기준, ④와 같은 원리) ══════════
-// 임시로 정한 기준 기간 — 나중에 바뀌면 이 숫자만 수정하면 된다.
-const LOOKBACK_DAYS = 30;
+// ══════════ 로드 + 상태 처리 ══════════
+const DATA_SECTIONS = ['kpi', 'prem', 'gauge', 'fx', 'decomp'];
 
-function renderFxBreakdown(){
-  const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-
-  const lastIdx = REAL.dates.length - 1;
-  const baseIdx = Math.max(0, lastIdx - LOOKBACK_DAYS);
-  const p0 = REAL.premiumPct[baseIdx];
-  const fx0 = REAL.fxRate[baseIdx];
-
-  const spread = REAL.premiumPct[lastIdx] - p0;
-  const fxImpact = (REAL.fxRate[lastIdx] / fx0 - 1) * 100;
-  const net = spread + fxImpact;
-
-  document.getElementById('sbSpread').textContent = fmtPct(spread);
-  document.getElementById('sbFx').textContent = fmtPct(fxImpact);
-  document.getElementById('sbNet').textContent = fmtPct(net);
-  document.getElementById('fUsd').textContent = fmtPct(spread);
-  document.getElementById('fFx').textContent = fmtPct(fxImpact);
-  document.getElementById('fKrw').textContent = fmtPct(net);
-}
-
-// ══════════ 실데이터 로드 + 로딩/에러 상태 처리 ══════════
-const DATA_SECTIONS = ['kpi', 'fx', 'prem', 'decomp', 'gauge', 'heat'];
-
-function setSectionState(name, state, message){
+function setSectionState(name, state, message) {
   const loading = document.getElementById(name + 'Loading');
   const error = document.getElementById(name + 'Error');
   const content = document.getElementById(name + 'Content');
-  loading.style.display = state === 'loading' ? '' : 'none';
-  error.style.display = state === 'error' ? '' : 'none';
-  content.style.display = state === 'loaded' ? '' : 'none';
-  if(state === 'error'){
+  if (loading) loading.style.display = state === 'loading' ? '' : 'none';
+  if (error) error.style.display = state === 'error' ? '' : 'none';
+  if (content) content.style.display = state === 'loaded' ? '' : 'none';
+  if (state === 'error' && error) {
     error.querySelector('.js-error-msg').textContent = message || '잠시 후 다시 시도해주세요.';
   }
 }
 
-async function loadRealData(){
-  const { dates, usdtPrice, fxRate } = await getUsdtPremiumData({ maxYears: 3 });
-  console.log(dates.length, dates[0], dates[dates.length - 1]);
-  const premiumPct = usdtPrice.map((p, i) => (p - fxRate[i]) / fxRate[i] * 100);
-  return { dates, usdtPrice, fxRate, premiumPct };
+async function loadRealData(forceRefresh) {
+  const data = await getUsdtPremiumData({ forceRefresh });
+  const premiumPct = data.usdtPrice.map((p, i) => (p - data.fxRate[i]) / data.fxRate[i] * 100);
+  return { ...data, premiumPct };
 }
 
-let REAL = null;
 const refreshBtn = document.getElementById('refreshBtn');
 
-async function loadAndRenderAll(){
+async function loadAndRenderAll(forceRefresh = false) {
   DATA_SECTIONS.forEach(name => setSectionState(name, 'loading'));
   refreshBtn.disabled = true;
+
   try {
-    REAL = await loadRealData();
-  } catch (err){
-    console.error('shared.js 데이터 로드 실패:', err);
+    REAL = await loadRealData(forceRefresh);
+  } catch (err) {
+    console.error('데이터 로드 실패:', err);
     DATA_SECTIONS.forEach(name => setSectionState(name, 'error', err.message));
     refreshBtn.disabled = false;
     return;
   }
+
+  console.log('데이터 %d일 (%s ~ %s)', REAL.dates.length, REAL.dates[0], REAL.dates[REAL.dates.length - 1]);
   DATA_SECTIONS.forEach(name => setSectionState(name, 'loaded'));
 
   renderKpi();
-  renderFxBreakdown();
+  renderPeriodTabs();
   const activeTab = document.querySelector('.period-tab.active');
-  drawPremChart(activeTab ? parseInt(activeTab.dataset.p) : 365);
-  drawDecompChart();
+  drawPremChart(activeTab ? parseInt(activeTab.dataset.p, 10) : REAL.dates.length);
   renderGaugeAndHeatmap();
+  drawBridgeChart();
+  drawDecompChart();
+
   refreshBtn.disabled = false;
 }
 
 refreshBtn.addEventListener('click', () => {
   clearPremiumCache();
-  loadAndRenderAll();
+  loadAndRenderAll(true);
 });
 
 loadAndRenderAll();

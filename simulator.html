@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>과거 매수 시뮬레이터</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body { padding-bottom: 80px; }
+  .header { padding: var(--sp-10) 0 var(--sp-2); }
+  .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
+
+  .section-block { margin-top: var(--sp-8); }
+  .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
+  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
+  .section-intro b.frog-text { color: var(--frog); }
+  .section-intro b.accent-text { color: var(--accent); }
+
+  /* ② 매수 시점 선택 */
+  .date-picker-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
+  .date-picker-label { font-size: 0.84rem; color: var(--mut); }
+  .date-picker-value { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 800; color: var(--text); }
+  .date-slider { width: 100%; accent-color: var(--frog); height: 4px; }
+  .date-range-caption { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--dim); margin-top: var(--sp-1); }
+
+  /* ③ 결과 차트 */
+  .decomp-svg { width: 100%; height: 200px; display: block; }
+  .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+  .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
+
+  /* ④ 요약 문장 */
+  .result-summary {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: var(--sp-4) var(--sp-5); margin-top: var(--sp-4); text-align: center;
+  }
+  .result-summary .headline { font-size: 1.02rem; font-weight: 800; color: var(--text); }
+  .result-summary .headline .frog-text { color: var(--frog); }
+  .result-summary .headline .accent-text { color: var(--accent); }
+  .result-summary .sub { font-size: 0.8rem; color: var(--mut); margin-top: var(--sp-2); }
+
+  /* ⑤ 하단 안내 */
+  .repeat-note {
+    text-align: center; font-size: 0.84rem; color: var(--mut);
+    margin-top: var(--sp-8); padding: 0 var(--sp-4); line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="index.html" class="topnav-logo">
+      <span class="topnav-mascot-slot" aria-hidden="true"></span>
+      김프로그
+    </a>
+    <div class="topnav-tabs">
+      <a href="index.html" class="topnav-tab">홈</a>
+      <a href="dashboard.html" class="topnav-tab">대시보드</a>
+      <a href="pattern.html" class="topnav-tab">패턴분석</a>
+      <a href="simulator.html" class="topnav-tab active">시뮬레이터</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <!-- ① 헤더 -->
+  <div class="header">
+    <div class="eyebrow mono">시뮬레이터</div>
+    <h1>당신이 그때 샀다면, 지금은 어떨까</h1>
+    <p>매수 시점을 골라보면, 프리미엄만 봤을 때와 환율까지 반영했을 때 실제로 남는 수익이 어떻게 달라지는지 확인할 수 있습니다.</p>
+  </div>
+
+  <!-- ② 매수 시점 선택 -->
+  <div class="section-block">
+    <div class="section-label">② 매수 시점 선택</div>
+    <div class="card">
+      <div class="date-picker-row">
+        <span class="date-picker-label">그때 샀다면</span>
+        <span class="date-picker-value" id="pickedDate">-</span>
+      </div>
+      <input type="range" class="date-slider" id="dateSlider" min="14" max="800" value="200" step="1">
+      <div class="date-range-caption">
+        <span id="rangeFar">-</span>
+        <span>오늘</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 결과 -->
+  <div class="section-block">
+    <div class="section-label">③ 그 시점부터 지금까지</div>
+    <div class="card">
+      <div class="disclaim" style="margin-bottom: var(--sp-4);">이 결과는 특정 시점을 가정해 계산한 것이며, 투자 조언이 아닙니다.</div>
+
+      <p class="section-intro"><b class="frog-text">그린 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b class="accent-text">버건디 선</b>은 환율까지 반영한 실제 누적 수익입니다.</p>
+      <div class="decomp-legend-row">
+        <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
+        <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+      </div>
+      <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
+      <div class="caption">두 선 사이 옅은 음영이 그 시점부터 지금까지 환율이 누적으로 갉아먹거나 더해준 몫입니다.</div>
+
+      <!-- ④ 요약 -->
+      <div class="result-summary">
+        <div class="headline" id="resultHeadline">-</div>
+        <div class="sub" id="resultSub">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 하단 안내 -->
+  <p class="repeat-note">이 관계는 언제를 고르든 반복해서 나타납니다. 다른 시점도 골라 확인해보세요.</p>
+</div>
+
+<script>
+function seededRandom(seed){ let s=seed; return function(){ s=(s*9301+49297)%233280; return s/233280; }; }
+
+// ══════════ 원시 일별 변화량 데이터 생성 (dashboard.html의 로직 재사용) ══════════
+const TOTAL_DAYS = 900;
+function genRawSteps(n, seed){
+  const rand = seededRandom(seed);
+  const arr = [];
+  for(let i=0;i<n;i++){
+    const premiumStep = (rand()-0.42)*0.55; // 프리미엄만으로 쌓인 하루치 변화
+    const fxStep = (rand()-0.5)*0.5;        // 환율이 추가로 준 영향
+    arr.push({ premiumStep, fxStep });
+  }
+  return arr;
+}
+const rawSteps = genRawSteps(TOTAL_DAYS, 202);
+
+const TODAY = new Date(2026, 7, 9);
+function dateLabel(d){
+  return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+}
+function dateFromDaysAgo(daysAgo){
+  const d = new Date(TODAY);
+  d.setDate(d.getDate() - daysAgo);
+  return d;
+}
+
+const farDate = dateFromDaysAgo(800);
+document.getElementById('rangeFar').textContent = dateLabel(farDate);
+
+function computeSeries(daysAgo){
+  const start = TOTAL_DAYS - daysAgo;
+  let premiumCum = 0, realCum = 0;
+  const arr = [];
+  for(let i=start;i<TOTAL_DAYS;i++){
+    premiumCum += rawSteps[i].premiumStep;
+    realCum += rawSteps[i].premiumStep + rawSteps[i].fxStep;
+    arr.push({ premium: premiumCum, real: realCum });
+  }
+  return arr;
+}
+
+function drawDecompChart(data){
+  const svg = document.getElementById('decompChart');
+  svg.innerHTML = '';
+  const W=760,H=200,PL=44,PR=14,PT=14,PB=20;
+  const pw=W-PL-PR, ph=H-PT-PB;
+  const allVals = data.flatMap(d=>[d.premium, d.real]);
+  const minY = Math.min(...allVals, 0) - 0.5, maxY = Math.max(...allVals, 0) + 0.5;
+  const n = data.length;
+  const xAt = i => n <= 1 ? PL : PL + (i/(n-1))*pw;
+  const yAt = v => PT + ph - ((v-minY)/(maxY-minY))*ph;
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  for(let s=0;s<=3;s++){
+    const y = PT + ph - (s/3)*ph;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
+    line.setAttribute('stroke','#e0ecdf');
+    g.appendChild(line);
+  }
+  svg.appendChild(g);
+
+  const premiumLine = data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' L');
+  const realLineRev = data.slice().reverse().map((d,i)=>`${xAt(n-1-i)},${yAt(d.real)}`).join(' L');
+  const fillPath = `M${premiumLine} L${realLineRev} Z`;
+
+  const fill = document.createElementNS('http://www.w3.org/2000/svg','path');
+  fill.setAttribute('d', fillPath);
+  fill.setAttribute('fill', '#b3372a');
+  fill.setAttribute('fill-opacity', '0.14');
+  svg.appendChild(fill);
+
+  const premPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  premPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' '));
+  premPoly.setAttribute('fill','none'); premPoly.setAttribute('stroke','#3fa15e'); premPoly.setAttribute('stroke-width','2');
+  svg.appendChild(premPoly);
+
+  const realPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  realPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.real)}`).join(' '));
+  realPoly.setAttribute('fill','none'); realPoly.setAttribute('stroke','#b3372a'); realPoly.setAttribute('stroke-width','2.2');
+  svg.appendChild(realPoly);
+}
+
+function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
+
+function render(daysAgo){
+  const picked = dateFromDaysAgo(daysAgo);
+  document.getElementById('pickedDate').textContent = dateLabel(picked);
+
+  const data = computeSeries(daysAgo);
+  drawDecompChart(data);
+
+  const last = data[data.length-1];
+  const diff = last.real - last.premium;
+
+  const headline = document.getElementById('resultHeadline');
+  const sub = document.getElementById('resultSub');
+
+  if (Math.abs(diff) < 0.05) {
+    headline.innerHTML = `당신이 고른 시점에서는, 환율이 실질 수익을 <b>거의 바꾸지 않았습니다</b>`;
+  } else if (diff > 0) {
+    headline.innerHTML = `당신이 고른 시점에서도, 환율이 실질 수익을 <b class="frog-text">늘렸습니다</b>`;
+  } else {
+    headline.innerHTML = `당신이 고른 시점에서도, 환율이 실질 수익을 <b class="accent-text">줄였습니다</b>`;
+  }
+  sub.textContent = `프리미엄 기준 누적수익 ${fmtPct(last.premium)} · 환율 반영 실질 누적수익 ${fmtPct(last.real)} (차이 ${fmtPct(diff)})`;
+}
+
+const slider = document.getElementById('dateSlider');
+slider.addEventListener('input', () => render(parseInt(slider.value)));
+render(parseInt(slider.value));
+</script>
+
+</body>
+</html>

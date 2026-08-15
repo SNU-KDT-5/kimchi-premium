@@ -4,8 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>실시간 관측 대시보드</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="shared.css">
 </head>
 <body>
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-logo">
+        <span class="topnav-mascot-slot" aria-hidden="true"></span>
+        김프로그
+      </a>
+      <div class="topnav-tabs">
+        <a href="index.html" class="topnav-tab">홈</a>
+        <a href="dashboard.html" class="topnav-tab active">대시보드</a>
+        <a href="pattern.html" class="topnav-tab">패턴분석</a>
+        <a href="simulator.html" class="topnav-tab">시뮬레이터</a>
+      </div>
+    </div>
+  </nav>
+
   <!--
     담당: 실시간 관측 대시보드
     역할: 차트 3종(가격비교/프리미엄추이/달러기준) + 탭 전환(전체/1000일/200일/주별/일별)

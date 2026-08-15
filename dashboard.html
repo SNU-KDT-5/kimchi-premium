@@ -14,13 +14,27 @@
   .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
   .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
 
-  .section-block { margin-top: var(--sp-8); }
-  .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
-  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
-  .section-intro b.frog-text { color: var(--frog); }
-  .section-intro b.accent-text { color: var(--accent); }
+  /* ── 대주제 구획 ──
+     구획마다 배경색이 달라서, 안쪽 요소(히트맵 등) 높이가 변해도
+     그 영향이 이 박스 안에서만 일어난다는 게 눈으로 보인다. */
+  .group { border-radius: var(--r-xl); padding: var(--sp-6); margin-top: var(--sp-8); }
+  .group-now { background: var(--frog-bg); }
+  .group-fx { background: var(--accent-bg); }
+  .group-head {
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: var(--sp-5);
+  }
+  .group-now .group-head { color: var(--frog); }
+  .group-fx .group-head { color: var(--accent); }
+  .group-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-5); max-width: 620px; }
+  .group-intro b.frog-text { color: var(--frog); }
+  .group-intro b.accent-text { color: var(--accent); }
 
-  /* ① 데이터 기준일 + 갱신 */
+  .sub-label { font-size: 0.78rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2); }
+  .sub-block + .sub-block { margin-top: var(--sp-5); }
+  .pane { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
+
+  /* ── 오늘의 숫자 ── */
   .kpi-meta-row {
     display: flex; align-items: center; justify-content: space-between;
     gap: var(--sp-3); margin-bottom: var(--sp-3); flex-wrap: wrap;
@@ -28,84 +42,90 @@
   .kpi-meta-row .btn { padding: var(--sp-1) var(--sp-3); font-size: 0.78rem; }
   .kpi-meta-row .btn:disabled { opacity: 0.5; cursor: default; }
   .kpi-meta-sep { color: var(--dim); margin: 0 var(--sp-2); }
-
-  /* ① 스탯 카드 — 배경보다 밝게 (--panel) */
   .stat-card { background: var(--panel); }
   .stat-card.is-focus { border-color: var(--accent-line); }
   .stat-card .hint.accent-text { color: var(--accent); font-weight: 600; }
 
-  /* ① 더 알아보기 아코디언 */
   .more-info-toggle {
-    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: var(--sp-2);
+    display: block; width: 100%; text-align: center; margin-top: var(--sp-3); padding: var(--sp-2);
     background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
     font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
   }
   .more-info-toggle:hover { background: var(--panel); }
-  .more-info-detail { display: none; margin-top: var(--sp-4); }
+  .more-info-detail { display: none; margin-top: var(--sp-3); }
   .more-info-detail.show { display: block; }
-  .more-info-detail .section-intro { margin-bottom: var(--sp-3); }
 
-  /* ② 시계열 */
-  .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-4); }
+  /* ── 프리미엄 추이 ── */
+  .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-3); }
   .period-tab { flex: 1; text-align: center; padding: var(--sp-2); border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 600; color: var(--mut); cursor: pointer; }
   .period-tab.active { background: var(--text); color: #fff; }
-  .chart-svg { width: 100%; height: 190px; display: block; }
-  .legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); }
+  .chart-svg { width: 100%; height: 180px; display: block; }
+  .legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
   .legend-line { display: inline-block; width: 14px; height: 2px; margin-right: 5px; vertical-align: middle; }
   .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
 
-  /* ③ 게이지 + 히트맵 나란히 */
-  .split-row { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); gap: var(--sp-4); align-items: start; }
+  /* ── 게이지 + 히트맵 ── */
+  .split-row { display: grid; grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr); gap: var(--sp-3); align-items: start; }
   @media (max-width: 720px) { .split-row { grid-template-columns: minmax(0, 1fr); } }
 
-  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--sp-2) 0 0; }
-  .gauge-label { font-size: 1.02rem; font-weight: 800; padding: 6px 20px; margin-top: calc(-1 * var(--sp-4)); }
-  .gauge-score { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; margin-top: var(--sp-3); }
-  .gauge-sub { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; line-height: 1.6; }
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+  .gauge-label { font-size: 1rem; font-weight: 800; padding: 5px 18px; margin-top: calc(-1 * var(--sp-4)); }
+  .gauge-score { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; margin-top: var(--sp-2); }
+  .gauge-sub { font-size: 0.72rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; line-height: 1.6; }
 
-  /* ③ 히트맵 */
-  .hm-nav { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-4); }
-  .hm-nav-btn {
-    width: 28px; height: 28px; flex: none; border-radius: var(--r-sm);
-    border: 1px solid var(--border2); background: var(--panel);
-    color: var(--mut); cursor: pointer; font-size: 0.9rem; line-height: 1;
-    font-family: var(--font-body);
+  /* 히트맵: 세로 7칸(요일) 고정 → 기간을 바꿔도 높이가 변하지 않는다 */
+  .hm-presets { display: flex; gap: var(--sp-1); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+  .hm-preset {
+    font-size: 0.74rem; padding: 4px 11px; border-radius: var(--r-sm);
+    border: 1px solid transparent; background: transparent; color: var(--mut);
+    cursor: pointer; font-family: var(--font-body); font-weight: 600;
   }
-  .hm-nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--frog); }
-  .hm-nav-btn:disabled { opacity: 0.35; cursor: default; }
-  .hm-select {
-    flex: 1; padding: 6px var(--sp-3); border-radius: var(--r-sm);
-    border: 1px solid var(--border2); background: var(--panel); color: var(--text);
-    font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  .hm-preset:hover { background: var(--panel2); }
+  .hm-preset.active { background: var(--text); color: #fff; }
+  .hm-range { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+  .hm-date {
+    border: 1px solid var(--border2); border-radius: var(--r-sm); padding: 3px var(--sp-2);
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--text); background: var(--panel);
   }
-  .hm-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--sp-1); max-width: 260px; margin: 0 auto; }
-  .hm-dow { font-size: 10px; color: var(--dim); text-align: center; font-weight: 600; padding-bottom: var(--sp-1); }
-  .hm-cell { aspect-ratio: 1; border-radius: var(--r-sm); position: relative; cursor: default; transition: transform .1s; }
-  .hm-cell:hover { transform: scale(1.25); z-index: 3; }
+  /* 칸 크기는 기간에 따라 달라지지만 이 상자의 높이는 고정이라,
+     기간을 바꿔도 아래 요소가 위아래로 밀리지 않는다 */
+  .hm-body { display: flex; gap: var(--sp-2); min-height: 132px; align-items: center; }
+  .hm-dows { display: grid; font-size: 9px; color: var(--dim); font-weight: 600; }
+  .hm-dows span { display: flex; align-items: center; }
+  .hm-grid { display: grid; grid-auto-flow: column; flex: 1; min-width: 0; }
+  .hm-cell { border-radius: 2px; position: relative; }
   .hm-cell.empty { background: transparent; }
-  .hm-cell.blank { background: var(--panel2); border: 1px dashed var(--border); }
+  .hm-cell.gap { background: var(--panel2); }
+  .hm-cell:hover { outline: 1.5px solid var(--text); outline-offset: 1px; z-index: 3; }
   .hm-cell .hm-tip {
-    display: none; position: absolute; bottom: calc(100% + var(--sp-2)); left: 50%; transform: translateX(-50%);
-    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3); font-size: 11px;
-    white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5;
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3);
+    font-size: 11px; white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5;
   }
   .hm-cell:hover .hm-tip { display: block; }
-  .hm-legend { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-4); font-size: 11px; color: var(--dim); justify-content: center; }
-  .hm-legend .bar { flex: 1; height: 6px; border-radius: var(--r-pill); max-width: 130px;
+  .hm-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-top: var(--sp-3); flex-wrap: wrap; }
+  .hm-legend { display: flex; align-items: center; gap: var(--sp-2); font-size: 11px; color: var(--dim); }
+  .hm-legend .bar { width: 90px; height: 6px; border-radius: var(--r-pill);
     background: linear-gradient(90deg, var(--border2), var(--amber), var(--accent)); }
 
-  /* ④ 환율 리스크 — 수치선 */
-  .bridge-svg { width: 100%; height: 170px; display: block; }
+  /* ── 환율 리스크 ── */
+  .decomp-svg { width: 100%; height: 200px; display: block; cursor: crosshair; }
+  .pick-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-2); flex-wrap: wrap; }
+  .pick-label { font-size: 0.78rem; font-weight: 700; color: var(--mut); }
+  .pick-label b { color: var(--accent); font-family: var(--font-mono); }
+  .pick-reset {
+    font-size: 0.74rem; padding: 3px var(--sp-3); border-radius: var(--r-sm);
+    border: 1px solid var(--border2); background: var(--panel); color: var(--mut);
+    cursor: pointer; font-family: var(--font-body);
+  }
+  .pick-reset:hover { color: var(--text); border-color: var(--frog); }
+  .pick-reset:disabled { opacity: 0.4; cursor: default; }
+  .bridge-svg { width: 100%; height: 150px; display: block; }
   .bridge-note {
     font-size: 0.78rem; color: var(--mut); text-align: center;
     border-top: 1px solid var(--border); padding-top: var(--sp-3); margin-top: var(--sp-2);
   }
   .bridge-note b { font-family: var(--font-mono); color: var(--text); }
-
-  /* ④ 두 선 비교 */
-  .decomp-svg { width: 100%; height: 200px; display: block; }
-  .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
-
   .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
 </style>
 </head>
@@ -133,124 +153,149 @@
     <p>김프가 지금 얼마나 벌어져 있는지, 그리고 그중 얼마가 실제로 손에 남는지를 함께 봅니다.</p>
   </div>
 
-  <!-- ① 현재 지표 -->
-  <div class="section-block">
-    <div class="section-label">① 현재 지표</div>
-    <div class="status-box" id="kpiLoading"><div class="spinner"></div>현재 지표를 불러오는 중…</div>
-    <div class="error-box" id="kpiError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-    <div id="kpiContent" style="display:none;">
-      <div class="kpi-meta-row">
-        <span class="mut-text mono" id="kpiAsOf"></span>
-        <button class="btn btn-outline" id="refreshBtn" type="button">갱신</button>
-      </div>
-      <div class="stat-row">
-        <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div><div class="hint" id="stUsdtHint">&nbsp;</div></div>
-        <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div><div class="hint" id="stFxHint">&nbsp;</div></div>
-        <div class="stat-card is-focus"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint accent-text" id="stPremHint">&nbsp;</div></div>
-      </div>
-    </div>
+  <!-- ══════ 구획 1: 현재 지표 ══════ -->
+  <section class="group group-now">
+    <div class="group-head">현재 지표</div>
 
-    <button class="more-info-toggle" id="moreInfoToggle">더 알아보기 — 지금 시장 상황 ▾</button>
-    <div class="more-info-detail" id="moreInfoDetail">
-      <p class="section-intro">여기에 USDT(테더) 거래량, 거래대금, 네이버 검색지수 등 시장 활발도 지표가 들어올 예정입니다</p>
-      <div class="stat-row">
-        <div class="stat-card"><div class="label">거래량</div><div class="value">—</div></div>
-        <div class="stat-card"><div class="label">거래대금</div><div class="value">—</div></div>
-        <div class="stat-card"><div class="label">검색지수</div><div class="value">—</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ② 프리미엄 추이 -->
-  <div class="section-block">
-    <div class="section-label">② USDT(테더) 프리미엄 추이</div>
-    <div class="card">
-      <div class="status-box" id="premLoading"><div class="spinner"></div>프리미엄 추이를 불러오는 중…</div>
-      <div class="error-box" id="premError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-      <div id="premContent" style="display:none;">
-        <div class="period-tabs" id="periodTabs"></div>
-        <div class="legend-row">
-          <span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span>
-          <span><span class="legend-swatch" style="background:var(--accent-bg);"></span>0% 아래 (역프)</span>
-          <span id="legendRecent" style="display:none;"><span class="legend-swatch" style="background:var(--panel2); border:1px solid var(--border2);"></span>최근 90일</span>
+    <!-- 오늘의 숫자 -->
+    <div class="sub-block">
+      <div class="sub-label">오늘의 숫자</div>
+      <div class="status-box" id="kpiLoading"><div class="spinner"></div>현재 지표를 불러오는 중…</div>
+      <div class="error-box" id="kpiError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div id="kpiContent" style="display:none;">
+        <div class="kpi-meta-row">
+          <span class="mut-text mono" id="kpiAsOf"></span>
+          <button class="btn btn-outline" id="refreshBtn" type="button">갱신</button>
         </div>
-        <svg class="chart-svg" id="premChart" viewBox="0 0 760 190" preserveAspectRatio="none"></svg>
-        <div class="caption" id="premRangeNote"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ③ 지금 김프 위치 + 월별 히트맵 -->
-  <div class="section-block">
-    <div class="section-label">③ 지금 김프 위치</div>
-    <div class="status-box" id="gaugeLoading"><div class="spinner"></div>분포 데이터를 불러오는 중…</div>
-    <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-    <div class="split-row" id="gaugeContent" style="display:none;">
-      <div class="card card-sm">
-        <div class="gauge-wrap">
-          <svg id="gaugeSvg" viewBox="0 0 320 168" style="width:100%;max-width:280px;display:block;margin:0 auto"></svg>
-          <div class="gauge-label badge" id="gaugeLabel">–</div>
-          <div class="gauge-score" id="gaugeScore">–</div>
-          <div class="gauge-sub" id="gaugeSub"></div>
+        <div class="stat-row">
+          <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div><div class="hint" id="stUsdtHint">&nbsp;</div></div>
+          <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div><div class="hint" id="stFxHint">&nbsp;</div></div>
+          <div class="stat-card is-focus"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint accent-text" id="stPremHint">&nbsp;</div></div>
         </div>
       </div>
-      <div class="card card-sm">
-        <div class="hm-nav">
-          <button class="hm-nav-btn" id="hmPrev" type="button" aria-label="이전 달">‹</button>
-          <select class="hm-select" id="hmMonth" aria-label="월 선택"></select>
-          <button class="hm-nav-btn" id="hmNext" type="button" aria-label="다음 달">›</button>
+
+      <button class="more-info-toggle" id="moreInfoToggle">더 알아보기 — 지금 시장 상황 ▾</button>
+      <div class="more-info-detail" id="moreInfoDetail">
+        <p class="mut-text" style="margin-bottom:var(--sp-3);">여기에 USDT(테더) 거래량, 거래대금, 네이버 검색지수 등 시장 활발도 지표가 들어올 예정입니다</p>
+        <div class="stat-row">
+          <div class="stat-card"><div class="label">거래량</div><div class="value">—</div></div>
+          <div class="stat-card"><div class="label">거래대금</div><div class="value">—</div></div>
+          <div class="stat-card"><div class="label">검색지수</div><div class="value">—</div></div>
         </div>
-        <div class="hm-grid" id="heatgrid"></div>
-        <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
-        <div class="caption" id="hmNote"></div>
       </div>
     </div>
-  </div>
 
-  <!-- ④ 환율 리스크 -->
-  <div class="section-block">
-    <div class="section-label">④ 환율 리스크</div>
-    <p class="section-intro">김프는 사는 순간의 웃돈이지만, 환율은 파는 순간까지 계속 움직입니다. 그래서 벌어진 김프가 그대로 손에 남지는 않습니다. <b id="fxWindowLabel">최근 60일</b> 동안 실제로 어떤 일이 있었는지 봅니다.</p>
+    <!-- 프리미엄 추이 -->
+    <div class="sub-block">
+      <div class="sub-label">프리미엄 추이</div>
+      <div class="pane">
+        <div class="status-box" id="premLoading"><div class="spinner"></div>프리미엄 추이를 불러오는 중…</div>
+        <div class="error-box" id="premError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+        <div id="premContent" style="display:none;">
+          <div class="period-tabs" id="periodTabs"></div>
+          <div class="legend-row">
+            <span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span>
+            <span><span class="legend-swatch" style="background:var(--accent-bg);"></span>0% 아래 (역프)</span>
+            <span id="legendRecent" style="display:none;"><span class="legend-swatch" style="background:var(--panel2); border:1px solid var(--border2);"></span>최근 90일</span>
+          </div>
+          <svg class="chart-svg" id="premChart" viewBox="0 0 760 180" preserveAspectRatio="none"></svg>
+          <div class="caption" id="premRangeNote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 지금 김프 위치 -->
+    <div class="sub-block">
+      <div class="sub-label">지금 김프 위치</div>
+      <div class="status-box" id="gaugeLoading"><div class="spinner"></div>분포 데이터를 불러오는 중…</div>
+      <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div class="split-row" id="gaugeContent" style="display:none;">
+        <div class="pane">
+          <div class="gauge-wrap">
+            <svg id="gaugeSvg" viewBox="0 0 320 160" style="width:100%;max-width:260px;display:block;margin:0 auto"></svg>
+            <div class="gauge-label badge" id="gaugeLabel">–</div>
+            <div class="gauge-score" id="gaugeScore">–</div>
+            <div class="gauge-sub" id="gaugeSub"></div>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="hm-presets" id="hmPresets">
+            <button class="hm-preset" type="button" data-d="90">3개월</button>
+            <button class="hm-preset active" type="button" data-d="182">6개월</button>
+            <button class="hm-preset" type="button" data-d="365">1년</button>
+          </div>
+          <div class="hm-range">
+            <input class="hm-date" type="date" id="hmFrom" aria-label="시작일">
+            <span class="caption" style="margin:0;">~</span>
+            <input class="hm-date" type="date" id="hmTo" aria-label="종료일">
+          </div>
+          <div class="hm-body">
+            <div class="hm-dows" id="hmDows"></div>
+            <div class="hm-grid" id="hmGrid"></div>
+          </div>
+          <div class="hm-foot">
+            <span class="caption" id="hmNote" style="margin:0;"></span>
+            <span class="hm-legend"><span>낮음</span><span class="bar"></span><span>높음</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 구획 2: 환율 리스크 ══════ -->
+  <section class="group group-fx">
+    <div class="group-head">환율 리스크</div>
+    <p class="group-intro">김프는 사는 순간의 웃돈이지만, 환율은 파는 순간까지 계속 움직입니다. 그래서 벌어진 김프가 그대로 손에 남지는 않습니다. <b id="fxWindowLabel">최근 60일</b> 동안 실제로 어떤 일이 있었는지 봅니다.</p>
+
     <div class="status-box" id="fxLoading"><div class="spinner"></div>환율 분해 데이터를 불러오는 중…</div>
     <div class="error-box" id="fxError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-    <div id="fxContent" style="display:none;">
-      <div class="card">
-        <svg class="bridge-svg" id="bridgeChart" viewBox="0 0 760 170"></svg>
-        <div class="bridge-note" id="bridgeNote"></div>
-      </div>
-    </div>
 
-    <div class="status-box" id="decompLoading" style="margin-top:var(--sp-4);"><div class="spinner"></div>누적수익 데이터를 불러오는 중…</div>
-    <div class="error-box" id="decompError" style="display:none; margin-top:var(--sp-4);"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
-    <div id="decompContent" style="display:none; margin-top:var(--sp-4);">
-      <div class="card">
-        <p class="section-intro">언제부터 벌어졌는지를 봅니다. <b class="frog-text">녹색 선</b>은 프리미엄만으로 쌓였을 누적 수익이고, <b class="accent-text">붉은 선</b>은 환율까지 반영한 실질 누적 수익입니다.</p>
-        <div class="decomp-legend-row">
-          <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
-          <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+    <div id="fxContent" style="display:none;">
+      <!-- 위: 그래프(입력) -->
+      <div class="sub-block">
+        <div class="sub-label">언제부터 벌어졌나 <span style="font-weight:400;color:var(--dim);">— 선 위를 클릭하면 그날 기준으로 아래가 바뀝니다</span></div>
+        <div class="pane">
+          <p class="mut-text" style="font-size:0.84rem;margin-bottom:var(--sp-3);"><b class="frog-text" style="color:var(--frog)">녹색 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b style="color:var(--accent)">붉은 선</b>은 환율까지 반영한 실질 누적 수익입니다. 두 선 사이 음영이 넓어질수록 그 구간에서 환율이 가져간 몫이 큽니다.</p>
+          <div class="legend-row">
+            <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
+            <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+          </div>
+          <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200"></svg>
         </div>
-        <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
-        <div class="caption">두 선 사이 음영이 넓어질수록 그 구간에서 환율이 가져간 몫이 큽니다.</div>
+      </div>
+
+      <!-- 아래: 수치선(출력) -->
+      <div class="sub-block">
+        <div class="pick-row">
+          <span class="pick-label" id="pickLabel">–</span>
+          <button class="pick-reset" id="pickReset" type="button" disabled>오늘로</button>
+        </div>
+        <div class="pane">
+          <svg class="bridge-svg" id="bridgeChart" viewBox="0 0 760 150"></svg>
+          <div class="bridge-note" id="bridgeNote"></div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <div class="caption" style="margin-top:var(--sp-8);">데이터 출처: 업비트 종가(KRW-USDT, 2024-06-07 상장), 환율은 ECB 기준 (주말·공휴일은 직전 거래일 환율 적용)</div>
-
 </div>
 
 <script>
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const LOOKBACK_DAYS = 60;   // 환율 리스크 구획이 기준으로 삼는 보유 기간
+const DAY_MS = 86400000;
 
-// 환율 리스크 섹션이 기준으로 삼는 보유 기간
-const LOOKBACK_DAYS = 60;
-
-let REAL = null;
-let HEAT = null; // { months: [...], byMonth: Map }
+let REAL = null;      // { dates, usdtPrice, fxRate, premiumPct, fetchedAt }
+let DECOMP = null;    // [{ premium, real }] — 최근 LOOKBACK_DAYS일
+let DECOMP_DATES = [];
+let pinnedIdx = null; // 클릭으로 고정한 날짜 (null이면 오늘)
+let pctOf = () => 0;
 
 const fmtWon = n => n.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '원';
 const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
 const fmtMoney = n => Math.round(n).toLocaleString('ko-KR') + '원';
+const isoOf = d => d.toISOString().slice(0, 10);
 
 function svgEl(tag, attrs) {
   const el = document.createElementNS(SVG_NS, tag);
@@ -271,19 +316,16 @@ function svgText(x, y, content, opts = {}) {
   return t;
 }
 
-// ══════════ 아코디언 ══════════
 document.getElementById('moreInfoToggle').addEventListener('click', function () {
   const detail = document.getElementById('moreInfoDetail');
   const isShown = detail.classList.toggle('show');
   this.textContent = isShown ? '접기 ▴' : '더 알아보기 — 지금 시장 상황 ▾';
 });
 
-// 공통: X축 날짜 라벨을 고르게 count개 배치
 function addDateLabels(g, dates, xAt, H, count) {
-  const n = dates.length;
   const shown = new Set();
   for (let k = 0; k < count; k++) {
-    const idx = Math.round((k / (count - 1)) * (n - 1));
+    const idx = Math.round((k / (count - 1)) * (dates.length - 1));
     if (shown.has(idx)) continue;
     shown.add(idx);
     g.appendChild(svgText(xAt(idx), H - 4, dates[idx], {
@@ -292,7 +334,7 @@ function addDateLabels(g, dates, xAt, H, count) {
   }
 }
 
-// ══════════ ② 프리미엄 추이 ══════════
+// ══════ 프리미엄 추이 ══════
 function renderPeriodTabs() {
   const N = REAL.dates.length;
   const tabs = document.getElementById('periodTabs');
@@ -319,7 +361,7 @@ function drawPremChart(days) {
 
   const series = REAL.premiumPct.slice(-days);
   const dates = REAL.dates.slice(-days);
-  const W = 760, H = 190, PL = 46, PR = 14, PT = 14, PB = 20;
+  const W = 760, H = 180, PL = 46, PR = 14, PT = 14, PB = 20;
   const pw = W - PL - PR, ph = H - PT - PB;
   const minY = Math.min(...series) - 0.4, maxY = Math.max(...series) + 0.4;
   const xAt = i => PL + (i / (series.length - 1)) * pw;
@@ -327,10 +369,9 @@ function drawPremChart(days) {
 
   const g = svgEl('g', {});
 
-  // 최근 90일 음영 (전체 보기일 때만)
-  const showRecentBand = series.length > 90;
-  document.getElementById('legendRecent').style.display = showRecentBand ? '' : 'none';
-  if (showRecentBand) {
+  const showBand = series.length > 90;
+  document.getElementById('legendRecent').style.display = showBand ? '' : 'none';
+  if (showBand) {
     const bandX = xAt(series.length - 90);
     g.appendChild(svgEl('rect', {
       x: bandX, y: PT, width: (W - PR) - bandX, height: ph,
@@ -338,7 +379,6 @@ function drawPremChart(days) {
     }));
   }
 
-  // 가로 눈금
   for (let s = 0; s <= 3; s++) {
     const y = PT + ph - (s / 3) * ph;
     const val = minY + (s / 3) * (maxY - minY);
@@ -346,18 +386,11 @@ function drawPremChart(days) {
     g.appendChild(svgText(PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
   }
 
-  // 0% 아래(역프) 영역 채우기 + 기준선 강조
   if (minY < 0 && maxY > 0) {
     const y0 = yAt(0);
     const negPts = series.map((v, i) => `${xAt(i).toFixed(1)},${yAt(Math.min(v, 0)).toFixed(1)}`).join(' L');
-    g.appendChild(svgEl('path', {
-      d: `M${PL},${y0} L${negPts} L${W - PR},${y0} Z`,
-      fill: 'var(--accent-bg)'
-    }));
-    g.appendChild(svgEl('line', {
-      x1: PL, x2: W - PR, y1: y0, y2: y0,
-      stroke: 'var(--mut)', 'stroke-width': 1.5
-    }));
+    g.appendChild(svgEl('path', { d: `M${PL},${y0} L${negPts} L${W - PR},${y0} Z`, fill: 'var(--accent-bg)' }));
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y0, y2: y0, stroke: 'var(--mut)', 'stroke-width': 1.5 }));
   }
 
   addDateLabels(g, dates, xAt, H, 5);
@@ -368,11 +401,8 @@ function drawPremChart(days) {
     fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2,
     'stroke-linejoin': 'round', 'stroke-linecap': 'round'
   }));
-
-  // 현재값 마커
-  const lastX = xAt(series.length - 1), lastY = yAt(series[series.length - 1]);
   svg.appendChild(svgEl('circle', {
-    cx: lastX, cy: lastY, r: 4,
+    cx: xAt(series.length - 1), cy: yAt(series[series.length - 1]), r: 4,
     fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 2
   }));
 
@@ -380,7 +410,7 @@ function drawPremChart(days) {
     `${dates[0]} ~ ${dates[dates.length - 1]} · 이 시작일 이전은 상장 전이라 기록이 없습니다`;
 }
 
-// ══════════ ③ 게이지 + 월별 히트맵 ══════════
+// ══════ 색 스케일 ══════
 function hexToRgb(hex) {
   hex = hex.trim().replace('#', '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -411,24 +441,19 @@ function getLabel(t) {
   return { txt: '낮음', cls: 'badge-neutral', swatch: 'var(--dim)' };
 }
 
-function renderGaugeAndHeatmap() {
-  buildColorScale();
-
-  // 상장 이후 전체 기간 분포를 기준으로 백분위를 계산한다.
-  // (게이지와 히트맵이 같은 자를 써야 색이 서로 어긋나지 않는다)
+// ══════ 게이지 ══════
+function renderGauge() {
   const all = REAL.premiumPct;
   const sorted = [...all].sort((a, b) => a - b);
-  const pctOf = v => sorted.filter(x => x <= v).length / sorted.length;
+  pctOf = v => sorted.filter(x => x <= v).length / sorted.length;
 
   const cur = all[all.length - 1];
   const pc = pctOf(cur);
   const score = Math.round(pc * 100);
-  const daysLowerOrEqual = Math.round(pc * sorted.length);
-  const daysHigher = sorted.length - daysLowerOrEqual;
+  const lower = Math.round(pc * sorted.length);
 
-  // ── 게이지 ──
   const svg = document.getElementById('gaugeSvg');
-  const cx = 160, cy = 140, R = 112, r2 = 96;
+  const cx = 160, cy = 132, R = 106, r2 = 90;
   const ang = Math.PI - (score / 100) * Math.PI;
   const nx = cx + r2 * Math.cos(ang), ny = cy - r2 * Math.sin(ang);
 
@@ -437,17 +462,16 @@ function renderGaugeAndHeatmap() {
     const a0 = Math.PI - s / 100 * Math.PI, a1 = Math.PI - (s + 2.4) / 100 * Math.PI;
     const x0 = cx + R * Math.cos(a0), y0 = cy - R * Math.sin(a0);
     const x1 = cx + R * Math.cos(a1), y1 = cy - R * Math.sin(a1);
-    arcs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s / 100)}" stroke-width="15" stroke-linecap="round"/>`;
+    arcs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s / 100)}" stroke-width="14" stroke-linecap="round"/>`;
   }
 
   svg.innerHTML = `${arcs}
-    <text x="30" y="164" font-size="11" style="fill:var(--dim)">낮음</text>
-    <text x="160" y="22" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
-    <text x="290" y="164" text-anchor="end" font-size="11" style="fill:var(--dim)">높음</text>
+    <text x="34" y="156" font-size="11" style="fill:var(--dim)">낮음</text>
+    <text x="160" y="20" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
+    <text x="286" y="156" text-anchor="end" font-size="11" style="fill:var(--dim)">높음</text>
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" style="stroke:var(--text)" stroke-width="3" stroke-linecap="round"/>
     <circle cx="${cx}" cy="${cy}" r="6" style="fill:var(--text)"/>`;
 
-  // 배지를 크게(주인공), 백분위 숫자를 그 아래 작게
   const lbl = getLabel(pc);
   const gl = document.getElementById('gaugeLabel');
   gl.textContent = lbl.txt;
@@ -459,160 +483,113 @@ function renderGaugeAndHeatmap() {
 
   document.getElementById('gaugeSub').innerHTML =
     `현재 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> · 상장 이후 ${sorted.length}일 중 ` +
-    `${daysLowerOrEqual}일이 오늘과 같거나 낮았고, ${daysHigher}일이 오늘보다 높았습니다.`;
+    `${lower}일이 오늘과 같거나 낮았습니다.`;
+}
 
-  // ── 월별 히트맵 데이터 ──
-  const byMonth = new Map();
-  REAL.dates.forEach((s, i) => {
-    const key = s.slice(0, 7); // YYYY-MM
-    if (!byMonth.has(key)) byMonth.set(key, []);
-    byMonth.get(key).push({
-      date: s,
-      day: Number(s.slice(8, 10)),
-      prem: REAL.premiumPct[i],
-      t: pctOf(REAL.premiumPct[i])
+// ══════ 히트맵 (기간 선택 · 세로 7칸 고정) ══════
+const DOW_LABEL = ['일', '월', '화', '수', '목', '금', '토'];
+
+let heatmapBound = false; // 갱신 때마다 리스너가 겹쳐 붙는 것을 막는다
+
+function setupHeatmapControls() {
+  const first = REAL.dates[0], last = REAL.dates[REAL.dates.length - 1];
+  const from = document.getElementById('hmFrom');
+  const to = document.getElementById('hmTo');
+
+  [from, to].forEach(el => { el.min = first; el.max = last; });
+  to.value = last;
+  if (!from.value || from.value < first || from.value > last) from.value = presetStart(182);
+
+  if (heatmapBound) return;
+  heatmapBound = true;
+
+  document.getElementById('hmPresets').querySelectorAll('.hm-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('hmPresets').querySelectorAll('.hm-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      to.value = last;
+      from.value = presetStart(parseInt(btn.dataset.d, 10));
+      drawHeatmap();
     });
   });
 
-  HEAT = { months: [...byMonth.keys()].sort(), byMonth };
+  [from, to].forEach(el => el.addEventListener('change', () => {
+    // 직접 날짜를 고르면 프리셋 선택은 해제한다
+    document.getElementById('hmPresets').querySelectorAll('.hm-preset').forEach(b => b.classList.remove('active'));
+    if (from.value > to.value) { const t = from.value; from.value = to.value; to.value = t; }
+    drawHeatmap();
+  }));
 
-  const select = document.getElementById('hmMonth');
-  select.innerHTML = HEAT.months
-    .map(m => `<option value="${m}">${Number(m.slice(0, 4))}년 ${Number(m.slice(5, 7))}월</option>`)
-    .join('');
-  select.value = HEAT.months[HEAT.months.length - 1];
-
-  drawHeatmapMonth(select.value);
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawHeatmap, 150);
+  });
 }
 
-function drawHeatmapMonth(monthKey) {
-  const days = HEAT.byMonth.get(monthKey) || [];
-  const grid = document.getElementById('heatgrid');
-  const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+function presetStart(days) {
+  const last = new Date(`${REAL.dates[REAL.dates.length - 1]}T00:00:00Z`);
+  const start = new Date(last.getTime() - (days - 1) * DAY_MS);
+  const first = REAL.dates[0];
+  const iso = isoOf(start);
+  return iso < first ? first : iso;
+}
 
-  const year = Number(monthKey.slice(0, 4));
-  const month = Number(monthKey.slice(5, 7));
-  const firstDow = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
-  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const byDay = new Map(days.map(d => [d.day, d]));
+function drawHeatmap() {
+  const from = document.getElementById('hmFrom').value;
+  const to = document.getElementById('hmTo').value;
+  const grid = document.getElementById('hmGrid');
+  const dows = document.getElementById('hmDows');
 
-  let html = DOW.map(d => `<div class="hm-dow">${d}</div>`).join('');
-  for (let i = 0; i < firstDow; i++) html += '<div class="hm-cell empty"></div>';
+  // 구간 내 실데이터를 날짜로 조회할 수 있게 맵으로
+  const byDate = new Map();
+  REAL.dates.forEach((d, i) => {
+    if (d >= from && d <= to) byDate.set(d, REAL.premiumPct[i]);
+  });
 
-  for (let day = 1; day <= lastDay; day++) {
-    const info = byDay.get(day);
-    if (!info) {
-      html += `<div class="hm-cell blank"><span class="hm-tip">${month}/${day}<br>데이터 없음</span></div>`;
+  const startD = new Date(`${from}T00:00:00Z`);
+  const endD = new Date(`${to}T00:00:00Z`);
+  const totalDays = Math.round((endD - startD) / DAY_MS) + 1;
+  if (totalDays <= 0) return;
+
+  // 첫 칸이 해당 요일 행에 오도록 앞을 비운다
+  const lead = startD.getUTCDay();
+  const weeks = Math.ceil((lead + totalDays) / 7);
+
+  // 칸 크기를 폭에 맞춰 자동 조절 (세로 7칸은 항상 고정)
+  const avail = grid.getBoundingClientRect().width || 360;
+  const gap = weeks > 40 ? 1 : 2;
+  const cell = Math.max(4, Math.min(16, Math.floor((avail - gap * (weeks - 1)) / weeks)));
+
+  grid.style.gridTemplateRows = `repeat(7, ${cell}px)`;
+  grid.style.gap = `${gap}px`;
+  dows.style.gridTemplateRows = `repeat(7, ${cell}px)`;
+  dows.style.gap = `${gap}px`;
+  dows.innerHTML = DOW_LABEL.map((d, i) => `<span>${cell >= 9 && i % 2 === 1 ? d : ''}</span>`).join('');
+
+  let html = '';
+  for (let i = 0; i < lead; i++) html += '<div class="hm-cell empty"></div>';
+
+  for (let i = 0; i < totalDays; i++) {
+    const d = new Date(startD.getTime() + i * DAY_MS);
+    const key = isoOf(d);
+    const prem = byDate.get(key);
+    if (prem === undefined) {
+      html += `<div class="hm-cell gap"><span class="hm-tip">${key}<br>데이터 없음</span></div>`;
       continue;
     }
-    const lbl = getLabel(info.t);
-    html += `<div class="hm-cell" style="background:${heatColor(info.t)}">` +
-      `<span class="hm-tip">${month}/${day}<br>김프 ${info.prem.toFixed(2)}%<br>` +
+    const t = pctOf(prem);
+    const lbl = getLabel(t);
+    html += `<div class="hm-cell" style="background:${heatColor(t)}">` +
+      `<span class="hm-tip">${key}<br>김프 ${prem.toFixed(2)}%<br>` +
       `<span style="color:${lbl.swatch};font-weight:700">${lbl.txt}</span></span></div>`;
   }
 
   grid.innerHTML = html;
-
-  const idx = HEAT.months.indexOf(monthKey);
-  document.getElementById('hmPrev').disabled = idx <= 0;
-  document.getElementById('hmNext').disabled = idx >= HEAT.months.length - 1;
-  document.getElementById('hmNote').textContent =
-    `${days.length}일 기록 · 색은 상장 이후 전체 분포에서의 위치입니다`;
+  document.getElementById('hmNote').textContent = `${byDate.size}일 · 색은 상장 이후 전체 분포 기준`;
 }
 
-document.getElementById('hmMonth').addEventListener('change', e => drawHeatmapMonth(e.target.value));
-document.getElementById('hmPrev').addEventListener('click', () => {
-  const select = document.getElementById('hmMonth');
-  const idx = HEAT.months.indexOf(select.value);
-  if (idx > 0) { select.value = HEAT.months[idx - 1]; drawHeatmapMonth(select.value); }
-});
-document.getElementById('hmNext').addEventListener('click', () => {
-  const select = document.getElementById('hmMonth');
-  const idx = HEAT.months.indexOf(select.value);
-  if (idx < HEAT.months.length - 1) { select.value = HEAT.months[idx + 1]; drawHeatmapMonth(select.value); }
-});
-
-// ══════════ ④ 환율 리스크 ══════════
-// 보유 기간(LOOKBACK_DAYS) 동안:
-//   spread = 프리미엄이 벌어진 만큼 (프리미엄만 봤다면 남았을 몫)
-//   fxImpact = 같은 기간 환율이 움직인 만큼
-//   net = 실제로 손에 남은 몫
-function computeFxBreakdown() {
-  const lastIdx = REAL.dates.length - 1;
-  const baseIdx = Math.max(0, lastIdx - LOOKBACK_DAYS);
-  const spread = REAL.premiumPct[lastIdx] - REAL.premiumPct[baseIdx];
-  const fxImpact = (REAL.fxRate[lastIdx] / REAL.fxRate[baseIdx] - 1) * 100;
-  return { spread, fxImpact, net: spread + fxImpact, baseIdx, lastIdx, days: lastIdx - baseIdx };
-}
-
-function drawBridgeChart() {
-  const { spread, net, days } = computeFxBreakdown();
-  const svg = document.getElementById('bridgeChart');
-  svg.innerHTML = '';
-
-  const W = 760, H = 170, PL = 60, PR = 60;
-  const axisY = 100, arrowY = 62;
-
-  const vals = [spread, net, 0];
-  const lo = Math.min(...vals), hi = Math.max(...vals);
-  const pad = Math.max((hi - lo) * 0.22, 0.4);
-  const domLo = lo - pad, domHi = hi + pad;
-  const xAt = v => PL + ((v - domLo) / (domHi - domLo)) * (W - PL - PR);
-
-  const lost = net < spread; // 환율이 가져갔는가, 더해줬는가
-  const arrowColor = lost ? 'var(--accent)' : 'var(--frog)';
-  const gap = Math.abs(spread - net);
-
-  // 0% 기준선
-  const zx = xAt(0);
-  svg.appendChild(svgEl('line', {
-    x1: zx, x2: zx, y1: 30, y2: axisY + 8,
-    stroke: 'var(--border2)', 'stroke-dasharray': '3 3'
-  }));
-  svg.appendChild(svgText(zx, 24, '0%', {}));
-
-  // 수치선
-  svg.appendChild(svgEl('line', {
-    x1: PL - 20, x2: W - PR + 20, y1: axisY, y2: axisY, stroke: 'var(--border2)'
-  }));
-
-  // 이동 화살표
-  const from = xAt(spread), to = xAt(net);
-  const dir = to < from ? 1 : -1;
-  svg.appendChild(svgEl('path', {
-    d: `M${from - dir * 6} ${arrowY} L${to + dir * 12} ${arrowY}`,
-    stroke: arrowColor, 'stroke-width': 2.5, fill: 'none'
-  }));
-  svg.appendChild(svgEl('path', {
-    d: `M${to} ${arrowY} L${to + dir * 12} ${arrowY - 6} L${to + dir * 12} ${arrowY + 6} Z`,
-    fill: arrowColor
-  }));
-  svg.appendChild(svgText((from + to) / 2, arrowY - 14,
-    `${lost ? '환율이 가져간' : '환율이 더해준'} ${gap.toFixed(2)}%p`,
-    { size: 13, fill: arrowColor, weight: 700 }));
-
-  // 두 점
-  const dot = (x, color) => svgEl('circle', {
-    cx: x, cy: axisY, r: 6, fill: color, stroke: 'var(--panel)', 'stroke-width': 2
-  });
-  svg.appendChild(dot(from, 'var(--frog)'));
-  svg.appendChild(dot(to, lost ? 'var(--accent)' : 'var(--frog)'));
-
-  svg.appendChild(svgText(from, axisY + 26, fmtPct(spread), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
-  svg.appendChild(svgText(from, axisY + 44, '프리미엄만 봤다면', { size: 11, fill: 'var(--mut)' }));
-  svg.appendChild(svgText(to, axisY + 26, fmtPct(net), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
-  svg.appendChild(svgText(to, axisY + 44, '실제로 남은 것', { size: 11, fill: 'var(--mut)' }));
-
-  // 금액 환산
-  const base = 1000000;
-  document.getElementById('bridgeNote').innerHTML =
-    `100만원을 넣었다면 · <b>${fmtMoney(base * (1 + spread / 100))}</b>이 됐어야 할 돈이 ` +
-    `<b>${fmtMoney(base * (1 + net / 100))}</b>으로`;
-
-  document.getElementById('fxWindowLabel').textContent = `최근 ${days}일`;
-}
-
-// ══════════ ④ 두 선 비교 ══════════
+// ══════ 환율 리스크 ══════
 function buildDecompSeries() {
   const n = Math.min(LOOKBACK_DAYS, REAL.dates.length);
   const start = REAL.dates.length - n;
@@ -624,88 +601,188 @@ function buildDecompSeries() {
     const fxCum = (REAL.fxRate[i] / fx0 - 1) * 100;
     data.push({ premium, real: premium + fxCum });
   }
+  DECOMP_DATES = REAL.dates.slice(start);
   return data;
+}
+
+// 두 선 비교 차트 좌표계 (마커를 다시 그릴 때도 써야 해서 밖에 둔다)
+const DC = { W: 760, H: 200, PL: 46, PR: 14, PT: 14, PB: 20 };
+
+function dcX(i) { return DC.PL + (i / (DECOMP.length - 1)) * (DC.W - DC.PL - DC.PR); }
+function dcY(v) {
+  const ph = DC.H - DC.PT - DC.PB;
+  return DC.PT + ph - ((v - DC.min) / (DC.max - DC.min)) * ph;
 }
 
 function drawDecompChart() {
   const svg = document.getElementById('decompChart');
   svg.innerHTML = '';
 
-  const data = buildDecompSeries();
-  const dates = REAL.dates.slice(-data.length);
-  const W = 760, H = 200, PL = 46, PR = 14, PT = 14, PB = 20;
-  const pw = W - PL - PR, ph = H - PT - PB;
+  const data = DECOMP;
+  const ph = DC.H - DC.PT - DC.PB;
   const allVals = data.flatMap(d => [d.premium, d.real]);
-  const minY = Math.min(...allVals, 0) - 0.5, maxY = Math.max(...allVals, 0) + 0.5;
-  const xAt = i => PL + (i / (data.length - 1)) * pw;
-  const yAt = v => PT + ph - ((v - minY) / (maxY - minY)) * ph;
+  DC.min = Math.min(...allVals, 0) - 0.5;
+  DC.max = Math.max(...allVals, 0) + 0.5;
 
   const g = svgEl('g', {});
   for (let s = 0; s <= 3; s++) {
-    const y = PT + ph - (s / 3) * ph;
-    const val = minY + (s / 3) * (maxY - minY);
-    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y, y2: y, stroke: 'var(--border)' }));
-    g.appendChild(svgText(PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
+    const y = DC.PT + ph - (s / 3) * ph;
+    const val = DC.min + (s / 3) * (DC.max - DC.min);
+    g.appendChild(svgEl('line', { x1: DC.PL, x2: DC.W - DC.PR, y1: y, y2: y, stroke: 'var(--border)' }));
+    g.appendChild(svgText(DC.PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
   }
-
-  if (minY < 0 && maxY > 0) {
+  if (DC.min < 0 && DC.max > 0) {
     g.appendChild(svgEl('line', {
-      x1: PL, x2: W - PR, y1: yAt(0), y2: yAt(0),
+      x1: DC.PL, x2: DC.W - DC.PR, y1: dcY(0), y2: dcY(0),
       stroke: 'var(--mut)', 'stroke-width': 1.5
     }));
   }
-
-  addDateLabels(g, dates, xAt, H, 3);
+  addDateLabels(g, DECOMP_DATES, dcX, DC.H, 3);
   svg.appendChild(g);
 
-  const premiumLine = data.map((d, i) => `${xAt(i)},${yAt(d.premium)}`).join(' L');
-  const realLineRev = data.slice().reverse().map((d, i) => `${xAt(data.length - 1 - i)},${yAt(d.real)}`).join(' L');
-  svg.appendChild(svgEl('path', { d: `M${premiumLine} L${realLineRev} Z`, fill: 'var(--accent-bg)' }));
+  const premLine = data.map((d, i) => `${dcX(i).toFixed(1)},${dcY(d.premium).toFixed(1)}`).join(' L');
+  const realRev = data.slice().reverse().map((d, i) => `${dcX(data.length - 1 - i).toFixed(1)},${dcY(d.real).toFixed(1)}`).join(' L');
+  svg.appendChild(svgEl('path', { d: `M${premLine} L${realRev} Z`, fill: 'var(--accent-bg)' }));
 
   svg.appendChild(svgEl('polyline', {
-    points: data.map((d, i) => `${xAt(i)},${yAt(d.premium)}`).join(' '),
+    points: data.map((d, i) => `${dcX(i)},${dcY(d.premium)}`).join(' '),
     fill: 'none', stroke: 'var(--frog)', 'stroke-width': 2
   }));
   svg.appendChild(svgEl('polyline', {
-    points: data.map((d, i) => `${xAt(i)},${yAt(d.real)}`).join(' '),
+    points: data.map((d, i) => `${dcX(i)},${dcY(d.real)}`).join(' '),
     fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.2
   }));
+
+  // 선택 마커 + 클릭/호버를 받는 투명 판
+  svg.appendChild(svgEl('g', { id: 'dcMarker' }));
+  const hit = svgEl('rect', {
+    x: DC.PL, y: DC.PT, width: DC.W - DC.PL - DC.PR, height: ph, fill: 'transparent'
+  });
+  svg.appendChild(hit);
+
+  const idxFromEvent = (e) => {
+    const r = svg.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    const x = (point.clientX - r.left) / r.width * DC.W;
+    const ratio = (x - DC.PL) / (DC.W - DC.PL - DC.PR);
+    return Math.max(0, Math.min(data.length - 1, Math.round(ratio * (data.length - 1))));
+  };
+
+  hit.addEventListener('mousemove', e => renderPick(idxFromEvent(e), false));
+  hit.addEventListener('mouseleave', () => renderPick(pinnedIdx, false));
+  hit.addEventListener('click', e => { pinnedIdx = idxFromEvent(e); renderPick(pinnedIdx, true); });
+  hit.addEventListener('touchstart', e => {
+    pinnedIdx = idxFromEvent(e);
+    renderPick(pinnedIdx, true);
+    e.preventDefault();
+  }, { passive: false });
 }
 
-// ══════════ ① 현재 지표 ══════════
+function drawMarker(i) {
+  const marker = document.getElementById('dcMarker');
+  if (!marker) return;
+  const d = DECOMP[i];
+  marker.innerHTML =
+    `<line x1="${dcX(i)}" y1="${DC.PT}" x2="${dcX(i)}" y2="${DC.H - DC.PB}" stroke="var(--dim)" stroke-dasharray="3 3"/>` +
+    `<circle cx="${dcX(i)}" cy="${dcY(d.premium)}" r="4.5" fill="var(--frog)" stroke="var(--panel)" stroke-width="2"/>` +
+    `<circle cx="${dcX(i)}" cy="${dcY(d.real)}" r="4.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="2"/>`;
+}
+
+// 선택한 시점의 수치선을 그린다 (그래프가 입력, 이 함수가 출력)
+function drawBridge(i) {
+  const d = DECOMP[i];
+  const svg = document.getElementById('bridgeChart');
+  svg.innerHTML = '';
+
+  const W = 760, PL = 70, PR = 70, axisY = 88, arrowY = 50;
+  const vals = [d.premium, d.real, 0];
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max((hi - lo) * 0.22, 0.4);
+  const xAt = v => PL + ((v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (W - PL - PR);
+
+  const lost = d.real < d.premium;
+  const color = lost ? 'var(--accent)' : 'var(--frog)';
+  const gap = Math.abs(d.premium - d.real);
+
+  const zx = xAt(0);
+  svg.appendChild(svgEl('line', { x1: zx, x2: zx, y1: 22, y2: axisY + 8, stroke: 'var(--border2)', 'stroke-dasharray': '3 3' }));
+  svg.appendChild(svgText(zx, 16, '0%', {}));
+  svg.appendChild(svgEl('line', { x1: PL - 24, x2: W - PR + 24, y1: axisY, y2: axisY, stroke: 'var(--border2)' }));
+
+  const from = xAt(d.premium), to = xAt(d.real);
+  const dir = to < from ? 1 : -1;
+  svg.appendChild(svgEl('path', { d: `M${from - dir * 6} ${arrowY} L${to + dir * 12} ${arrowY}`, stroke: color, 'stroke-width': 2.5, fill: 'none' }));
+  svg.appendChild(svgEl('path', { d: `M${to} ${arrowY} L${to + dir * 12} ${arrowY - 6} L${to + dir * 12} ${arrowY + 6} Z`, fill: color }));
+  svg.appendChild(svgText((from + to) / 2, arrowY - 14,
+    `${lost ? '환율이 가져간' : '환율이 더해준'} ${gap.toFixed(2)}%p`,
+    { size: 13, fill: color, weight: 700 }));
+
+  const dot = (x, c) => svgEl('circle', { cx: x, cy: axisY, r: 6, fill: c, stroke: 'var(--panel)', 'stroke-width': 2 });
+  svg.appendChild(dot(from, 'var(--frog)'));
+  svg.appendChild(dot(to, color));
+
+  svg.appendChild(svgText(from, axisY + 26, fmtPct(d.premium), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(from, axisY + 44, '프리미엄만 봤다면', { size: 11, fill: 'var(--mut)' }));
+  svg.appendChild(svgText(to, axisY + 26, fmtPct(d.real), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(to, axisY + 44, '실제로 남은 것', { size: 11, fill: 'var(--mut)' }));
+
+  const base = 1000000;
+  document.getElementById('bridgeNote').innerHTML =
+    `100만원을 넣었다면 · <b>${fmtMoney(base * (1 + d.premium / 100))}</b>이 됐어야 할 돈이 ` +
+    `<b>${fmtMoney(base * (1 + d.real / 100))}</b>으로`;
+}
+
+// 그래프에서 고른 시점을 아래 수치선에 반영
+function renderPick(idx, pinned) {
+  const i = (idx === null || idx === undefined) ? DECOMP.length - 1 : idx;
+  drawMarker(i);
+  drawBridge(i);
+
+  const isToday = i === DECOMP.length - 1;
+  const label = document.getElementById('pickLabel');
+  label.innerHTML = isToday
+    ? '오늘 기준 · 환율이 가져간 몫'
+    : `<b>${DECOMP_DATES[i]}</b> 시점 · 환율이 가져간 몫${pinned ? '' : ' (미리보기)'}`;
+
+  document.getElementById('pickReset').disabled = pinnedIdx === null;
+}
+
+document.getElementById('pickReset').addEventListener('click', () => {
+  pinnedIdx = null;
+  renderPick(null, false);
+});
+
+// ══════ 오늘의 숫자 ══════
 function renderKpi() {
   const last = REAL.dates.length - 1;
   const lastUsdt = REAL.usdtPrice[last];
   const lastFx = REAL.fxRate[last];
-  const lastPrem = REAL.premiumPct[last];
 
   document.getElementById('stUsdt').textContent = fmtWon(lastUsdt);
   document.getElementById('stFx').textContent = fmtWon(lastFx);
-  document.getElementById('stPrem').textContent = fmtPct(lastPrem);
+  document.getElementById('stPrem').textContent = fmtPct(REAL.premiumPct[last]);
 
-  // 전일 대비
   if (last > 0) {
-    const dUsdt = lastUsdt - REAL.usdtPrice[last - 1];
-    const dFx = lastFx - REAL.fxRate[last - 1];
-    const arrow = v => (v > 0 ? '▲' : v < 0 ? '▼' : '–');
-    document.getElementById('stUsdtHint').textContent = `${arrow(dUsdt)} ${Math.abs(dUsdt).toFixed(1)}원`;
-    document.getElementById('stFxHint').textContent = `${arrow(dFx)} ${Math.abs(dFx).toFixed(1)}원`;
+    const fmtDelta = v => (Math.abs(v) < 0.05 ? '변동 없음' : `${v > 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(1)}원`);
+    document.getElementById('stUsdtHint').textContent = fmtDelta(lastUsdt - REAL.usdtPrice[last - 1]);
+    document.getElementById('stFxHint').textContent = fmtDelta(lastFx - REAL.fxRate[last - 1]);
   }
 
-  // 프리미엄 카드에는 환율까지 반영한 실질 수치를 미리 얹어둔다 (④로 이어지는 실마리)
-  const { net } = computeFxBreakdown();
-  document.getElementById('stPremHint').textContent = `환율 반영 시 ${fmtPct(net)}`;
+  // 아래 환율 리스크 구획과 같은 계산을 쓴다 (두 숫자가 어긋날 일이 없도록)
+  document.getElementById('stPremHint').textContent =
+    `환율 반영 시 ${fmtPct(DECOMP[DECOMP.length - 1].real)}`;
 
   const fetched = new Date(REAL.fetchedAt || Date.now());
-  const hh = String(fetched.getHours()).padStart(2, '0');
-  const mm = String(fetched.getMinutes()).padStart(2, '0');
-  const ss = String(fetched.getSeconds()).padStart(2, '0');
+  const pad = n => String(n).padStart(2, '0');
   document.getElementById('kpiAsOf').innerHTML =
-    `${REAL.dates[last]} 기준<span class="kpi-meta-sep">·</span>${hh}:${mm}:${ss} 갱신`;
+    `${REAL.dates[last]} 기준<span class="kpi-meta-sep">·</span>` +
+    `${pad(fetched.getHours())}:${pad(fetched.getMinutes())}:${pad(fetched.getSeconds())} 갱신`;
+
+  document.getElementById('fxWindowLabel').textContent = `최근 ${DECOMP.length - 1}일`;
 }
 
-// ══════════ 로드 + 상태 처리 ══════════
-const DATA_SECTIONS = ['kpi', 'prem', 'gauge', 'fx', 'decomp'];
+// ══════ 로드 ══════
+const DATA_SECTIONS = ['kpi', 'prem', 'gauge', 'fx'];
 
 function setSectionState(name, state, message) {
   const loading = document.getElementById(name + 'Loading');
@@ -740,16 +817,21 @@ async function loadAndRenderAll(forceRefresh = false) {
     return;
   }
 
-  console.log('데이터 %d일 (%s ~ %s)', REAL.dates.length, REAL.dates[0], REAL.dates[REAL.dates.length - 1]);
   DATA_SECTIONS.forEach(name => setSectionState(name, 'loaded'));
 
+  DECOMP = buildDecompSeries();
+  pinnedIdx = null;
+
+  buildColorScale();
   renderKpi();
   renderPeriodTabs();
   const activeTab = document.querySelector('.period-tab.active');
   drawPremChart(activeTab ? parseInt(activeTab.dataset.p, 10) : REAL.dates.length);
-  renderGaugeAndHeatmap();
-  drawBridgeChart();
+  renderGauge();
+  setupHeatmapControls();
+  drawHeatmap();
   drawDecompChart();
+  renderPick(null, false);
 
   refreshBtn.disabled = false;
 }

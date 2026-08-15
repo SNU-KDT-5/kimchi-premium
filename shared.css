@@ -288,15 +288,11 @@ body {
   gap: var(--sp-4);
 }
 .topnav-logo {
-  display: flex; align-items: center; gap: var(--sp-2);
-  font-weight: 800; font-size: 0.98rem; color: var(--frog);
-  text-decoration: none; flex: none; letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-mono); font-weight: 800; font-size: 1.02rem;
+  letter-spacing: 0.08em; color: var(--frog); text-decoration: none; flex: none;
 }
-.topnav-mascot-slot {
-  width: 26px; height: 26px; flex: none; border-radius: 50%;
-  background: var(--frog-bg); display: flex; align-items: center; justify-content: center;
-  font-size: 14px; line-height: 1;
-} /* 추후 마스코트 SVG로 교체 예정 — 지금은 임시 placeholder */
+.topnav-mascot-slot { height: 20px; width: auto; flex: none; display: block; }
 .topnav-tabs {
   display: flex; gap: var(--sp-1); overflow-x: auto;
   scrollbar-width: none; -ms-overflow-style: none;

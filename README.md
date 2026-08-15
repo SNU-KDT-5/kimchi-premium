@@ -6,7 +6,7 @@
 |---|---|---|
 | `index` | `index.html` | 온보딩 (스크롤 인트로) |
 | `dashboard` | `dashboard.html` | 현황 대시보드 |
-| `pattern` | `pattern.html` | 패턴 분석 (FOMO+해외충격+뉴스량) |
+| `pattern` | `pattern.html` | 패턴 분석 |
 | `simulator` | `simulator.html` | 시뮬레이터 (퀴즈+계산기) |
 | `shared` | `shared.js` | 공용 데이터 fetch |
 | `design-system` | `shared.css` | 공용 디자인 시스템 |

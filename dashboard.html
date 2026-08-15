@@ -112,7 +112,7 @@
   .hm-cell:hover .hm-tip { display: block; }
   .hm-legend { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-3); font-size: 11px; color: var(--dim); }
   .hm-legend .bar { flex: 1; height: 6px; border-radius: var(--r-pill); max-width: 160px;
-    background: linear-gradient(90deg, #4a90c4, var(--border2), var(--accent)); }
+    background: linear-gradient(90deg, var(--frog), var(--border2), var(--accent)); }
 </style>
 </head>
 <body>
@@ -125,8 +125,8 @@
     </a>
     <div class="topnav-tabs">
       <a href="index.html" class="topnav-tab">홈</a>
-      <a href="dashboard.html" class="topnav-tab active">대시보드</a>
       <a href="pattern.html" class="topnav-tab">패턴분석</a>
+      <a href="dashboard.html" class="topnav-tab active">대시보드</a>
       <a href="simulator.html" class="topnav-tab">시뮬레이터</a>
     </div>
   </div>
@@ -247,7 +247,7 @@
   <div class="section-block">
     <div class="section-label">⑦ 일별 투자 안정성 히트맵</div>
     <div class="card">
-      <p class="section-intro"><b class="accent-text">빨간색</b>일수록 실질 김프가 과거 대비 높은 날, <b style="color:#4a90c4">파란색</b>일수록 낮은 날입니다.</p>
+      <p class="section-intro"><b class="accent-text">빨간색</b>일수록 실질 김프가 과거 대비 높은 날, <b class="frog-text">초록색</b>일수록 낮은 날입니다.</p>
       <div class="heatmap-wrap">
         <div class="hm-months" id="heatgrid"></div>
         <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
@@ -434,12 +434,12 @@ renderWaterfall(CASES[0]);
   const pc = sorted.filter(v=>v<=cur).length / sorted.length;
   const score = Math.round(pc*100);
 
-  // 색상 스케일: 파랑 → 회색 → 빨강 (수치의 상대적 높낮이만 표현)
+  // 색상 스케일: 그린 → 회색 → 빨강 (수치의 상대적 높낮이만 표현, 디자인시스템 --frog/--accent 사용)
   function heatColor(t){
     t = Math.max(0, Math.min(1, t));
     if(t < 0.5){
       const f = t/0.5;
-      return `rgb(${Math.round(74+f*(180-74))},${Math.round(144+f*(180-144))},${Math.round(196+f*(180-196))})`;
+      return `rgb(${Math.round(63+f*(180-63))},${Math.round(161+f*(180-161))},${Math.round(94+f*(180-94))})`;
     } else {
       const f = (t-.5)/.5;
       return `rgb(${Math.round(180+f*(179-180))},${Math.round(180+f*(55-180))},${Math.round(180+f*(42-180))})`;
@@ -450,7 +450,7 @@ renderWaterfall(CASES[0]);
   function getLabel(t){
     if(t >= 0.7) return { txt:'높음', bg:'rgba(179,55,42,.12)', col:'#b3372a' };
     if(t >= 0.3) return { txt:'보통', bg:'rgba(196,138,31,.12)', col:'#c48a1f' };
-    return { txt:'낮음', bg:'rgba(74,144,196,.12)', col:'#4a90c4' };
+    return { txt:'낮음', bg:'rgba(63,161,94,.12)', col:'#3fa15e' };
   }
 
   // ── 게이지 ──

@@ -48,3 +48,48 @@ card 구조, stat-row 같은 컴포넌트를 어떻게 쓰는지 참고할 수 �
 
 전부 `view1_interactive.html` 프로토타입 기반 데모 데이터: 실제 뉴스/가격
 API 연동은 아직 안 되어 있습니다.
+
+## shared.js 연동 방법 (`shared` 브랜치 PR 머지되면)
+
+이 페이지는 **BTC 프리미엄**(환율조정 BTC 김프)을 다루니까 `getUsdtPremiumData()`가
+아니라 **`getBtcPremiumData()`**를 씁니다. (원래 스켈레톤 주석엔 `getUsdtPremiumData()`
+로 적혀있었는데, 실제로 만든 건 BTC 김프라서 함수가 다릅니다 — 주의하세요.)
+
+1. `<head>`에 `<script src="shared.js"></script>`를 `shared.css` 링크 다음 줄에 추가
+   (shared 브랜치 머지 후 `shared.js` 파일이 저장소 루트에 생김. 없으면
+   `git checkout shared -- shared.js`로 가져오세요.)
+
+2. 반환 형식은 `{ dates, btcPrice, foreignUsd, fxRate, foreignSource }`입니다.
+   김프%는 직접 계산해야 합니다:
+   ```js
+   const 환산가 = foreignUsd[i] * fxRate[i];
+   const 김프pct = (btcPrice[i] - 환산가) / 환산가 * 100;
+   ```
+
+3. 지금 `anchors`/`seriesPoints`로 만드는 장기 라인차트 데이터를 실제
+   `dates`/`김프pct` 배열로 교체하면 됩니다. 차트를 그리는 `xScale`/`yScale`/SVG
+   렌더링 로직은 `[연도, 값]` 형태만 맞으면 그대로 재사용 가능합니다.
+
+4. **이벤트(사건) 데이터는 API로 안 옵니다.** `events` 배열(2017년 말 폭등, FTX
+   파산, 계엄·탄핵 등)은 팀이 직접 조사해서 채워 넣은 정성적 데이터라
+   `getBtcPremiumData()`로 대체되는 부분이 아닙니다. 다만 각 이벤트의 `fx`/`btc`/
+   `vol`/`d1`/`d3`/`d7` 같은 수치는 지금처럼 손으로 채우지 말고, 실제 데이터가
+   들어오면 이벤트 날짜를 기준으로 `dates` 배열에서 인덱스를 찾아 전/후 구간을
+   계산하는 함수로 바꾸는 걸 권장합니다 (예: `d7`은 이벤트일 인덱스와 -7 인덱스의
+   김프% 차이).
+
+5. `backend`(FastAPI 뉴스 프록시) 브랜치의 `/api/news` 엔드포인트가 준비되면,
+   지금 손으로 쓴 이벤트 제목/설명(`title`/`desc`)을 실제 뉴스 데이터로 교체하는
+   것도 고려해보세요. (원래 스켈레톤 의존성에 명시돼 있던 부분)
+
+6. **로딩 상태 처리 필수**: API 호출은 비동기라 `shared.css`의 `.status-box`/
+   `.spinner`를 로딩 중 표시에, `.error-box`를 실패 시 표시에 쓰세요.
+
+7. **주말 처리 이슈**: `shared.js`는 업비트(매일)·해외시세·환율(ECB 영업일만)
+   데이터를 "모든 소스에 값이 있는 날짜만" 교집합으로 병합해서 **주말이 자동으로
+   제외됩니다.** `shared` 브랜치 PR이 아직 안 머지된 이유가 이 처리 방식을 바꿀지
+   말지 결정이 안 나서라고 들었으니, merge 시점에 실제 응답을 콘솔로 한 번 찍어보고
+   `dates` 간격이 예상과 맞는지 확인 후 연동하세요.
+
+8. `getBtcPremiumData()`도 1시간 localStorage 캐시를 씁니다. 데이터가 이상하게
+   안 바뀌면 `clearPremiumCache()`로 캐시를 비우고 다시 테스트하세요.

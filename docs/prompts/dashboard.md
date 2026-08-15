@@ -49,6 +49,47 @@
 ## 남은 것 (제안)
 
 - `shared.js`의 `getUsdtPremiumData()`가 준비되면 데모 데이터를 실제 데이터로 교체
+  (아래 "shared.js 연동 방법" 참고)
 - ①의 "더 알아보기" 아코디언 안에 비트코인 거래량/거래대금/네이버 검색지수 등 실제 지표 채우기
 - 필요하면 ⑤ 워터폴에 다른 사례를 다시 추가할지 여부 논의 (지금은 "매수/파세요" 뉘앙스
   방지 차원에서 "평상시" 하나로 단순화된 상태)
+
+## shared.js 연동 방법 (`shared` 브랜치 PR 머지되면)
+
+이 페이지는 **USDT 프리미엄**을 다루니까 `getBtcPremiumData()`가 아니라
+**`getUsdtPremiumData()`**를 씁니다. (헷갈리기 쉬우니 주의 — pattern.html은 반대로
+BTC용 함수를 씁니다.)
+
+1. `<head>`에 `<script src="shared.js"></script>`를 `shared.css` 링크 다음 줄에 추가
+   (shared 브랜치 머지 후 `shared.js` 파일이 저장소 루트에 생김. 없으면
+   `git checkout shared -- shared.js`로 가져오세요.)
+
+2. 반환 형식은 `{ dates: string[], usdtPrice: number[], fxRate: number[] }`입니다.
+   프리미엄%는 직접 계산해야 합니다: `(usdtPrice[i] - fxRate[i]) / fxRate[i] * 100`
+
+3. 지금 데모 데이터를 만드는 함수들(`genPremSeries`, `genCumulativeSeries`, 게이지/
+   히트맵의 `realPrems` 생성 루프)을 아래처럼 실제 데이터 기반으로 바꾸면 됩니다.
+   차트를 그리는 `drawPremChart`/`drawDecompChart`/게이지·히트맵 렌더링 함수들은
+   입력 배열만 맞으면 그대로 재사용 가능합니다 — 굳이 새로 안 짜도 됩니다.
+
+   ```js
+   async function loadRealData() {
+     const { dates, usdtPrice, fxRate } = await getUsdtPremiumData({ maxYears: 3 });
+     const premiumPct = usdtPrice.map((p, i) => (p - fxRate[i]) / fxRate[i] * 100);
+     // premiumPct를 genPremSeries()가 반환하던 배열 자리에 그대로 넣으면 됨
+   }
+   ```
+
+4. **로딩 상태 처리 필수**: API 호출은 비동기(첫 호출 시 최대 몇 초 소요)라
+   `shared.css`의 `.status-box`/`.spinner`를 로딩 중 표시에, `.error-box`를 실패
+   시 표시에 쓰세요. 페이지 로드 시 바로 빈 차트가 보이지 않게 해주세요.
+
+5. **주말 처리 이슈**: `shared.js`는 현재 업비트(매일)·환율(ECB 영업일만)·해외시세
+   데이터를 "모든 소스에 값이 있는 날짜만" 교집합으로 병합합니다 — 즉 **주말이
+   자동으로 제외됩니다.** `shared` 브랜치 PR이 아직 머지 안 된 이유가 이 주말 처리
+   방식을 바꿀지 말지 결정이 안 나서라고 들었는데, 만약 주말을 채워 넣는 방식으로
+   바뀌면 `dates` 배열 길이/간격이 지금과 달라질 수 있으니 merge 시점에 실제 응답
+   형태를 한 번 콘솔로 찍어보고 연동하세요.
+
+6. `getUsdtPremiumData()`는 내부적으로 1시간 localStorage 캐시를 씁니다. 데이터가
+   이상하게 안 바뀌면 `clearPremiumCache()`로 캐시를 비우고 다시 테스트하세요.

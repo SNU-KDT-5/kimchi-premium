@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
-
 <style>
   body { padding-bottom: 80px; }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
@@ -20,29 +19,149 @@
   .section-intro b.frog-text { color: var(--frog); }
   .section-intro b.accent-text { color: var(--accent); }
 
-  /* ② 매수 시점 선택 */
-  .date-picker-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
-  .date-picker-label { font-size: 0.84rem; color: var(--mut); }
-  .date-picker-value { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 800; color: var(--text); }
-  .date-slider { width: 100%; accent-color: var(--frog); height: 4px; }
-  .date-range-caption { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--dim); margin-top: var(--sp-1); }
+  /* ② 퀴즈 */
+  .quiz-q { margin-bottom: var(--sp-6); }
+  .quiz-q:last-child { margin-bottom: 0; }
+  .quiz-q-head { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: var(--sp-3); display: flex; gap: var(--sp-2); }
+  .quiz-q-head .qi { color: var(--frog); font-family: var(--font-mono); }
+  .quiz-opts { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .quiz-opt {
+    text-align: left; background: var(--panel2); border: 1.5px solid var(--border);
+    border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); font-family: inherit;
+    font-size: 0.86rem; color: var(--text); cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--border2); background: var(--panel); }
+  .quiz-opt.correct { border-color: var(--frog); background: var(--frog-bg); color: var(--frog); font-weight: 700; }
+  .quiz-opt.wrong { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-msg { font-size: 0.78rem; font-weight: 600; margin-top: var(--sp-2); min-height: 1.2em; }
+  .quiz-msg.ok { color: var(--frog); }
+  .quiz-msg.no { color: var(--amber); }
 
-  /* ③ 결과 차트 */
+  .unlock-toast {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.92);
+    display: flex; align-items: center; gap: var(--sp-2); background: var(--frog); color: #fff;
+    padding: var(--sp-4) var(--sp-6); border-radius: var(--r-pill); font-size: 0.98rem; font-weight: 700;
+    box-shadow: var(--shadow-lg); z-index: 200; opacity: 0; pointer-events: none; transition: opacity .3s ease, transform .3s ease;
+  }
+  .unlock-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .unlock-toast .icon { font-size: 1.1rem; }
+
+  .sim-lock { filter: blur(5px); pointer-events: none; user-select: none; opacity: .45; transition: filter .35s, opacity .35s; }
+  .sim-lock.open { filter: none; pointer-events: auto; opacity: 1; }
+
+  .intro-banner {
+    display: flex; gap: var(--sp-3); align-items: flex-start;
+    background: var(--frog-bg); border: 1px solid var(--frog-line); border-radius: var(--r-lg);
+    padding: var(--sp-4) var(--sp-5); margin-bottom: var(--sp-5);
+  }
+  .intro-banner-icon { height: 34px; width: auto; flex: none; display: block; margin-top: var(--sp-2); }
+  .intro-banner-title { font-weight: 800; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
+  .intro-banner-text { font-size: 0.82rem; color: var(--mut); line-height: 1.65; }
+
+  /* ③ 매수 시점 달력 + 투입 정보 (좌우 배치) */
+  .pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); align-items: start; }
+  @media (max-width: 620px) { .pick-grid { grid-template-columns: 1fr; } }
+
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
+  .cal-nav-btn {
+    border: 1px solid var(--border2); background: var(--panel); color: var(--mut);
+    border-radius: var(--r-sm); width: 22px; height: 22px; font-size: 0.72rem; line-height: 1;
+    font-family: inherit; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center;
+  }
+  .cal-nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--frog); }
+  .cal-nav-btn:disabled { opacity: .35; cursor: default; }
+  .cal-nav-label { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 700; color: var(--text); }
+  .cal-day-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
+  .cal-day-labels span { font-size: 0.6rem; color: var(--dim); text-align: center; font-weight: 600; }
+  .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
+  .cal-cell {
+    aspect-ratio: 1; max-height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; cursor: pointer; color: var(--text);
+    background: var(--panel2); border: 1px solid var(--border); transition: background .12s, border-color .12s;
+  }
+  .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+  .cal-cell.future { background: transparent; border-color: transparent; color: var(--dim); cursor: default; }
+  .cal-cell:hover:not(.empty):not(.future) { border-color: var(--frog); }
+  .cal-cell.selected { background: var(--frog); border-color: var(--frog); color: #fff; font-weight: 800; }
+  .cal-picked-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
+  .cal-picked-label { font-size: 0.76rem; color: var(--mut); }
+  .cal-picked-value { font-family: var(--font-mono); font-size: 0.92rem; font-weight: 800; color: var(--text); }
+
+  .calc-amt-field label { display: block; font-size: 0.76rem; color: var(--mut); font-weight: 600; margin-bottom: var(--sp-2); }
+  .calc-amt-field input[type=number] {
+    width: 100%; background: var(--panel); border: 1px solid var(--border2); border-radius: var(--r-md);
+    padding: var(--sp-2) var(--sp-3); color: var(--text); font-family: var(--font-mono); font-size: 0.9rem;
+    font-weight: 700; outline: none;
+  }
+  .calc-amt-field input[type=number]:focus { border-color: var(--frog); }
+  .calc-fee-field label { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--mut); font-weight: 600; margin-bottom: var(--sp-2); }
+  .calc-fee-field label b { color: var(--text); font-family: var(--font-mono); }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: var(--r-pill);
+    background: linear-gradient(90deg, var(--frog-light), var(--frog)); outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
+    background: #fff; border: 2.5px solid var(--frog); cursor: pointer; box-shadow: var(--shadow-sm);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 15px; height: 15px; border-radius: 50%; background: #fff; border: 2.5px solid var(--frog); cursor: pointer;
+  }
+  input[type=range]::-moz-range-track { height: 5px; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--frog-light), var(--frog)); }
+
+  /* ④ 결과 (분리된 카드) */
+  .calc-hero { text-align: center; padding: var(--sp-12) 0 var(--sp-2); }
+  .calc-hero-flow { display: flex; align-items: baseline; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
+  .calc-hero-flow .from { font-family: var(--font-mono); font-size: 0.78rem; color: var(--dim); text-decoration: line-through; text-decoration-color: var(--border2); }
+  .calc-hero-flow .arrow { color: var(--dim); font-size: 0.78rem; }
+  .calc-hero-flow .to { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 800; color: var(--text); }
+  .calc-hero-badge {
+    display: block; margin-top: 3px;
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.76rem;
+  }
+  .calc-hero-badge.up { color: var(--frog); }
+  .calc-hero-badge.down { color: var(--accent); }
+
+  .stat-row .value { font-size: 1rem; }
+  .stat-row .label { font-size: 0.66rem; }
+
+  .calc-footnote { font-size: 0.72rem; color: var(--dim); text-align: center; margin-top: var(--sp-4); line-height: 1.5; }
+
+  .wf-row { display: flex; align-items: flex-end; gap: var(--sp-3); height: 110px; margin: var(--sp-2) 0 var(--sp-6); padding-top: var(--sp-4); }
+  .wf-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .wf-bar { width: 100%; max-width: 46px; border-radius: 4px 4px 0 0; min-height: 3px; position: relative; }
+  .wf-val { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; }
+  .wf-name { font-size: 0.66rem; color: var(--mut); margin-top: var(--sp-2); text-align: center; }
+  .wf-axis { width: 100%; height: 1px; background: var(--border2); }
+
+  .breakeven-card {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5);
+  }
+  .breakeven-head { display: flex; align-items: center; gap: 6px; font-size: 0.66rem; font-weight: 700; color: var(--frog); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--sp-2); }
+  .breakeven-value { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
+  .breakeven-desc { font-size: 0.78rem; color: var(--mut); line-height: 1.6; margin-bottom: var(--sp-3); }
+  .breakeven-gauge { position: relative; height: 6px; border-radius: var(--r-pill); background: var(--border); margin-bottom: var(--sp-2); }
+  .breakeven-gauge .fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--frog-light), var(--frog)); }
+  .breakeven-gauge .marker {
+    position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--text); border: 2px solid var(--panel2); transform: translate(-50%, -50%);
+  }
+  .breakeven-labels { display: flex; justify-content: space-between; font-size: 0.64rem; color: var(--dim); font-family: var(--font-mono); }
+
+  /* ⑤ 결과 차트 */
   .decomp-svg { width: 100%; height: 200px; display: block; }
   .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
-  .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
+  .legend-line { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+  .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-4); text-align: center; }
 
-  /* ④ 요약 문장 */
-  .result-summary {
-    background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md);
-    padding: var(--sp-4) var(--sp-5); margin-top: var(--sp-4); text-align: center;
-  }
-  .result-summary .headline { font-size: 1.02rem; font-weight: 800; color: var(--text); }
+  .result-summary { margin-top: var(--sp-8); text-align: center; }
+  .result-summary .headline { font-size: 0.88rem; font-weight: 700; color: var(--text); }
   .result-summary .headline .frog-text { color: var(--frog); }
   .result-summary .headline .accent-text { color: var(--accent); }
-  .result-summary .sub { font-size: 0.8rem; color: var(--mut); margin-top: var(--sp-2); }
+  .result-summary .sub { font-size: 0.76rem; color: var(--dim); margin-top: var(--sp-3); }
 
-  /* ⑤ 하단 안내 */
   .repeat-note {
     text-align: center; font-size: 0.84rem; color: var(--mut);
     margin-top: var(--sp-8); padding: 0 var(--sp-4); line-height: 1.7;
@@ -53,38 +172,88 @@
 
 <div id="topnav-root"></div>
 <script src="nav.js"></script>
+<div class="unlock-toast" id="unlockToast"><span class="icon">🔓</span> 개굴, 계산기가 열렸어요!</div>
 
 <div class="wrap">
   <!-- ① 헤더 -->
   <div class="header">
     <div class="eyebrow mono">시뮬레이터</div>
     <h1>당신이 그때 샀다면, 지금은 어떨까</h1>
-    <p>매수 시점을 골라보면, 프리미엄만 봤을 때와 환율까지 반영했을 때 실제로 남는 수익이 어떻게 달라지는지 확인할 수 있습니다.</p>
+    <p>먼저 김프를 제대로 이해했는지 간단히 확인해요. 다 맞히면 아래 계산기가 열립니다.</p>
   </div>
 
-  <!-- ② 매수 시점 선택 -->
+  <!-- ② 이해도 확인 -->
   <div class="section-block">
-    <div class="section-label">② 매수 시점 선택</div>
-    <div class="card">
-      <div class="date-picker-row">
-        <span class="date-picker-label">그때 샀다면</span>
-        <span class="date-picker-value" id="pickedDate">-</span>
+    <div class="section-label">② 먼저, 간단히 확인해볼게요</div>
+    <div class="card" id="quizPanel"></div>
+  </div>
+
+  <!-- ③ 매수 시점 선택 + 투입 정보 (잠김) -->
+  <div class="section-block sim-lock" id="simLock">
+    <div class="intro-banner">
+      <img class="intro-banner-icon" src="assets/face-happy.svg" alt="">
+      <div>
+        <div class="intro-banner-title">자, 이제 진짜로 계산해볼 시간이에요!</div>
+        <div class="intro-banner-text">아래 달력에서 날짜 하나만 골라보세요. 그날 샀다고 치고 지금까지 들고 있었다면 실제로 얼마가 남았을지 계산해드릴게요.
+          프리미엄이 뭔지 환율이 어땠는지 몰라도 괜찮아요! 숫자는 저희가 다 채워드립니다, 개굴!</div>
       </div>
-      <input type="range" class="date-slider" id="dateSlider" min="14" max="800" value="200" step="1">
-      <div class="date-range-caption">
-        <span id="rangeFar">-</span>
-        <span>오늘</span>
+    </div>
+    <div class="section-label">③ 매수 시점 선택</div>
+    <div class="card">
+      <div class="pick-grid">
+        <!-- 왼쪽: 달력 -->
+        <div>
+          <div class="cal-picked-row">
+            <span class="cal-picked-label">선택한 날짜</span>
+            <span class="cal-picked-value" id="pickedDate">-</span>
+          </div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" id="calPrev">←</button>
+            <span class="cal-nav-label" id="calMonthLabel">-</span>
+            <button class="cal-nav-btn" id="calNext">→</button>
+          </div>
+          <div class="cal-day-labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div id="calGrid"></div>
+        </div>
+
+        <!-- 오른쪽: 투입 정보 -->
+        <div>
+          <div class="calc-amt-field" style="margin-bottom: var(--sp-4);"><label>투입 금액 (원)</label><input type="number" id="calcAmt" value="1000000" step="100000" min="0"></div>
+          <div class="calc-fee-field" style="margin-bottom: var(--sp-3);"><label>매수 수수료 <b><span id="calcBuyV">0.10</span>%</b></label><input type="range" id="calcBuy" min="0" max="1" step="0.05" value="0.1"></div>
+          <div class="calc-fee-field" style="margin-bottom: var(--sp-3);"><label>매도 수수료 <b><span id="calcSellV">0.10</span>%</b></label><input type="range" id="calcSell" min="0" max="1" step="0.05" value="0.1"></div>
+          <div class="calc-fee-field"><label>전송·출금 비용 <b><span id="calcTrV">0.30</span>%</b></label><input type="range" id="calcTr" min="0" max="1.5" step="0.05" value="0.3"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ③ 결과 -->
-  <div class="section-block">
-    <div class="section-label">③ 그 시점부터 지금까지</div>
+  <!-- ④ 결과 (잠김) -->
+  <div class="section-block sim-lock" id="calcLock">
+    <div class="section-label">④ 결과</div>
     <div class="card">
-      <div class="disclaim" style="margin-bottom: var(--sp-4);">이 결과는 특정 시점을 가정해 계산한 것이며, 투자 조언이 아닙니다.</div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="label">매수 시점 프리미엄</div><div class="value" id="calcPremAt">-</div></div>
+        <div class="stat-card"><div class="label">매수 시점 환율</div><div class="value" id="calcFxAt">-</div></div>
+        <div class="stat-card"><div class="label">오늘 환율</div><div class="value" id="calcFxNow">-</div></div>
+      </div>
 
-      <p class="section-intro"><b class="frog-text">그린 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b class="accent-text">버건디 선</b>은 환율까지 반영한 실제 누적 수익입니다.</p>
+      <div class="calc-hero">
+        <div class="calc-hero-flow"><span class="from" id="calcAmtFrom">-</span><span class="arrow">→</span><span class="to" id="calcAmtTo">-</span></div>
+        <div class="calc-hero-badge" id="calcHeroBadge">-</div>
+      </div>
+
+      <div class="wf-row" id="wfRow"></div>
+
+      <div class="breakeven-card" id="breakEvenBox"></div>
+      <p class="calc-footnote">이 결과는 특정 시점을 가정해 계산한 것이며, 투자 조언이 아닙니다.</p>
+    </div>
+  </div>
+
+  <!-- ⑤ 결과 차트 -->
+  <div class="section-block sim-lock" id="chartLock">
+    <div class="section-label">⑤ 그 시점부터 지금까지</div>
+    <div class="card">
+      <p class="section-intro"><b class="frog-text">초록색 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b class="accent-text">빨간색 선</b>은 환율까지 반영한 실제 누적 수익입니다.</p>
       <div class="decomp-legend-row">
         <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
         <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
@@ -92,7 +261,6 @@
       <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
       <div class="caption">두 선 사이 옅은 음영이 그 시점부터 지금까지 환율이 누적으로 갉아먹거나 더해준 몫입니다.</div>
 
-      <!-- ④ 요약 -->
       <div class="result-summary">
         <div class="headline" id="resultHeadline">-</div>
         <div class="sub" id="resultSub">-</div>
@@ -100,48 +268,174 @@
     </div>
   </div>
 
-  <!-- ⑤ 하단 안내 -->
+  <!-- ⑥ 하단 안내 -->
   <p class="repeat-note">이 관계는 언제를 고르든 반복해서 나타납니다. 다른 시점도 골라 확인해보세요.</p>
 </div>
 
 <script>
 function seededRandom(seed){ let s=seed; return function(){ s=(s*9301+49297)%233280; return s/233280; }; }
 
-// ══════════ 원시 일별 변화량 데이터 생성 (dashboard.html의 로직 재사용) ══════════
+// ══════════ 원시 데이터 생성 (데모용: 실제 API 연동 시 TODO) ══════════
+// TODO(shared.js 연동): 아래 genRawSteps~fxContribCum까지는 seededRandom으로 만든
+// 가짜 데이터입니다. main 브랜치의 shared.js에 있는 getBtcPremiumData()로 교체하세요.
+//   const { dates, btcPrice, foreignUsd, fxRate } = await getBtcPremiumData({ maxYears: 3 });
+//   각 날짜의 김프% = (btcPrice[i] - foreignUsd[i]*fxRate[i]) / (foreignUsd[i]*fxRate[i]) * 100
+// 실제 데이터로 바뀌면:
+//   - TOTAL_DAYS는 dates.length로, TODAY는 dates[dates.length-1] 기준으로 바뀌어야 함
+//   - fxRateAt(i)는 fxRate[i]를 그대로 쓰면 됨 (지금처럼 역산할 필요 없음)
+//   - premiumLevelAt(i)는 위 김프% 계산식으로 바로 대체
+//   - 달력 선택 가능 범위(MIN_MONTH_OFFSET)도 실제 데이터 시작일(KRW-BTC는 2017-09-25~)에 맞게 조정
+//   - fetch는 비동기이므로 로딩/에러 상태 처리 필요 (shared.css의 .status-box/.spinner/.error-box 참고)
 const TOTAL_DAYS = 900;
+const BASE_FX = 1350;
+const BASE_PREMIUM = 2.2;
+
 function genRawSteps(n, seed){
   const rand = seededRandom(seed);
   const arr = [];
   for(let i=0;i<n;i++){
-    const premiumStep = (rand()-0.42)*0.55; // 프리미엄만으로 쌓인 하루치 변화
-    const fxStep = (rand()-0.5)*0.5;        // 환율이 추가로 준 영향
+    const premiumStep = (rand()-0.42)*0.55;
+    const fxStep = (rand()-0.5)*0.5;
     arr.push({ premiumStep, fxStep });
   }
   return arr;
 }
 const rawSteps = genRawSteps(TOTAL_DAYS, 202);
 
+// 전 구간 누적값을 한 번만 계산해서 재사용 (매수 시점 b, 오늘 t 사이 구간은 차분으로 구함)
+const premiumCumFull = [0];
+const realCumFull = [0];
+for (let i = 1; i < TOTAL_DAYS; i++) {
+  premiumCumFull.push(premiumCumFull[i-1] + rawSteps[i].premiumStep);
+  realCumFull.push(realCumFull[i-1] + rawSteps[i].premiumStep + rawSteps[i].fxStep);
+}
+const fxContribCum = premiumCumFull.map((v, i) => realCumFull[i] - v);
+const fxRateAt = i => BASE_FX * (1 + fxContribCum[i] / 100);
+const premiumLevelAt = i => Math.max(-1, Math.min(8, BASE_PREMIUM + premiumCumFull[i] * 0.4));
+
 const TODAY = new Date(2026, 7, 9);
 function dateLabel(d){
   return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
 }
-function dateFromDaysAgo(daysAgo){
+function idxFromDate(d) {
+  const diffDays = Math.round((TODAY - d) / 86400000);
+  return TOTAL_DAYS - 1 - diffDays;
+}
+function dateFromIdx(idx) {
+  const daysAgo = TOTAL_DAYS - 1 - idx;
   const d = new Date(TODAY);
   d.setDate(d.getDate() - daysAgo);
   return d;
 }
 
-const farDate = dateFromDaysAgo(800);
-document.getElementById('rangeFar').textContent = dateLabel(farDate);
+// ② 퀴즈
+const QUIZ = [
+  { q: '김치프리미엄이란 무엇인가요?', opts: ['국내 거래소 가격이 해외보다 높은(또는 낮은) 정도', '비트코인의 하루 변동폭', '거래 수수료의 총합', '환전 수수료율'], ans: 0, hint: '국내 vs 해외 가격 격차를 말해요.' },
+  { q: '"김프가 높다"는 건 어떤 상황인가요?', opts: ['해외 가격이 국내보다 비싸다', '국내 가격이 해외보다 비싸다', '환율이 고정됐다', '거래량이 0이다'], ans: 1, hint: '국내가 상대적으로 비싼 상태예요.' },
+  { q: '이 시뮬레이터가 보여주는 수치는 무엇인가요?', opts: ['확실한 미래 수익 보장', '지금 사라는 신호', '과거 데이터를 가정한 참고용 계산 결과', '실시간 매매 주문'], ans: 2, hint: '예측이나 권유가 아니라 참고용 계산이에요.' },
+];
+const quizDone = new Array(QUIZ.length).fill(false);
 
-function computeSeries(daysAgo){
-  const start = TOTAL_DAYS - daysAgo;
-  let premiumCum = 0, realCum = 0;
+function renderQuiz(){
+  document.getElementById('quizPanel').innerHTML = QUIZ.map((it, qi) => `
+    <div class="quiz-q">
+      <div class="quiz-q-head"><span class="qi">Q${qi+1}</span>${it.q}</div>
+      <div class="quiz-opts">${it.opts.map((o, oi) => `<button class="quiz-opt" data-q="${qi}" data-o="${oi}">${o}</button>`).join('')}</div>
+      <div class="quiz-msg" data-msg="${qi}"></div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.quiz-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qi = +btn.dataset.q, oi = +btn.dataset.o;
+      if (quizDone[qi]) return;
+      const it = QUIZ[qi];
+      const msg = document.querySelector(`[data-msg="${qi}"]`);
+      if (oi === it.ans) {
+        btn.classList.add('correct');
+        quizDone[qi] = true;
+        msg.textContent = '정답이에요!';
+        msg.className = 'quiz-msg ok';
+        document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.disabled = true);
+        checkUnlock();
+      } else {
+        btn.classList.add('wrong');
+        msg.textContent = it.hint + ' 다시 골라보세요.';
+        msg.className = 'quiz-msg no';
+        setTimeout(() => btn.classList.remove('wrong'), 700);
+      }
+    });
+  });
+}
+
+function checkUnlock(){
+  if (!quizDone.every(Boolean)) return;
+  ['simLock', 'calcLock', 'chartLock'].forEach(id => document.getElementById(id).classList.add('open'));
+
+  const toast = document.getElementById('unlockToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+// ③ 달력
+let calMonthOffset = 0; // 0 = 이번 달
+const MIN_MONTH_OFFSET = -5; // 최근 6개월 범위
+let selectedIdx = idxFromDate(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 60));
+
+function renderCalendar(){
+  const base = new Date(TODAY.getFullYear(), TODAY.getMonth() + calMonthOffset, 1);
+  const year = base.getFullYear(), month = base.getMonth();
+  document.getElementById('calMonthLabel').textContent = year + '년 ' + (month + 1) + '월';
+  document.getElementById('calPrev').disabled = calMonthOffset <= MIN_MONTH_OFFSET;
+  document.getElementById('calNext').disabled = calMonthOffset >= 0;
+
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  let html = '';
+  weeks.forEach(week => {
+    html += '<div class="cal-week">';
+    week.forEach(d => {
+      if (!d) { html += '<div class="cal-cell empty"></div>'; return; }
+      const idx = idxFromDate(d);
+      if (idx < 0 || idx >= TOTAL_DAYS - 1) {
+        html += `<div class="cal-cell future">${d.getDate()}</div>`;
+        return;
+      }
+      const sel = idx === selectedIdx ? ' selected' : '';
+      html += `<div class="cal-cell${sel}" data-idx="${idx}">${d.getDate()}</div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('calGrid').innerHTML = html;
+
+  document.querySelectorAll('.cal-cell[data-idx]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      selectedIdx = parseInt(cell.dataset.idx);
+      renderCalendar();
+      renderAll();
+    });
+  });
+}
+
+document.getElementById('calPrev').addEventListener('click', () => { calMonthOffset--; renderCalendar(); });
+document.getElementById('calNext').addEventListener('click', () => { calMonthOffset++; renderCalendar(); });
+
+// ④+⑤ 계산 & 렌더
+function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
+function commas(n){ return Math.round(n).toLocaleString('ko-KR'); }
+
+function computeSeriesFromIdx(buyIdx){
   const arr = [];
-  for(let i=start;i<TOTAL_DAYS;i++){
-    premiumCum += rawSteps[i].premiumStep;
-    realCum += rawSteps[i].premiumStep + rawSteps[i].fxStep;
-    arr.push({ premium: premiumCum, real: realCum });
+  for (let i = buyIdx; i < TOTAL_DAYS; i++) {
+    arr.push({ premium: premiumCumFull[i] - premiumCumFull[buyIdx], real: realCumFull[i] - realCumFull[buyIdx] });
   }
   return arr;
 }
@@ -188,34 +482,113 @@ function drawDecompChart(data){
   svg.appendChild(realPoly);
 }
 
-function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
-
-function render(daysAgo){
-  const picked = dateFromDaysAgo(daysAgo);
+function renderAll(){
+  const buyIdx = selectedIdx;
+  const todayIdx = TOTAL_DAYS - 1;
+  const picked = dateFromIdx(buyIdx);
   document.getElementById('pickedDate').textContent = dateLabel(picked);
 
-  const data = computeSeries(daysAgo);
-  drawDecompChart(data);
-
-  const last = data[data.length-1];
+  // ③ 차트
+  const series = computeSeriesFromIdx(buyIdx);
+  drawDecompChart(series);
+  const last = series[series.length - 1];
   const diff = last.real - last.premium;
-
   const headline = document.getElementById('resultHeadline');
   const sub = document.getElementById('resultSub');
-
   if (Math.abs(diff) < 0.05) {
-    headline.innerHTML = `당신이 고른 시점에서는, 환율이 실질 수익을 <b>거의 바꾸지 않았습니다</b>`;
+    headline.innerHTML = `이 시점은 환율 영향이 거의 없었어요`;
   } else if (diff > 0) {
-    headline.innerHTML = `당신이 고른 시점에서도, 환율이 실질 수익을 <b class="frog-text">늘렸습니다</b>`;
+    headline.innerHTML = `이 시점은 환율이 실질 수익을 <b class="frog-text">늘렸어요</b>`;
   } else {
-    headline.innerHTML = `당신이 고른 시점에서도, 환율이 실질 수익을 <b class="accent-text">줄였습니다</b>`;
+    headline.innerHTML = `이 시점은 환율이 실질 수익을 <b class="accent-text">줄였어요</b>`;
   }
   sub.textContent = `프리미엄 기준 누적수익 ${fmtPct(last.premium)} · 환율 반영 실질 누적수익 ${fmtPct(last.real)} (차이 ${fmtPct(diff)})`;
+
+  // ④ 계산기
+  const premAt = premiumLevelAt(buyIdx);
+  const fxAt = fxRateAt(buyIdx);
+  const fxNow = fxRateAt(todayIdx);
+  document.getElementById('calcPremAt').textContent = fmtPct(premAt);
+  document.getElementById('calcFxAt').textContent = commas(fxAt) + '원';
+  document.getElementById('calcFxNow').textContent = commas(fxNow) + '원';
+
+  const amt = +document.getElementById('calcAmt').value || 0;
+  const buyFee = +document.getElementById('calcBuy').value;
+  const sellFee = +document.getElementById('calcSell').value;
+  const trFee = +document.getElementById('calcTr').value;
+  document.getElementById('calcBuyV').textContent = buyFee.toFixed(2);
+  document.getElementById('calcSellV').textContent = sellFee.toFixed(2);
+  document.getElementById('calcTrV').textContent = trFee.toFixed(2);
+
+  const totalFee = buyFee + sellFee + trFee;
+  const netReturn = last.real - totalFee;
+  const profit = amt * netReturn / 100;
+  const finalAmt = amt + profit;
+  const fxEffect = last.real - last.premium; // 환율이 더해주거나 깎은 몫
+
+  document.getElementById('calcAmtFrom').textContent = commas(amt) + '원';
+  document.getElementById('calcAmtTo').textContent = commas(finalAmt) + '원';
+  const badge = document.getElementById('calcHeroBadge');
+  badge.className = 'calc-hero-badge ' + (profit >= 0 ? 'up' : 'down');
+  badge.textContent = `${profit>=0?'+':''}${commas(profit)}원 · ${fmtPct(netReturn)}`;
+
+  // 워터폴: 프리미엄 스프레드 → 환율 효과 → 수수료 → 순수익
+  const steps = [
+    { name: '프리미엄', val: last.premium, color: '#3fa15e' },
+    { name: '환율 효과', val: fxEffect, color: '#b3372a' },
+    { name: '수수료', val: -totalFee, color: '#c48a1f' },
+    { name: '순수익', val: netReturn, color: netReturn >= 0 ? '#3fa15e' : '#b3372a' },
+  ];
+  const maxAbs = Math.max(...steps.map(s => Math.abs(s.val)), 1);
+  document.getElementById('wfRow').innerHTML = steps.map(s => {
+    const hpct = Math.max(4, Math.abs(s.val) / maxAbs * 100);
+    return `<div class="wf-bar-col">
+      <div class="wf-val" style="color:${s.color}">${s.val>=0?'+':''}${s.val.toFixed(2)}%</div>
+      <div class="wf-bar" style="height:${hpct}%; background:${s.color}"></div>
+      <div class="wf-axis"></div>
+      <div class="wf-name">${s.name}</div>
+    </div>`;
+  }).join('');
+
+  // 손익분기점: 프리미엄 쪽 수익(수수료 반영)이 이미 확보된 상태에서,
+  // 환율이 매수 시점 대비 얼마나 반대로 움직여야 실질 수익이 0이 되는지 계산
+  const netPremiumEdge = (last.premium - totalFee);
+  const breakEvenFx = fxAt * (1 - netPremiumEdge / 100);
+  const box = document.getElementById('breakEvenBox');
+
+  const lo = Math.min(fxAt, breakEvenFx, fxNow) - 15;
+  const hi = Math.max(fxAt, breakEvenFx, fxNow) + 15;
+  const pctOf = v => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
+  const fillPct = pctOf(breakEvenFx);
+  const markerPct = pctOf(fxNow);
+
+  let desc;
+  if (netPremiumEdge >= 0) {
+    const gapPct = (fxNow - breakEvenFx) / breakEvenFx * 100;
+    desc = `매수 시점(${commas(fxAt)}원) 대비 환율이 ${Math.abs(netPremiumEdge).toFixed(2)}% 넘게 떨어지면 손실로 전환됩니다.
+      오늘 환율(${commas(fxNow)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
+  } else {
+    desc = `프리미엄과 수수료만 놓고 보면 이미 ${Math.abs(netPremiumEdge).toFixed(2)}%p 손해인 상태라,
+      환율이 매수 시점(${commas(fxAt)}원)보다 더 올라야 본전이 됩니다.`;
+  }
+
+  box.innerHTML = `
+    <div class="breakeven-head">손익분기점</div>
+    <div class="breakeven-value">${commas(breakEvenFx)}원</div>
+    <div class="breakeven-desc">${desc}</div>
+    <div class="breakeven-gauge">
+      <div class="fill" style="width:${100 - fillPct}%; left:${fillPct}%"></div>
+      <div class="marker" style="left:${markerPct}%"></div>
+    </div>
+    <div class="breakeven-labels"><span>${commas(lo)}원</span><span>${commas(hi)}원</span></div>
+  `;
 }
 
-const slider = document.getElementById('dateSlider');
-slider.addEventListener('input', () => render(parseInt(slider.value)));
-render(parseInt(slider.value));
+['calcAmt', 'calcBuy', 'calcSell', 'calcTr'].forEach(id => document.getElementById(id).addEventListener('input', renderAll));
+
+renderQuiz();
+renderCalendar();
+renderAll();
 </script>
 
 </body>

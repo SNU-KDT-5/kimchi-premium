@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-  body { padding-bottom: 80px; }
+  body { padding-bottom: calc(var(--sp-8) + var(--sp-12)); }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
   .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
   .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
@@ -21,7 +21,7 @@
 
   /* ① 더 알아보기 아코디언 */
   .more-info-toggle {
-    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: 9px;
+    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: var(--sp-2);
     background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
     font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
   }
@@ -39,7 +39,7 @@
   .formula-eq .op { color: var(--dim); margin: 0 6px; }
   .formula-parts { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
   .formula-part { flex: 1; min-width: 150px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); text-align: center; }
-  .formula-part .l { font-size: 0.7rem; color: var(--mut); margin-bottom: 6px; }
+  .formula-part .l { font-size: 0.7rem; color: var(--mut); margin-bottom: var(--sp-2); }
   .formula-part .l .sym { font-family: var(--font-mono); font-weight: 700; }
   .formula-part .v { font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; }
   .formula-part .v.accent { color: var(--accent); }
@@ -50,17 +50,17 @@
   .formula-note b.accent-text { color: var(--accent); }
 
   .simple-breakdown { background: var(--panel); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
-  .sb-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+  .sb-row { display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3) 0; }
   .sb-label { font-size: 0.88rem; color: var(--text); }
   .sb-val { font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; }
   .sb-val.frog { color: var(--frog); }
   .sb-val.accent { color: var(--accent); }
-  .sb-divider { height: 1px; background: var(--border2); margin: 2px 0; }
+  .sb-divider { height: 1px; background: var(--border2); margin: var(--sp-1) 0; }
   .sb-total .sb-label { font-weight: 700; }
   .sb-total .sb-val { font-size: 1.3rem; color: var(--text); }
 
   .formula-toggle {
-    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: 9px;
+    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: var(--sp-2);
     background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
     font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
   }
@@ -69,8 +69,8 @@
   .formula-detail.show { display: block; }
 
   /* ③ 시계열 */
-  .period-tabs { display: flex; gap: 5px; background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; margin-bottom: var(--sp-4); }
-  .period-tab { flex: 1; text-align: center; padding: 8px 6px; border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 600; color: var(--mut); cursor: pointer; }
+  .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-4); }
+  .period-tab { flex: 1; text-align: center; padding: var(--sp-2); border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 600; color: var(--mut); cursor: pointer; }
   .period-tab.active { background: var(--text); color: #fff; }
   .chart-svg { width: 100%; height: 180px; display: block; }
   .legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); }
@@ -81,38 +81,38 @@
   .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
 
   /* ⑤ 워터폴 (사례) */
-  .waterfall { display: flex; align-items: flex-end; gap: var(--sp-2); height: 160px; margin: var(--sp-5) 0 6px; }
-  .wf-bar { flex: 1; border-radius: 5px 5px 0 0; position: relative; min-height: 2px; }
-  .wf-bar .lbl { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-family: var(--font-mono); }
-  .wf-bar .nm { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 0.68rem; color: var(--dim); white-space: nowrap; }
-  .case-desc { font-size: 0.82rem; color: var(--mut); margin-top: 32px; line-height: 1.7; }
+  .waterfall { display: flex; align-items: flex-end; gap: var(--sp-2); height: 160px; margin: var(--sp-5) 0 var(--sp-2); }
+  .wf-bar { flex: 1; border-radius: var(--r-sm) var(--r-sm) 0 0; position: relative; min-height: 2px; }
+  .wf-bar .lbl { position: absolute; top: calc(-1 * var(--sp-5)); left: 50%; transform: translateX(-50%); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-family: var(--font-mono); }
+  .wf-bar .nm { position: absolute; bottom: calc(-1 * var(--sp-6)); left: 50%; transform: translateX(-50%); font-size: 0.68rem; color: var(--dim); white-space: nowrap; }
+  .case-desc { font-size: 0.82rem; color: var(--mut); margin-top: var(--sp-8); line-height: 1.7; }
 
   .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
 
   /* ⑥ 게이지 */
-  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: 10px 0 0; }
-  .gauge-score { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 800; margin-top: -10px; }
-  .gauge-label { font-size: 0.82rem; font-weight: 700; padding: 3px 12px; border-radius: var(--r-pill); margin-top: 6px; }
-  .gauge-sub { font-size: 0.74rem; color: var(--dim); margin-top: 6px; text-align: center; }
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--sp-3) 0 0; }
+  .gauge-score { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 800; margin-top: calc(-1 * var(--sp-3)); }
+  .gauge-label { font-size: 0.82rem; margin-top: var(--sp-2); }
+  .gauge-sub { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
 
   /* ⑦ 히트맵 */
-  .heatmap-wrap { margin-top: 4px; }
+  .heatmap-wrap { margin-top: var(--sp-1); }
   .hm-months { display: flex; gap: var(--sp-4); flex-wrap: wrap; }
   .hm-month {}
-  .hm-month-label { font-size: 0.72rem; font-weight: 700; color: var(--mut); margin-bottom: 6px; }
-  .hm-day-labels { display: grid; grid-template-columns: repeat(7, 22px); gap: 2px; margin-bottom: 3px; }
+  .hm-month-label { font-size: 0.72rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2); }
+  .hm-day-labels { display: grid; grid-template-columns: repeat(7, 22px); gap: var(--sp-1); margin-bottom: var(--sp-1); }
   .hm-day-labels span { font-size: 9px; color: var(--dim); text-align: center; font-weight: 600; }
-  .hm-week { display: grid; grid-template-columns: repeat(7, 22px); gap: 2px; margin-bottom: 2px; }
-  .hm-cell { width: 22px; height: 22px; border-radius: 4px; position: relative; cursor: default; transition: transform .1s; }
+  .hm-week { display: grid; grid-template-columns: repeat(7, 22px); gap: var(--sp-1); margin-bottom: var(--sp-1); }
+  .hm-cell { width: 22px; height: 22px; border-radius: var(--r-sm); position: relative; cursor: default; transition: transform .1s; }
   .hm-cell:hover { transform: scale(1.3); z-index: 3; }
-  .hm-cell.empty { background: rgba(0,0,0,.04); }
-  .hm-cell .hm-tip { display: none; position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
-    background: var(--text); color: var(--bg); border-radius: 7px; padding: 6px 9px; font-size: 11px;
+  .hm-cell.empty { background: var(--panel2); }
+  .hm-cell .hm-tip { display: none; position: absolute; bottom: calc(var(--sp-3) + var(--sp-4)); left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3); font-size: 11px;
     white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5; }
   .hm-cell:hover .hm-tip { display: block; }
   .hm-legend { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-3); font-size: 11px; color: var(--dim); }
   .hm-legend .bar { flex: 1; height: 6px; border-radius: var(--r-pill); max-width: 160px;
-    background: linear-gradient(90deg, var(--frog), var(--border2), var(--accent)); }
+    background: linear-gradient(90deg, var(--border2), var(--amber), var(--accent)); }
 </style>
 </head>
 <body>
@@ -161,7 +161,7 @@
 
   <!-- ② 환율 분해 -->
   <div class="section-block">
-    <div class="section-label">② 번 돈 중 얼마가 환율 때문에 사라졌을까</div>
+    <div class="section-label">② 번 돈 중 환율과 함께 사라진 몫</div>
     <div class="formula-box">
       <div class="simple-breakdown">
         <div class="sb-row">
@@ -178,7 +178,7 @@
           <span class="sb-val" id="sbNet">+0.94%</span>
         </div>
       </div>
-      <div class="formula-note">프리미엄이 아무리 커도, 환율이 반대로 크게 움직이면 실제로 손에 남는 수익은 줄어듭니다. 반대로 환율이 유리하게 움직이면 실질 수익이 프리미엄보다 커질 수도 있습니다.</div>
+      <div class="formula-note">프리미엄이 크더라도, 환율이 반대 방향으로 크게 움직인 구간에서는 실제로 남은 수익이 함께 줄어든 모습이 나타납니다. 반대로 환율이 같은 방향으로 움직인 구간에서는 실질 수익이 프리미엄보다 커진 모습도 나타납니다.</div>
 
       <button class="formula-toggle" id="formulaToggle">계산 방식이 궁금하다면 ▾</button>
       <div class="formula-detail" id="formulaDetail">
@@ -210,13 +210,13 @@
   <div class="section-block">
     <div class="section-label">④ 프리미엄만큼 벌었다면 vs 실제로 번 것</div>
     <div class="card">
-      <p class="section-intro">만약 처음부터 계속 투자했다면, <b class="frog-text">그린 선</b>은 프리미엄만으로 쌓였을 누적 수익이고 <b class="accent-text">버건디 선</b>은 환율까지 반영한 실제 누적 수익입니다. 두 선 사이가 벌어질수록, 그만큼 환율이 수익에 끼어든 것입니다.</p>
+      <p class="section-intro">만약 처음부터 계속 투자했다면, <b class="frog-text">그린 선</b>은 프리미엄만으로 쌓였을 누적 수익이고 <b class="accent-text">버건디 선</b>은 환율까지 반영한 실제 누적 수익입니다. 두 선 사이가 벌어질수록, 그 구간에서 환율 변동이 함께 크게 나타난 것입니다.</p>
       <div class="decomp-legend-row">
         <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
         <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
       </div>
       <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
-      <div class="caption">두 선 사이 옅은 음영이 그 시점까지 환율이 누적으로 갉아먹거나 더해준 몫입니다. 선이 벌어질수록 영향이 큽니다.</div>
+      <div class="caption">두 선 사이 옅은 음영은 그 시점까지 환율 변동과 함께 나타난 누적 차이입니다. 선이 벌어질수록 그 차이가 큽니다.</div>
     </div>
   </div>
 
@@ -237,7 +237,7 @@
       <div class="gauge-wrap">
         <svg id="gaugeSvg" viewBox="0 0 320 178" style="width:100%;max-width:320px;display:block;margin:0 auto"></svg>
         <div class="gauge-score" id="gaugeScore">–</div>
-        <div class="gauge-label" id="gaugeLabel">–</div>
+        <div class="gauge-label badge" id="gaugeLabel">–</div>
         <div class="gauge-sub">과거 2년 실질 김프 분포 대비 현재 위치</div>
       </div>
     </div>
@@ -247,7 +247,7 @@
   <div class="section-block">
     <div class="section-label">⑦ 일별 투자 안정성 히트맵</div>
     <div class="card">
-      <p class="section-intro"><b class="accent-text">빨간색</b>일수록 실질 김프가 과거 대비 높은 날, <b class="frog-text">초록색</b>일수록 낮은 날입니다.</p>
+      <p class="section-intro">색이 짙을수록 실질 김프가 과거 대비 높은 날, 옅을수록 낮은 날입니다. 짙거나 옅다고 유리·불리를 뜻하지는 않습니다.</p>
       <div class="heatmap-wrap">
         <div class="hm-months" id="heatgrid"></div>
         <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
@@ -299,14 +299,14 @@ function drawPremChart(days){
     const y = PT + ph - (s/3)*ph;
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
-    line.setAttribute('stroke','#e0ecdf');
+    line.setAttribute('stroke','var(--border)');
     g.appendChild(line);
   }
   svg.appendChild(g);
 
   const pts = series.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
   const poly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
-  poly.setAttribute('points',pts); poly.setAttribute('fill','none'); poly.setAttribute('stroke','#b3372a'); poly.setAttribute('stroke-width','2');
+  poly.setAttribute('points',pts); poly.setAttribute('fill','none'); poly.setAttribute('stroke','var(--accent)'); poly.setAttribute('stroke-width','2');
   svg.appendChild(poly);
 }
 
@@ -350,7 +350,7 @@ function drawDecompChart(){
     const y = PT + ph - (s/3)*ph;
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
-    line.setAttribute('stroke','#e0ecdf');
+    line.setAttribute('stroke','var(--border)');
     g.appendChild(line);
   }
   svg.appendChild(g);
@@ -362,18 +362,17 @@ function drawDecompChart(){
 
   const fill = document.createElementNS('http://www.w3.org/2000/svg','path');
   fill.setAttribute('d', fillPath);
-  fill.setAttribute('fill', '#b3372a');
-  fill.setAttribute('fill-opacity', '0.14');
+  fill.setAttribute('fill', 'var(--accent-bg)');
   svg.appendChild(fill);
 
   const premPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
   premPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' '));
-  premPoly.setAttribute('fill','none'); premPoly.setAttribute('stroke','#3fa15e'); premPoly.setAttribute('stroke-width','2');
+  premPoly.setAttribute('fill','none'); premPoly.setAttribute('stroke','var(--frog)'); premPoly.setAttribute('stroke-width','2');
   svg.appendChild(premPoly);
 
   const realPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
   realPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.real)}`).join(' '));
-  realPoly.setAttribute('fill','none'); realPoly.setAttribute('stroke','#b3372a'); realPoly.setAttribute('stroke-width','2.2');
+  realPoly.setAttribute('fill','none'); realPoly.setAttribute('stroke','var(--accent)'); realPoly.setAttribute('stroke-width','2.2');
   svg.appendChild(realPoly);
 }
 drawDecompChart();
@@ -383,17 +382,17 @@ const CASES = [
   {
     id:'normal', label:'평상시',
     spread: 3.2, fee: -0.8, fx: -0.6,
-    desc:'평상시에는 환율 변동이 크지 않아, 프리미엄 스프레드가 실질 수익에 대체로 반영됩니다.'
+    desc:'평상시에는 환율 변동이 크지 않은 구간에서, 프리미엄 스프레드와 실질 수익의 차이가 크지 않게 나타납니다.'
   },
 ];
 
 function renderWaterfall(c){
   const net = c.spread + c.fee + c.fx;
   const steps = [
-    { name:'프리미엄 스프레드', val:c.spread, color:'#3fa15e' },
-    { name:'수수료', val:c.fee, color:'#c48a1f' },
-    { name:'환율분', val:c.fx, color:'#b3372a' },
-    { name:'실질 수익', val:net, color: net>=0 ? '#3fa15e' : '#b3372a', isTotal:true },
+    { name:'프리미엄 스프레드', val:c.spread, color:'var(--frog)' },
+    { name:'수수료', val:c.fee, color:'var(--amber)' },
+    { name:'환율분', val:c.fx, color:'var(--accent)' },
+    { name:'실질 수익', val:net, color:'var(--text)', isTotal:true },
   ];
   const wf = document.getElementById('waterfallChart');
   wf.innerHTML = '';
@@ -434,23 +433,31 @@ renderWaterfall(CASES[0]);
   const pc = sorted.filter(v=>v<=cur).length / sorted.length;
   const score = Math.round(pc*100);
 
-  // 색상 스케일: 그린 → 회색 → 빨강 (수치의 상대적 높낮이만 표현, 디자인시스템 --frog/--accent 사용)
+  // 색상 스케일: --border2 → --amber → --accent (수치의 상대적 높낮이만 표현하는 단일 방향 스케일,
+  // 그린(--frog)은 기능색으로 쓰지 않고 디자인시스템 토큰만 사용)
+  function hexToRgb(hex){
+    hex = hex.trim().replace('#','');
+    if(hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+    const n = parseInt(hex,16);
+    return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  const rootStyle = getComputedStyle(document.documentElement);
+  const scaleLow = hexToRgb(rootStyle.getPropertyValue('--border2'));
+  const scaleMid = hexToRgb(rootStyle.getPropertyValue('--amber'));
+  const scaleHigh = hexToRgb(rootStyle.getPropertyValue('--accent'));
+  function mixRgb(a,b,f){ return a.map((v,i)=>Math.round(v+(b[i]-v)*f)); }
   function heatColor(t){
     t = Math.max(0, Math.min(1, t));
-    if(t < 0.5){
-      const f = t/0.5;
-      return `rgb(${Math.round(63+f*(180-63))},${Math.round(161+f*(180-161))},${Math.round(94+f*(180-94))})`;
-    } else {
-      const f = (t-.5)/.5;
-      return `rgb(${Math.round(180+f*(179-180))},${Math.round(180+f*(55-180))},${Math.round(180+f*(42-180))})`;
-    }
+    const rgb = t < 0.5 ? mixRgb(scaleLow, scaleMid, t/0.5) : mixRgb(scaleMid, scaleHigh, (t-0.5)/0.5);
+    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
   }
 
-  // 라벨 결정 (상위30%=높음, 하위30%=낮음, 중간=보통) — 매수/매도 프레이밍 대신 중립 서술
+  // 라벨 결정 (상위30%=높음, 하위30%=낮음, 중간=보통) — 매수/매도 프레이밍 대신 중립 서술,
+  // 기존 .badge-* 클래스를 재사용
   function getLabel(t){
-    if(t >= 0.7) return { txt:'높음', bg:'rgba(179,55,42,.12)', col:'#b3372a' };
-    if(t >= 0.3) return { txt:'보통', bg:'rgba(196,138,31,.12)', col:'#c48a1f' };
-    return { txt:'낮음', bg:'rgba(63,161,94,.12)', col:'#3fa15e' };
+    if(t >= 0.7) return { txt:'높음', cls:'badge-accent', swatch:'var(--accent)' };
+    if(t >= 0.3) return { txt:'보통', cls:'badge-amber', swatch:'var(--amber)' };
+    return { txt:'낮음', cls:'badge-neutral', swatch:'var(--dim)' };
   }
 
   // ── 게이지 ──
@@ -465,11 +472,11 @@ renderWaterfall(CASES[0]);
     arcs+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s/100)}" stroke-width="16" stroke-linecap="round"/>`;
   }
   svg.innerHTML = `${arcs}
-    <text x="24" y="172" font-size="11" fill="#7c9080">낮음</text>
-    <text x="160" y="22" text-anchor="middle" font-size="11" fill="#7c9080">보통</text>
-    <text x="296" y="172" text-anchor="end" font-size="11" fill="#7c9080">높음</text>
-    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1f2b21" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="${cx}" cy="${cy}" r="6" fill="#1f2b21"/>`;
+    <text x="24" y="172" font-size="11" style="fill:var(--dim)">낮음</text>
+    <text x="160" y="22" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
+    <text x="296" y="172" text-anchor="end" font-size="11" style="fill:var(--dim)">높음</text>
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" style="stroke:var(--text)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="6" style="fill:var(--text)"/>`;
 
   const gs = document.getElementById('gaugeScore');
   const topPct = 100 - score;
@@ -481,10 +488,10 @@ renderWaterfall(CASES[0]);
   const lbl = getLabel(pc);
   const gl = document.getElementById('gaugeLabel');
   gl.textContent = lbl.txt;
-  gl.setAttribute('style', `background:${lbl.bg};color:${lbl.col};font-size:0.82rem;font-weight:700;padding:3px 12px;border-radius:20px;margin-top:6px;`);
+  gl.className = `gauge-label badge ${lbl.cls}`;
 
   const sub = document.querySelector('.gauge-sub');
-  sub.innerHTML = `현재 실질 김프 <b style="color:#b3372a">${cur.toFixed(2)}%</b> — 과거 2년 대비 상위 <b>${100-score}%</b> 수준`;
+  sub.innerHTML = `현재 실질 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> — 과거 2년 대비 상위 <b>${100-score}%</b> 수준`;
 
   // ── 히트맵 (최근 91일 표시) ──
   const TODAY = new Date(2026,7,9);
@@ -520,7 +527,7 @@ renderWaterfall(CASES[0]);
           const lbl2=getLabel(day.t);
           const dd=day.d;
           const dateStr=(dd.getMonth()+1)+'/'+(dd.getDate());
-          html+=`<div class="hm-cell" style="background:${col}"><span class="hm-tip">${dateStr}<br>실질 김프 ${day.prem.toFixed(2)}%<br><span style="color:${lbl2.col};font-weight:700">${lbl2.txt}</span></span></div>`;
+          html+=`<div class="hm-cell" style="background:${col}"><span class="hm-tip">${dateStr}<br>실질 김프 ${day.prem.toFixed(2)}%<br><span style="color:${lbl2.swatch};font-weight:700">${lbl2.txt}</span></span></div>`;
         }
       });
       html+='</div>';

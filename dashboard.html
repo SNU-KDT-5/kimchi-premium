@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>실시간 관측 대시보드</title>
+<title>일별 관측 대시보드</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
 <style>
   body { padding-bottom: calc(var(--sp-8) + var(--sp-12)); }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
@@ -18,6 +19,14 @@
   .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
   .section-intro b.frog-text { color: var(--frog); }
   .section-intro b.accent-text { color: var(--accent); }
+
+  /* ① 데이터 기준일 + 새로고침 */
+  .kpi-meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--sp-3); margin-bottom: var(--sp-3); flex-wrap: wrap;
+  }
+  .kpi-meta-row .btn { padding: var(--sp-1) var(--sp-3); font-size: 0.78rem; }
+  .kpi-meta-row .btn:disabled { opacity: 0.5; cursor: default; }
 
   /* ① 더 알아보기 아코디언 */
   .more-info-toggle {
@@ -136,21 +145,29 @@
   <div class="header">
     <div class="eyebrow mono">현황 대시보드</div>
     <h1>지금 이 순간의 숫자들</h1>
-    <p>테더 투자의 가장 큰 방해물은 환율입니다. 프리미엄이 아무리 벌어져도, 환율이 함께 흔들리면 실질 수익은 달라집니다.</p>
+    <p>USDT(테더) 투자의 가장 큰 방해물은 환율입니다. 프리미엄이 아무리 벌어져도, 환율이 함께 흔들리면 실질 수익은 달라집니다.</p>
   </div>
 
   <!-- ① 게시판 -->
   <div class="section-block">
     <div class="section-label">① 현재 지표</div>
-    <div class="stat-row">
-      <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">1,342원</div><div class="hint">방금 갱신</div></div>
-      <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">1,312원</div><div class="hint">방금 갱신</div></div>
-      <div class="stat-card"><div class="label">프리미엄</div><div class="value accent" id="stPrem">+2.28%</div><div class="hint">방금 갱신</div></div>
+    <div class="status-box" id="kpiLoading"><div class="spinner"></div>현재 지표를 불러오는 중…</div>
+    <div class="error-box" id="kpiError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+    <div id="kpiContent" style="display:none;">
+      <div class="kpi-meta-row">
+        <span class="mut-text mono" id="kpiAsOf"></span>
+        <button class="btn btn-outline" id="refreshBtn" type="button">새로고침</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div><div class="hint">오늘 기준</div></div>
+        <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div><div class="hint">오늘 기준</div></div>
+        <div class="stat-card"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint">오늘 기준</div></div>
+      </div>
     </div>
 
     <button class="more-info-toggle" id="moreInfoToggle">더 알아보기 — 지금 시장 상황 ▾</button>
     <div class="more-info-detail" id="moreInfoDetail">
-      <p class="section-intro">여기에 비트코인 거래량, 거래대금, 네이버 검색지수 등 시장 활발도 지표가 들어올 예정입니다</p>
+      <p class="section-intro">여기에 USDT(테더) 거래량, 거래대금, 네이버 검색지수 등 시장 활발도 지표가 들어올 예정입니다</p>
       <div class="stat-row">
         <div class="stat-card"><div class="label">거래량</div><div class="value">—</div></div>
         <div class="stat-card"><div class="label">거래대금</div><div class="value">—</div></div>
@@ -163,30 +180,34 @@
   <div class="section-block">
     <div class="section-label">② 번 돈 중 환율과 함께 사라진 몫</div>
     <div class="formula-box">
-      <div class="simple-breakdown">
-        <div class="sb-row">
-          <span class="sb-label">프리미엄으로 벌었어야 할 돈</span>
-          <span class="sb-val frog" id="sbSpread">+2.28%</span>
+      <div class="status-box" id="fxLoading"><div class="spinner"></div>환율 분해 데이터를 불러오는 중…</div>
+      <div class="error-box" id="fxError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div id="fxContent" style="display:none;">
+        <div class="simple-breakdown">
+          <div class="sb-row">
+            <span class="sb-label">프리미엄으로 벌었어야 할 돈</span>
+            <span class="sb-val frog" id="sbSpread">–</span>
+          </div>
+          <div class="sb-row">
+            <span class="sb-label">환율이 가져간 몫</span>
+            <span class="sb-val accent" id="sbFx">–</span>
+          </div>
+          <div class="sb-divider"></div>
+          <div class="sb-row sb-total">
+            <span class="sb-label">실제로 남은 돈</span>
+            <span class="sb-val" id="sbNet">–</span>
+          </div>
         </div>
-        <div class="sb-row">
-          <span class="sb-label">환율이 가져간 몫</span>
-          <span class="sb-val accent" id="sbFx">-1.31%</span>
-        </div>
-        <div class="sb-divider"></div>
-        <div class="sb-row sb-total">
-          <span class="sb-label">실제로 남은 돈</span>
-          <span class="sb-val" id="sbNet">+0.94%</span>
-        </div>
-      </div>
-      <div class="formula-note">프리미엄이 크더라도, 환율이 반대 방향으로 크게 움직인 구간에서는 실제로 남은 수익이 함께 줄어든 모습이 나타납니다. 반대로 환율이 같은 방향으로 움직인 구간에서는 실질 수익이 프리미엄보다 커진 모습도 나타납니다.</div>
+        <div class="formula-note">프리미엄이 크더라도, 환율이 반대 방향으로 크게 움직인 구간에서는 실제로 남은 수익이 함께 줄어든 모습이 나타납니다. 반대로 환율이 같은 방향으로 움직인 구간에서는 실질 수익이 프리미엄보다 커진 모습도 나타납니다.</div>
 
-      <button class="formula-toggle" id="formulaToggle">계산 방식이 궁금하다면 ▾</button>
-      <div class="formula-detail" id="formulaDetail">
-        <div class="formula-eq">(1 + R<sub>krw</sub>)<span class="op">=</span>(1 + R<sub>usd</sub>)<span class="op">×</span>(1 + fx)</div>
-        <div class="formula-parts">
-          <div class="formula-part"><div class="l">원화 기준 실질수익 <span class="sym">R_krw</span></div><div class="v" id="fKrw">+0.94%</div></div>
-          <div class="formula-part"><div class="l">프리미엄 스프레드 <span class="sym">R_usd</span></div><div class="v frog" id="fUsd">+2.28%</div></div>
-          <div class="formula-part"><div class="l">환율 변동분 <span class="sym">fx</span></div><div class="v accent" id="fFx">-1.31%</div></div>
+        <button class="formula-toggle" id="formulaToggle">계산 방식이 궁금하다면 ▾</button>
+        <div class="formula-detail" id="formulaDetail">
+          <div class="formula-eq">(1 + R<sub>krw</sub>)<span class="op">=</span>(1 + R<sub>usd</sub>)<span class="op">×</span>(1 + fx)</div>
+          <div class="formula-parts">
+            <div class="formula-part"><div class="l">원화 기준 실질수익 <span class="sym">R_krw</span></div><div class="v" id="fKrw">–</div></div>
+            <div class="formula-part"><div class="l">프리미엄 스프레드 <span class="sym">R_usd</span></div><div class="v frog" id="fUsd">–</div></div>
+            <div class="formula-part"><div class="l">환율 변동분 <span class="sym">fx</span></div><div class="v accent" id="fFx">–</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -194,15 +215,19 @@
 
   <!-- ③ 시계열 -->
   <div class="section-block">
-    <div class="section-label">③ 프리미엄 추이</div>
+    <div class="section-label">③ USDT(테더) 프리미엄 추이</div>
     <div class="card">
-      <div class="period-tabs" id="periodTabs">
-        <div class="period-tab" data-p="90">90일</div>
-        <div class="period-tab active" data-p="365">1년</div>
-        <div class="period-tab" data-p="1095">3년</div>
+      <div class="status-box" id="premLoading"><div class="spinner"></div>프리미엄 추이를 불러오는 중…</div>
+      <div class="error-box" id="premError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div id="premContent" style="display:none;">
+        <div class="period-tabs" id="periodTabs">
+          <div class="period-tab" data-p="90">90일</div>
+          <div class="period-tab active" data-p="365">1년</div>
+          <div class="period-tab" data-p="1095">3년</div>
+        </div>
+        <div class="legend-row"><span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span></div>
+        <svg class="chart-svg" id="premChart" viewBox="0 0 760 180" preserveAspectRatio="none"></svg>
       </div>
-      <div class="legend-row"><span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span></div>
-      <svg class="chart-svg" id="premChart" viewBox="0 0 760 180" preserveAspectRatio="none"></svg>
     </div>
   </div>
 
@@ -210,13 +235,17 @@
   <div class="section-block">
     <div class="section-label">④ 프리미엄만큼 벌었다면 vs 실제로 번 것</div>
     <div class="card">
-      <p class="section-intro">만약 처음부터 계속 투자했다면, <b class="frog-text">그린 선</b>은 프리미엄만으로 쌓였을 누적 수익이고 <b class="accent-text">버건디 선</b>은 환율까지 반영한 실제 누적 수익입니다. 두 선 사이가 벌어질수록, 그 구간에서 환율 변동이 함께 크게 나타난 것입니다.</p>
-      <div class="decomp-legend-row">
-        <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
-        <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+      <p class="section-intro">만약 처음부터 계속 투자했다면, <b class="frog-text">녹색 선</b>은 프리미엄만으로 쌓였을 누적 수익이고 <b class="accent-text">붉은 선</b>은 환율까지 반영한 실제 누적 수익입니다. 두 선 사이가 벌어질수록, 그 구간에서 환율 변동이 함께 크게 나타난 것입니다.</p>
+      <div class="status-box" id="decompLoading"><div class="spinner"></div>누적수익 데이터를 불러오는 중…</div>
+      <div class="error-box" id="decompError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div id="decompContent" style="display:none;">
+        <div class="decomp-legend-row">
+          <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
+          <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+        </div>
+        <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
+        <div class="caption">두 선 사이 옅은 음영은 그 시점까지 환율 변동과 함께 나타난 누적 차이입니다. 선이 벌어질수록 그 차이가 큽니다.</div>
       </div>
-      <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
-      <div class="caption">두 선 사이 옅은 음영은 그 시점까지 환율 변동과 함께 나타난 누적 차이입니다. 선이 벌어질수록 그 차이가 큽니다.</div>
     </div>
   </div>
 
@@ -233,12 +262,14 @@
   <div class="section-block">
     <div class="section-label">⑥ 지금 투자 안정성 게이지</div>
     <div class="card">
-      <p class="section-intro">실질 김프가 과거 대비 어느 수준인지 보여줍니다. 높다고 유리하거나 낮다고 불리하다는 뜻은 아닙니다.</p>
-      <div class="gauge-wrap">
+      <p class="section-intro">오늘의 실질 김프가 지난 1년 중 몇 번째로 높은지를 점수로 보여줍니다. 이 점수가 최근 며칠 동안 어떻게 이어져왔는지는 바로 아래 히트맵에서 확인할 수 있습니다.</p>
+      <div class="status-box" id="gaugeLoading"><div class="spinner"></div>게이지 데이터를 불러오는 중…</div>
+      <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div class="gauge-wrap" id="gaugeContent" style="display:none;">
         <svg id="gaugeSvg" viewBox="0 0 320 178" style="width:100%;max-width:320px;display:block;margin:0 auto"></svg>
         <div class="gauge-score" id="gaugeScore">–</div>
         <div class="gauge-label badge" id="gaugeLabel">–</div>
-        <div class="gauge-sub">과거 2년 실질 김프 분포 대비 현재 위치</div>
+        <div class="gauge-sub">지난 1년 실질 김프 분포 대비 현재 위치</div>
       </div>
     </div>
   </div>
@@ -247,19 +278,21 @@
   <div class="section-block">
     <div class="section-label">⑦ 일별 투자 안정성 히트맵</div>
     <div class="card">
-      <p class="section-intro">색이 짙을수록 실질 김프가 과거 대비 높은 날, 옅을수록 낮은 날입니다. 짙거나 옅다고 유리·불리를 뜻하지는 않습니다.</p>
-      <div class="heatmap-wrap">
+      <p class="section-intro">최근 91일 동안 매일의 실질 김프가 지난 1년 중 상위 30%, 중간 40%, 하위 30% 중 어디에 속했는지를 색으로 나타낸 달력입니다. 각 칸에 마우스를 올리면 그 날짜의 정확한 수치를 확인할 수 있습니다.</p>
+      <div class="status-box" id="heatLoading"><div class="spinner"></div>히트맵 데이터를 불러오는 중…</div>
+      <div class="error-box" id="heatError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div class="heatmap-wrap" id="heatContent" style="display:none;">
         <div class="hm-months" id="heatgrid"></div>
         <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
       </div>
     </div>
   </div>
 
+  <div class="caption">데이터 출처: 업비트 종가, 환율은 ECB 기준 (주말·공휴일은 직전 거래일 환율 적용)</div>
+
 </div>
 
 <script>
-function seededRandom(seed){ let s=seed; return function(){ s=(s*9301+49297)%233280; return s/233280; }; }
-
 document.getElementById('formulaToggle').addEventListener('click', function(){
   const detail = document.getElementById('formulaDetail');
   const isShown = detail.classList.toggle('show');
@@ -272,22 +305,31 @@ document.getElementById('moreInfoToggle').addEventListener('click', function(){
   this.textContent = isShown ? '접기 ▴' : '더 알아보기 — 지금 시장 상황 ▾';
 });
 
-// ══════════ ③ 시계열 데이터 ══════════
-function genPremSeries(days, seed){
-  const rand = seededRandom(seed);
-  let base = 1.3, arr = [];
-  for(let i=0;i<days;i++){
-    base += (rand()-0.5)*0.045;
-    base = Math.max(-1.2, Math.min(5, base));
-    arr.push(base + (rand()-0.5)*0.7);
+// 공통: X축에 날짜 라벨을 고르게 count개 배치 (양 끝은 바깥쪽 정렬, 중간은 가운데 정렬)
+function addDateLabels(g, dates, xAt, H, count){
+  const n = dates.length;
+  const shown = new Set();
+  for(let k=0;k<count;k++){
+    const idx = Math.round((k/(count-1))*(n-1));
+    if(shown.has(idx)) continue;
+    shown.add(idx);
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x', xAt(idx));
+    label.setAttribute('y', H-4);
+    label.setAttribute('text-anchor', k===0 ? 'start' : (k===count-1 ? 'end' : 'middle'));
+    label.setAttribute('font-size','10');
+    label.setAttribute('style','fill:var(--dim)');
+    label.textContent = dates[idx];
+    g.appendChild(label);
   }
-  return arr;
 }
 
+// ══════════ ③ 시계열 데이터 (실데이터: REAL.premiumPct) ══════════
 function drawPremChart(days){
   const svg = document.getElementById('premChart');
   svg.innerHTML = '';
-  const series = genPremSeries(days, 101);
+  const series = REAL.premiumPct.slice(-days);
+  const dates = REAL.dates.slice(-days);
   const W=760,H=180,PL=44,PR=14,PT=14,PB=20;
   const pw=W-PL-PR, ph=H-PT-PB;
   const minY=Math.min(...series)-0.4, maxY=Math.max(...series)+0.4;
@@ -297,11 +339,31 @@ function drawPremChart(days){
   const g = document.createElementNS('http://www.w3.org/2000/svg','g');
   for(let s=0;s<=3;s++){
     const y = PT + ph - (s/3)*ph;
+    const val = minY + (s/3)*(maxY-minY);
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
     line.setAttribute('stroke','var(--border)');
     g.appendChild(line);
+
+    const yLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+    yLabel.setAttribute('x', PL-6); yLabel.setAttribute('y', y+3);
+    yLabel.setAttribute('text-anchor','end'); yLabel.setAttribute('font-size','10');
+    yLabel.setAttribute('style','fill:var(--dim)');
+    yLabel.textContent = val.toFixed(1) + '%';
+    g.appendChild(yLabel);
   }
+
+  // 0% 기준선 강조 (프리미엄이 마이너스로 갈 때 구분되도록)
+  if(minY < 0 && maxY > 0){
+    const zeroLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+    zeroLine.setAttribute('x1',PL); zeroLine.setAttribute('x2',W-PR); zeroLine.setAttribute('y1',yAt(0)); zeroLine.setAttribute('y2',yAt(0));
+    zeroLine.setAttribute('stroke','var(--dim)'); zeroLine.setAttribute('stroke-width','1.5');
+    g.appendChild(zeroLine);
+  }
+
+  // X축: 기간에 맞춰 3~5개 날짜를 고르게 표시 (데이터를 4등분한 지점)
+  addDateLabels(g, dates, xAt, H, 5);
+
   svg.appendChild(g);
 
   const pts = series.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
@@ -317,27 +379,31 @@ document.querySelectorAll('.period-tab').forEach(tab=>{
     drawPremChart(parseInt(tab.dataset.p));
   });
 });
-drawPremChart(365);
 
-// ══════════ ④ 두 선 비교 (프리미엄 누적 vs 실질 누적) ══════════
-function genCumulativeSeries(n, seed){
-  const rand = seededRandom(seed);
-  let premiumCum = 0, realCum = 0;
-  const arr = [];
-  for(let i=0;i<n;i++){
-    const premiumStep = (rand()-0.42)*0.55;   // 프리미엄만으로 쌓인 하루치 변화
-    const fxStep = (rand()-0.5)*0.5;          // 환율이 추가로 준 영향
-    premiumCum += premiumStep;
-    realCum += premiumStep + fxStep;
-    arr.push({ premium: premiumCum, real: realCum });
+// ══════════ ④ 두 선 비교 (프리미엄 누적 vs 실질 누적, 최근 60일 실데이터 기준) ══════════
+// premium: 시작일 대비 프리미엄(%)의 누적 변화 (그대로 프리미엄만 따라간 경우)
+// real: 위 값에 같은 구간 환율 누적 변화(%)를 더한 값 (실제로 환율까지 반영된 경우)
+// 두 값의 formula-note 관계(1+R_krw = (1+R_usd)(1+fx))와 같은 원리로,
+// 두 선 사이 음영은 그 구간 환율 누적 변화분과 같다.
+function buildDecompSeries(){
+  const n = Math.min(60, REAL.dates.length);
+  const start = REAL.dates.length - n;
+  const p0 = REAL.premiumPct[start];
+  const fx0 = REAL.fxRate[start];
+  const data = [];
+  for(let i=start;i<REAL.dates.length;i++){
+    const premium = REAL.premiumPct[i] - p0;
+    const fxCum = (REAL.fxRate[i]/fx0 - 1) * 100;
+    data.push({ premium, real: premium + fxCum });
   }
-  return arr;
+  return data;
 }
 
 function drawDecompChart(){
   const svg = document.getElementById('decompChart');
   svg.innerHTML = '';
-  const data = genCumulativeSeries(60, 202);
+  const data = buildDecompSeries();
+  const dates = REAL.dates.slice(-data.length);
   const W=760,H=200,PL=44,PR=14,PT=14,PB=20;
   const pw=W-PL-PR, ph=H-PT-PB;
   const allVals = data.flatMap(d=>[d.premium, d.real]);
@@ -348,11 +414,31 @@ function drawDecompChart(){
   const g = document.createElementNS('http://www.w3.org/2000/svg','g');
   for(let s=0;s<=3;s++){
     const y = PT + ph - (s/3)*ph;
+    const val = minY + (s/3)*(maxY-minY);
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
     line.setAttribute('stroke','var(--border)');
     g.appendChild(line);
+
+    const yLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+    yLabel.setAttribute('x', PL-6); yLabel.setAttribute('y', y+3);
+    yLabel.setAttribute('text-anchor','end'); yLabel.setAttribute('font-size','10');
+    yLabel.setAttribute('style','fill:var(--dim)');
+    yLabel.textContent = val.toFixed(1) + '%';
+    g.appendChild(yLabel);
   }
+
+  // 0% 기준선 강조
+  if(minY < 0 && maxY > 0){
+    const zeroLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+    zeroLine.setAttribute('x1',PL); zeroLine.setAttribute('x2',W-PR); zeroLine.setAttribute('y1',yAt(0)); zeroLine.setAttribute('y2',yAt(0));
+    zeroLine.setAttribute('stroke','var(--dim)'); zeroLine.setAttribute('stroke-width','1.5');
+    g.appendChild(zeroLine);
+  }
+
+  // X축: 고정 60일이므로 시작/중간/끝 3개만 표시
+  addDateLabels(g, dates, xAt, H, 3);
+
   svg.appendChild(g);
 
   // 두 선 사이 음영
@@ -375,7 +461,6 @@ function drawDecompChart(){
   realPoly.setAttribute('fill','none'); realPoly.setAttribute('stroke','var(--accent)'); realPoly.setAttribute('stroke-width','2.2');
   svg.appendChild(realPoly);
 }
-drawDecompChart();
 
 // ══════════ ⑤ 워터폴 사례 (평상시 한 가지만) ══════════
 const CASES = [
@@ -411,26 +496,19 @@ function renderWaterfall(c){
 renderWaterfall(CASES[0]);
 
 
-// ══════════ ⑥ 게이지 + ⑦ 히트맵 (실질 김프 백분위 기준, 2년치) ══════════
-(function(){
-  const rand = seededRandom(303);
-  const randFx = seededRandom(707);
+// ══════════ ⑥ 게이지 + ⑦ 히트맵 (실질 김프 백분위 기준, 최근 1년) ══════════
+function renderGaugeAndHeatmap(){
+  // section-intro/gauge-sub 문구의 "지난 1년"과 맞춘 계산 기간
+  const GAUGE_WINDOW_DAYS = 365;
+  // 실질 김프 시계열 = REAL.premiumPct 그 자체 (usdtPrice/fxRate로 이미 계산된 값)를 최근 1년으로 제한
+  const realPrems = REAL.premiumPct.slice(-GAUGE_WINDOW_DAYS);
 
-  // 실질 김프 시계열 (730일 = 2년) = 겉보기 김프 - 환율 변동분
-  const realPrems = [];
-  let p = 1.0, fx = 0;
-  for(let i=0;i<730;i++){
-    p += (rand()-.5)*.04;
-    p = Math.max(-1.5, Math.min(4.5, p));
-    fx += (randFx()-.5)*.006;
-    fx = Math.max(-.02, Math.min(.02, fx));
-    realPrems.push(+(p - fx*100 + (rand()-.5)*.3).toFixed(3));
-  }
-
-  // 과거 2년 정렬 → 백분위 계산
+  // 최근 1년 정렬 → 백분위 계산
   const sorted = [...realPrems].sort((a,b)=>a-b);
   const cur = realPrems[realPrems.length-1];
-  const pc = sorted.filter(v=>v<=cur).length / sorted.length;
+  const daysLowerOrEqual = sorted.filter(v=>v<=cur).length;
+  const daysHigher = realPrems.length - daysLowerOrEqual;
+  const pc = daysLowerOrEqual / sorted.length;
   const score = Math.round(pc*100);
 
   // 색상 스케일: --border2 → --amber → --accent (수치의 상대적 높낮이만 표현하는 단일 방향 스케일,
@@ -491,20 +569,20 @@ renderWaterfall(CASES[0]);
   gl.className = `gauge-label badge ${lbl.cls}`;
 
   const sub = document.querySelector('.gauge-sub');
-  sub.innerHTML = `현재 실질 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> — 과거 2년 대비 상위 <b>${100-score}%</b> 수준`;
+  sub.innerHTML = `현재 실질 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> — 지난 1년 대비 상위 <b>${100-score}%</b> 수준. 지난 1년 중 ${daysLowerOrEqual}일이 오늘과 같거나 낮았고, ${daysHigher}일이 오늘보다 높았습니다.`;
 
-  // ── 히트맵 (최근 91일 표시) ──
-  const TODAY = new Date(2026,7,9);
-  const DATES = [];
-  for(let i=0;i<91;i++){const d=new Date(TODAY);d.setDate(d.getDate()-(90-i));DATES.push(d);}
-
-  const recent = realPrems.slice(-91);
+  // ── 히트맵 (최근 91일 표시, REAL.dates 실제 날짜 사용) ──
+  const N = Math.min(91, REAL.dates.length);
+  // 'YYYY-MM-DD'는 UTC 기준 날짜 키(shared.js 주석 참고)이므로,
+  // 로컬 타임존 영향을 받지 않도록 UTC getter만 사용한다.
+  const DATES = REAL.dates.slice(-N).map(s => new Date(s + 'T00:00:00Z'));
+  const recent = realPrems.slice(-N);
   const pcAll = recent.map(v => sorted.filter(x=>x<=v).length/sorted.length);
 
   const months={};
   DATES.forEach((d,i)=>{
-    const key=d.getFullYear()+'-'+(d.getMonth()+1);
-    if(!months[key])months[key]={label:d.getFullYear()+'년 '+(d.getMonth()+1)+'월',days:[]};
+    const key=d.getUTCFullYear()+'-'+(d.getUTCMonth()+1);
+    if(!months[key])months[key]={label:d.getUTCFullYear()+'년 '+(d.getUTCMonth()+1)+'월',days:[]};
     months[key].days.push({d, t:pcAll[i], prem:recent[i]});
   });
 
@@ -514,7 +592,7 @@ renderWaterfall(CASES[0]);
     html+=`<div class="hm-month"><div class="hm-month-label">${mo.label}</div>`;
     html+=`<div class="hm-day-labels">${DOW.map(d=>`<span>${d}</span>`).join('')}</div>`;
     const weeks=[];let week=[];
-    const fd=mo.days[0].d.getDay();
+    const fd=mo.days[0].d.getUTCDay();
     for(let pp=0;pp<fd;pp++)week.push(null);
     mo.days.forEach(day=>{week.push(day);if(week.length===7){weeks.push(week);week=[];}});
     if(week.length){while(week.length<7)week.push(null);weeks.push(week);}
@@ -526,7 +604,7 @@ renderWaterfall(CASES[0]);
           const col=heatColor(day.t);
           const lbl2=getLabel(day.t);
           const dd=day.d;
-          const dateStr=(dd.getMonth()+1)+'/'+(dd.getDate());
+          const dateStr=(dd.getUTCMonth()+1)+'/'+(dd.getUTCDate());
           html+=`<div class="hm-cell" style="background:${col}"><span class="hm-tip">${dateStr}<br>실질 김프 ${day.prem.toFixed(2)}%<br><span style="color:${lbl2.swatch};font-weight:700">${lbl2.txt}</span></span></div>`;
         }
       });
@@ -535,7 +613,100 @@ renderWaterfall(CASES[0]);
     html+='</div>';
   });
   document.getElementById('heatgrid').innerHTML=html;
-})();
+}
+
+// ══════════ ① 현재 지표 (REAL의 마지막 값) ══════════
+function renderKpi(){
+  const fmtWon = n => n.toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + '원';
+  const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+
+  const lastUsdt = REAL.usdtPrice[REAL.usdtPrice.length - 1];
+  const lastFx = REAL.fxRate[REAL.fxRate.length - 1];
+  const lastPrem = REAL.premiumPct[REAL.premiumPct.length - 1];
+
+  document.getElementById('stUsdt').textContent = fmtWon(lastUsdt);
+  document.getElementById('stFx').textContent = fmtWon(lastFx);
+  document.getElementById('stPrem').textContent = fmtPct(lastPrem);
+  document.getElementById('kpiAsOf').textContent = REAL.dates[REAL.dates.length - 1] + ' 기준';
+}
+
+// ══════════ ② 환율 분해 (최근 LOOKBACK_DAYS일 기준, ④와 같은 원리) ══════════
+// 임시로 정한 기준 기간 — 나중에 바뀌면 이 숫자만 수정하면 된다.
+const LOOKBACK_DAYS = 30;
+
+function renderFxBreakdown(){
+  const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+
+  const lastIdx = REAL.dates.length - 1;
+  const baseIdx = Math.max(0, lastIdx - LOOKBACK_DAYS);
+  const p0 = REAL.premiumPct[baseIdx];
+  const fx0 = REAL.fxRate[baseIdx];
+
+  const spread = REAL.premiumPct[lastIdx] - p0;
+  const fxImpact = (REAL.fxRate[lastIdx] / fx0 - 1) * 100;
+  const net = spread + fxImpact;
+
+  document.getElementById('sbSpread').textContent = fmtPct(spread);
+  document.getElementById('sbFx').textContent = fmtPct(fxImpact);
+  document.getElementById('sbNet').textContent = fmtPct(net);
+  document.getElementById('fUsd').textContent = fmtPct(spread);
+  document.getElementById('fFx').textContent = fmtPct(fxImpact);
+  document.getElementById('fKrw').textContent = fmtPct(net);
+}
+
+// ══════════ 실데이터 로드 + 로딩/에러 상태 처리 ══════════
+const DATA_SECTIONS = ['kpi', 'fx', 'prem', 'decomp', 'gauge', 'heat'];
+
+function setSectionState(name, state, message){
+  const loading = document.getElementById(name + 'Loading');
+  const error = document.getElementById(name + 'Error');
+  const content = document.getElementById(name + 'Content');
+  loading.style.display = state === 'loading' ? '' : 'none';
+  error.style.display = state === 'error' ? '' : 'none';
+  content.style.display = state === 'loaded' ? '' : 'none';
+  if(state === 'error'){
+    error.querySelector('.js-error-msg').textContent = message || '잠시 후 다시 시도해주세요.';
+  }
+}
+
+async function loadRealData(){
+  const { dates, usdtPrice, fxRate } = await getUsdtPremiumData({ maxYears: 3 });
+  console.log(dates.length, dates[0], dates[dates.length - 1]);
+  const premiumPct = usdtPrice.map((p, i) => (p - fxRate[i]) / fxRate[i] * 100);
+  return { dates, usdtPrice, fxRate, premiumPct };
+}
+
+let REAL = null;
+const refreshBtn = document.getElementById('refreshBtn');
+
+async function loadAndRenderAll(){
+  DATA_SECTIONS.forEach(name => setSectionState(name, 'loading'));
+  refreshBtn.disabled = true;
+  try {
+    REAL = await loadRealData();
+  } catch (err){
+    console.error('shared.js 데이터 로드 실패:', err);
+    DATA_SECTIONS.forEach(name => setSectionState(name, 'error', err.message));
+    refreshBtn.disabled = false;
+    return;
+  }
+  DATA_SECTIONS.forEach(name => setSectionState(name, 'loaded'));
+
+  renderKpi();
+  renderFxBreakdown();
+  const activeTab = document.querySelector('.period-tab.active');
+  drawPremChart(activeTab ? parseInt(activeTab.dataset.p) : 365);
+  drawDecompChart();
+  renderGaugeAndHeatmap();
+  refreshBtn.disabled = false;
+}
+
+refreshBtn.addEventListener('click', () => {
+  clearPremiumCache();
+  loadAndRenderAll();
+});
+
+loadAndRenderAll();
 </script>
 
 </body>

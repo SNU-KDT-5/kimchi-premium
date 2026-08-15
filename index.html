@@ -17,6 +17,11 @@
     .idx-cta .arrow { transition: transform 0.15s ease; }
     .idx-cta:hover { background: var(--frog-bg); text-decoration: underline; }
     .idx-cta:hover .arrow { transform: translateX(3px); }
+
+    /* 인트로 전용: 맨 위에서는 nav를 배경에 녹여 존재감을 줄이고,
+       스크롤을 내리면 다시 배경/구분선이 떠오르게 함 */
+    .topnav { background: transparent; border-bottom-color: transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
+    .topnav.scrolled { background: var(--panel); border-bottom-color: var(--border); box-shadow: var(--shadow-sm); }
   </style>
 </head>
 <body>
@@ -40,5 +45,17 @@
   <div class="idx-cta-wrap">
     <a href="pattern.html" class="idx-cta">시작해봐요! 개굴 <span class="arrow">→</span></a>
   </div>
+
+  <script>
+    (function () {
+      var nav = document.querySelector('.topnav');
+      var THRESHOLD = 40;
+      function onScroll() {
+        nav.classList.toggle('scrolled', window.scrollY > THRESHOLD);
+      }
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+  </script>
 </body>
 </html>

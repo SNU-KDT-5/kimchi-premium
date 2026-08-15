@@ -39,8 +39,8 @@
 
    ── 참고 ─────────────────────────────────────────────────
    · 날짜 키는 UTC 기준(업비트 일봉 경계 UTC 00:00 = KST 09:00).
-   · 환율은 ECB 영업일만 제공되므로, 모든 소스에 값이 있는 날짜만
-     남기는 교집합 방식으로 병합한다. 주말·공휴일은 제외된다.
+   · 환율은 ECB 영업일만 제공되므로, 주말·공휴일은 직전 거래일 환율로
+     forward-fill 한다. 업비트·해외거래소에 값이 있는 날은 모두 포함.
    · 실제 확보 가능 기간은 업비트 상장일에 막힌다.
      KRW-USDT 2024-06-07~, KRW-BTC 2017-09-25~ (10년치는 불가능)
    ══════════════════════════════════════════════════════════════ */
@@ -277,9 +277,25 @@
     if (onProgress) onProgress(0, 'fx');
     var fxMap = await fetchFxHistory(localDates[0], new Date());
 
-    // 3) 날짜 교집합으로 병합 — 모든 소스에 값이 있는 날짜만 사용
+    // 3) 주말·공휴일 환율 forward-fill
+    //    ECB는 영업일만 제공하므로, 직전 거래일 환율을 빈 날짜에 채운다.
+    //    첫 localDate가 주말일 경우를 대비해 앞쪽 여유분(5일 버퍼)도 탐색.
+    var filledFxMap = {};
+    var lastFx = (function () {
+      var fxDates = Object.keys(fxMap).sort();
+      var first = localDates[0];
+      for (var i = fxDates.length - 1; i >= 0; i--) {
+        if (fxDates[i] < first) return fxMap[fxDates[i]];
+      }
+      return null;
+    }());
+    localDates.forEach(function (d) {
+      if (fxMap[d] !== undefined) lastFx = fxMap[d];
+      if (lastFx !== null) filledFxMap[d] = lastFx;
+    });
+
     var dates = localDates.filter(function (d) {
-      if (fxMap[d] === undefined) return false;
+      if (filledFxMap[d] === undefined) return false;
       if (foreignMap && foreignMap[d] === undefined) return false;
       return true;
     });
@@ -289,7 +305,7 @@
       market: market,
       dates: dates,
       price:  dates.map(function (d) { return localMap[d]; }),
-      fxRate: dates.map(function (d) { return fxMap[d]; })
+      fxRate: dates.map(function (d) { return filledFxMap[d]; })
     };
     if (foreignMap) {
       result.foreignUsd = dates.map(function (d) { return foreignMap[d]; });

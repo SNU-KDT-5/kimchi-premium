@@ -289,22 +289,26 @@ body {
 }
 .topnav-logo {
   display: flex; align-items: center; gap: var(--sp-2);
-  font-weight: 800; font-size: 0.98rem; color: var(--text);
-  text-decoration: none; flex: none;
+  font-weight: 800; font-size: 0.98rem; color: var(--frog);
+  text-decoration: none; flex: none; letter-spacing: -0.01em;
 }
-.topnav-mascot-slot { width: 22px; height: 22px; flex: none; } /* 추후 마스코트 SVG 자리 */
+.topnav-mascot-slot {
+  width: 26px; height: 26px; flex: none; border-radius: 50%;
+  background: var(--frog-bg); display: flex; align-items: center; justify-content: center;
+  font-size: 14px; line-height: 1;
+} /* 추후 마스코트 SVG로 교체 예정 — 지금은 임시 placeholder */
 .topnav-tabs {
-  display: flex; gap: var(--sp-5); overflow-x: auto;
+  display: flex; gap: var(--sp-1); overflow-x: auto;
   scrollbar-width: none; -ms-overflow-style: none;
 }
 .topnav-tabs::-webkit-scrollbar { display: none; }
 .topnav-tab {
-  flex: none; white-space: nowrap; padding: 8px 2px;
+  flex: none; white-space: nowrap; padding: 7px 14px;
   font-size: 0.86rem; font-weight: 600; color: var(--mut);
-  text-decoration: none; border-bottom: 2px solid transparent;
+  text-decoration: none; border-radius: var(--r-pill);
 }
-.topnav-tab:hover { color: var(--text); }
-.topnav-tab.active { color: var(--frog); border-bottom-color: var(--frog); font-weight: 700; }
+.topnav-tab:hover { color: var(--text); background: var(--panel2); }
+.topnav-tab.active { color: var(--frog); background: var(--frog-bg); font-weight: 700; }
 
 @media (max-width: 768px) {
   .topnav-inner { padding: 0 var(--sp-4); }

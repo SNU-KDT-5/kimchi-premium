@@ -7,7 +7,185 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
+  <!--
+    ============================================================
+    온보딩 스크롤 스토리
+    ============================================================
+    · 데이터 fetch 없음(shared.js 미사용). 시세표 숫자는 스크립트 맨 위
+      예시 상수 4개(USD_PRICE / KRW_PRICE / FX_BASE / FX_ALT)에서 계산합니다.
+    · 스토리 내용을 바꿀 때 손댈 곳은 두 군데입니다.
+        1) 스크립트의 STEPS 배열 — 단계별 개구리 위치/표정/문구/표 줄 수
+        2) .intro-step 섹션들 — 단계별 설명 텍스트
+      레이아웃·스크롤 처리 코드는 내용과 분리되어 있습니다.
+    · 색상/spacing/radius는 shared.css 토큰만 사용.
+    ============================================================
+  -->
   <style>
+    body { padding-bottom: var(--sp-12); }
+
+    .header { padding: var(--sp-10) 0 var(--sp-2); }
+    .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+    .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
+    .header .badge { margin-left: var(--sp-2); vertical-align: middle; }
+
+    .section-block { margin-top: var(--sp-8); }
+    .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
+    .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
+
+    /* 인트로 전용: 맨 위에서는 nav를 배경에 녹여 존재감을 줄이고,
+       스크롤을 내리면 다시 배경/구분선이 떠오르게 함 */
+    .topnav { background: transparent; border-bottom-color: transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
+    .topnav.scrolled { background: var(--panel); border-bottom-color: var(--border); box-shadow: var(--shadow-sm); }
+
+    /* ── 히어로 (마스코트 인사 + 스크롤 유도) ── */
+    .intro-hero {
+      display: flex; align-items: center; gap: var(--sp-6);
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: var(--sp-6); box-shadow: var(--shadow-md);
+      margin-top: var(--sp-6);
+    }
+    .intro-hero-mascot { width: 132px; height: auto; flex: none; }
+    .intro-hero-copy .l1 { font-size: 1.05rem; font-weight: 800; margin-bottom: var(--sp-2); }
+    .intro-hero-copy .l2 { font-size: 0.86rem; color: var(--mut); line-height: 1.75; }
+    .intro-scroll-hint {
+      display: inline-flex; align-items: center; gap: var(--sp-2);
+      margin-top: var(--sp-4); font-size: 0.78rem; font-weight: 700; color: var(--frog);
+    }
+    .intro-scroll-hint .arr { display: inline-block; animation: intro-nudge 1.6s ease-in-out infinite; }
+    @keyframes intro-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+    @media (max-width: 560px) {
+      .intro-hero { flex-direction: column; align-items: flex-start; gap: var(--sp-4); }
+      .intro-hero-mascot { width: 108px; }
+    }
+
+    /* ── 스크롤 스토리 골격 ── */
+    .intro-scrolly { position: relative; margin-top: var(--sp-6); }
+
+    /* 56px = shared.css의 .topnav-inner 높이 (nav 바로 아래에 붙게) */
+    .intro-stage {
+      position: sticky; top: calc(56px + var(--sp-3)); z-index: 5;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: var(--sp-5); box-shadow: var(--shadow-md);
+    }
+
+    /* 개구리가 건너다니는 연못 (해외 잎 → 환율 다리 → 국내 잎) */
+    .intro-pond { position: relative; height: 132px; margin-bottom: var(--sp-4); }
+    .intro-pads { position: absolute; inset: auto 0 0 0; display: flex; align-items: flex-end; gap: var(--sp-2); }
+    .intro-pad {
+      flex: 1; background: var(--panel2); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3); text-align: center;
+      transition: background-color .3s ease, border-color .3s ease;
+    }
+    .intro-pad .l { font-size: 0.68rem; color: var(--mut); font-weight: 600; }
+    .intro-pad .v { font-family: var(--font-mono); font-size: 0.86rem; font-weight: 800; margin-top: var(--sp-1); }
+    .intro-pad.is-active { background: var(--frog-bg); border-color: var(--frog-line); }
+
+    .intro-bridge {
+      flex: 0 0 88px; align-self: flex-end; text-align: center;
+      border-bottom: 2px dashed var(--border2); padding-bottom: var(--sp-2);
+      transition: border-color .3s ease;
+    }
+    .intro-bridge .l { font-size: 0.66rem; color: var(--dim); font-weight: 600; }
+    .intro-bridge .v { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--mut); }
+    .intro-bridge.is-active { border-bottom-color: var(--frog); }
+    .intro-bridge.is-active .v { color: var(--frog); }
+
+    .intro-frog {
+      position: absolute; bottom: 56px; left: 17%;
+      transform: translateX(-50%); width: 56px;
+      transition: left .55s cubic-bezier(.34, 1.1, .64, 1), bottom .55s cubic-bezier(.34, 1.1, .64, 1);
+    }
+    .intro-frog-hop { display: block; }
+    .intro-frog-hop.is-hopping { animation: intro-hop .55s ease; }
+    @keyframes intro-hop {
+      0%   { transform: translateY(0) rotate(0deg); }
+      35%  { transform: translateY(-26px) rotate(-7deg); }
+      70%  { transform: translateY(0) rotate(0deg); }
+      85%  { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+    .intro-frog-face {
+      display: block; width: 100%; height: auto;
+      animation: intro-bob 2.8s ease-in-out infinite;
+      transition: opacity .18s ease;
+    }
+    .intro-frog-face.is-swapping { opacity: 0.25; }
+    @keyframes intro-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+    .intro-say {
+      font-size: 0.82rem; font-weight: 700; color: var(--frog);
+      text-align: center; margin-bottom: var(--sp-3); min-height: 1.6em;
+      transition: opacity .2s ease;
+    }
+    .intro-say.is-swapping { opacity: 0; }
+
+    /* 스크롤에 따라 한 줄씩 생기는 시세표 */
+    .intro-quote { background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-2) var(--sp-4); }
+    /* 아직 나오지 않은 줄은 자리만 잡아둔 채 흐리게 — 표 높이가 흔들리지 않게 합니다 */
+    .intro-quote-row {
+      display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-3);
+      padding: var(--sp-2) 0; opacity: 0.3; transform: translateY(4px);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .intro-quote-row.is-on { opacity: 1; transform: none; }
+    .intro-quote-row .l { font-size: 0.8rem; color: var(--mut); }
+    .intro-quote-row .l .sub { display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--dim); }
+    .intro-quote-row .v {
+      font-family: var(--font-mono); font-size: 0.92rem; font-weight: 800; white-space: nowrap;
+      filter: blur(4px); transition: filter .35s ease;
+    }
+    .intro-quote-row.is-on .v { filter: none; }
+    .intro-quote-row .v.accent { color: var(--accent); }
+    .intro-quote-row.is-total { border-top: 1px solid var(--border2); margin-top: var(--sp-1); padding-top: var(--sp-3); }
+    .intro-quote-row.is-total .l { font-weight: 700; color: var(--text); }
+    .intro-quote-row.is-total .v { font-size: 1.15rem; }
+    .intro-quote-row .v.is-changed { animation: intro-flash .7s ease; }
+    @keyframes intro-flash {
+      0% { background: var(--amber-bg); }
+      100% { background: transparent; }
+    }
+
+    .intro-progress { display: flex; justify-content: center; gap: var(--sp-2); margin-top: var(--sp-3); }
+    .intro-progress span { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); transition: background-color .25s ease, transform .25s ease; }
+    .intro-progress span.is-on { background: var(--frog); transform: scale(1.25); }
+
+    /* ── 스크롤 텍스트 단계 ── */
+    .intro-steps { margin-top: var(--sp-6); }
+    .intro-step { min-height: 68vh; display: flex; align-items: center; }
+    .intro-step:last-child { min-height: 52vh; align-items: flex-start; }
+    .intro-step-card {
+      width: 100%; background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: var(--sp-6); box-shadow: var(--shadow-sm);
+      opacity: 0.45; transition: opacity .35s ease, box-shadow .35s ease, border-color .35s ease;
+    }
+    .intro-step.is-active .intro-step-card { opacity: 1; box-shadow: var(--shadow-md); border-color: var(--border2); }
+    .intro-step-num { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; color: var(--frog); margin-bottom: var(--sp-2); letter-spacing: 0.06em; }
+    .intro-step-card h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: var(--sp-3); }
+    .intro-step-card p { font-size: 0.88rem; color: var(--mut); line-height: 1.8; }
+    .intro-step-card p + p { margin-top: var(--sp-3); }
+
+    .intro-formula {
+      margin-top: var(--sp-4); background: var(--panel2); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: var(--sp-4);
+      font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700;
+      text-align: center; line-height: 1.9; color: var(--text);
+    }
+    .intro-formula .op { color: var(--dim); margin: 0 var(--sp-1); }
+    .intro-formula .out { color: var(--accent); }
+
+    /* ── 마무리 ── */
+    .intro-note-list { list-style: none; }
+    .intro-note-list li {
+      position: relative; padding-left: var(--sp-5); font-size: 0.86rem;
+      color: var(--mut); line-height: 1.8;
+    }
+    .intro-note-list li + li { margin-top: var(--sp-3); }
+    .intro-note-list li:before {
+      content: ""; position: absolute; left: 0; top: var(--sp-3);
+      width: 7px; height: 7px; border-radius: 50%; background: var(--frog-light);
+    }
+
+    /* ── 기존 CTA ── */
     .idx-cta-wrap { text-align: center; padding: var(--sp-12) var(--sp-4) var(--sp-12); }
     .idx-cta {
       display: inline-flex; align-items: center; gap: var(--sp-1);
@@ -19,17 +197,187 @@
     .idx-cta:hover { background: var(--frog-bg); text-decoration: underline; }
     .idx-cta:hover .arrow { transform: translateX(3px); }
 
-    /* 인트로 전용: 맨 위에서는 nav를 배경에 녹여 존재감을 줄이고,
-       스크롤을 내리면 다시 배경/구분선이 떠오르게 함 */
-    .topnav { background: transparent; border-bottom-color: transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
-    .topnav.scrolled { background: var(--panel); border-bottom-color: var(--border); box-shadow: var(--shadow-sm); }
+    @media (max-width: 560px) {
+      .intro-stage { padding: var(--sp-4); }
+      .intro-pond { height: 108px; }
+      .intro-frog { width: 44px; bottom: 48px; }
+      .intro-bridge { flex-basis: 64px; }
+      .intro-pad .v { font-size: 0.78rem; }
+      .intro-quote-row .l { font-size: 0.76rem; }
+      .intro-quote-row .v { font-size: 0.84rem; }
+      .intro-quote-row.is-total .v { font-size: 1.02rem; }
+      .intro-step { min-height: 62vh; }
+      .intro-step-card { padding: var(--sp-5); }
+    }
+
+    /* 모션 최소화 설정을 켠 사용자에게는 이동/점프 애니메이션을 끕니다 */
+    @media (prefers-reduced-motion: reduce) {
+      .intro-frog, .intro-quote-row, .intro-quote-row .v, .intro-step-card, .intro-say { transition: none; }
+      .intro-frog-face, .intro-scroll-hint .arr { animation: none; }
+      .intro-frog-hop.is-hopping { animation: none; }
+      .intro-quote-row .v.is-changed { animation: none; }
+    }
   </style>
 </head>
 <body>
   <div id="topnav-root"></div>
   <script src="nav.js"></script>
 
-  <!-- 온보딩 스크롤 스토리 본문은 여기, 이 CTA 버튼 위쪽에 작업해주세요. -->
+  <div class="wrap">
+
+    <div class="header">
+      <div class="eyebrow mono">온보딩 · 인트로<span class="badge badge-neutral">예시 수치 · 실제 시세 아님</span></div>
+      <h1>김치 프리미엄, 어디서 생기는 숫자일까</h1>
+      <p>스크롤을 내리면 개구리가 해외 거래소에서 국내 거래소까지 건너가면서, 시세표가 한 줄씩 채워집니다. 다 채워지면 김치 프리미엄이 어떻게 계산되는 숫자인지 보입니다.</p>
+    </div>
+
+    <div class="intro-hero">
+      <img class="intro-hero-mascot" src="assets/body.svg" alt="" aria-hidden="true">
+      <div class="intro-hero-copy">
+        <div class="l1">안녕하세요, 김프로그입니다 개굴</div>
+        <div class="l2">뉴스에서 "김프가 몇 퍼센트" 하는 이야기, 사실 계산 자체는 아주 단순합니다. 가격표 두 장과 환율 하나만 있으면 끝나거든요. 같이 한 줄씩 채워볼게요.</div>
+        <div class="intro-scroll-hint">스크롤해서 따라오기 <span class="arr">↓</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════ 스크롤 스토리 ══════════ -->
+    <div class="intro-scrolly" id="scrolly">
+
+      <!-- 화면에 고정되는 무대: 개구리 + 시세표 -->
+      <div class="intro-stage">
+        <div class="intro-say" id="say">가격표가 두 장 있어요</div>
+
+        <div class="intro-pond">
+          <div class="intro-pads">
+            <div class="intro-pad" id="padOverseas">
+              <div class="l">해외 거래소</div>
+              <div class="v" id="padOverseasV">$107,000</div>
+            </div>
+            <div class="intro-bridge" id="bridge">
+              <div class="l">환율</div>
+              <div class="v" id="bridgeV">×1,385</div>
+            </div>
+            <div class="intro-pad" id="padDomestic">
+              <div class="l">국내 거래소</div>
+              <div class="v" id="padDomesticV">151,000,000원</div>
+            </div>
+          </div>
+          <div class="intro-frog" id="frog">
+            <span class="intro-frog-hop" id="frogHop">
+              <img class="intro-frog-face" id="frogFace" src="assets/face-smile.svg" alt="" aria-hidden="true">
+            </span>
+          </div>
+        </div>
+
+        <div class="intro-quote" id="quote">
+          <div class="intro-quote-row" data-row="0">
+            <span class="l">해외 거래소 비트코인</span>
+            <span class="v" id="qUsd">$107,000</span>
+          </div>
+          <div class="intro-quote-row" data-row="1">
+            <span class="l">원/달러 환율</span>
+            <span class="v" id="qFx">1,385원</span>
+          </div>
+          <div class="intro-quote-row" data-row="2">
+            <span class="l">원화로 환산하면<span class="sub" id="qConvNote">107,000 × 1,385</span></span>
+            <span class="v" id="qConv">148,195,000원</span>
+          </div>
+          <div class="intro-quote-row" data-row="3">
+            <span class="l">국내 거래소 비트코인</span>
+            <span class="v" id="qKrw">151,000,000원</span>
+          </div>
+          <div class="intro-quote-row" data-row="4">
+            <span class="l">두 값의 차이</span>
+            <span class="v accent" id="qDiff">+2,805,000원</span>
+          </div>
+          <div class="intro-quote-row is-total" data-row="5">
+            <span class="l">김치 프리미엄</span>
+            <span class="v accent" id="qPrem">+1.89%</span>
+          </div>
+        </div>
+
+        <div class="intro-progress" id="progress" aria-hidden="true"></div>
+      </div>
+
+      <!-- 스크롤에 따라 지나가는 설명들 -->
+      <div class="intro-steps" id="steps">
+
+        <section class="intro-step" data-step="0">
+          <div class="intro-step-card">
+            <div class="intro-step-num">STEP 01</div>
+            <h3>같은 코인인데 가격표가 두 장입니다</h3>
+            <p>비트코인은 해외 거래소에서 달러로, 국내 거래소에서 원화로 거래됩니다. 두 가격은 서로 다른 시장에서 각각 매겨지기 때문에, 항상 나란히 움직이지는 않습니다.</p>
+          </div>
+        </section>
+
+        <section class="intro-step" data-step="1">
+          <div class="intro-step-card">
+            <div class="intro-step-num">STEP 02</div>
+            <h3>그대로는 비교할 수 없습니다</h3>
+            <p>달러로 적힌 가격과 원화로 적힌 가격은 단위가 다릅니다. 두 가격 사이에는 환율이라는 다리가 하나 놓여 있고, 비교하려면 반드시 이 다리를 건너야 합니다.</p>
+          </div>
+        </section>
+
+        <section class="intro-step" data-step="2">
+          <div class="intro-step-card">
+            <div class="intro-step-num">STEP 03</div>
+            <h3>환율로 옮겨 적으면 기준선이 생깁니다</h3>
+            <p>해외 가격에 환율을 곱하면 "해외 가격을 원화로 옮긴 값"이 나옵니다. 이 값이 국내 가격과 견줘볼 기준선입니다.</p>
+          </div>
+        </section>
+
+        <section class="intro-step" data-step="3">
+          <div class="intro-step-card">
+            <div class="intro-step-num">STEP 04</div>
+            <h3>국내 가격을 나란히 놓아봅니다</h3>
+            <p>같은 시각 국내 거래소 가격입니다. 이 예시에서는 기준선보다 조금 위에 자리하고 있습니다. 시기에 따라 아래에 놓이기도 합니다.</p>
+          </div>
+        </section>
+
+        <section class="intro-step" data-step="4">
+          <div class="intro-step-card">
+            <div class="intro-step-num">STEP 05</div>
+            <h3>이 간격을 김치 프리미엄이라고 부릅니다</h3>
+            <p>국내 가격에서 원화 환산가를 뺀 차이를, 다시 환산가로 나눈 비율입니다. 금액이 아니라 비율로 보는 이유는 코인 가격이 오르내려도 같은 잣대로 비교하기 위해서입니다.</p>
+            <p>국내 가격이 기준선보다 낮은 날에는 이 값이 마이너스가 되고, 흔히 "역프"라고 부릅니다.</p>
+            <div class="intro-formula">
+              (국내 가격 <span class="op">−</span> 원화 환산가) <span class="op">÷</span> 원화 환산가 <span class="op">×</span> 100 <span class="op">=</span> <span class="out">김프 %</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="intro-step" data-step="5">
+          <div class="intro-step-card">
+            <div class="intro-step-num">STEP 06</div>
+            <h3>환율이 움직이면 기준선도 함께 움직입니다</h3>
+            <p>해외 가격과 국내 가격을 그대로 두고 환율만 1,385원에서 1,410원으로 바꿔보면, 기준선이 위로 올라가면서 두 값의 간격이 좁아집니다.</p>
+            <p>김프 숫자는 두 거래소 가격뿐 아니라 환율에도 함께 반응합니다. 그래서 이 사이트에서는 김프를 볼 때 환율을 늘 같이 놓고 봅니다.</p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ══════════ 마무리 ══════════ -->
+    <div class="section-block">
+      <div class="section-label">왜 간격이 남아 있을까</div>
+      <div class="card">
+        <p class="section-intro">두 가격이 곧바로 같아지지 않는 배경으로 자주 언급되는 것들입니다. 단정적인 원인이라기보다, 함께 관찰되는 조건에 가깝습니다.</p>
+        <ul class="intro-note-list">
+          <li>국내와 해외 사이에서 자금을 옮기는 데는 시간과 비용, 절차가 따릅니다. 두 시장을 잇는 통로가 좁을수록 간격이 오래 남는 모습이 나타납니다.</li>
+          <li>국내 거래가 특히 활발해지는 시기에는 두 가격의 간격이 함께 벌어지는 모습이 관찰됩니다.</li>
+          <li>간격은 며칠씩 이어지기도 하고, 하루 만에 좁혀지기도 합니다. 방향이나 크기가 미리 정해져 있지는 않습니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="disclaim">
+        <b>이 페이지의 숫자는 계산 원리를 보여주기 위한 예시</b>이며 실제 시세가 아닙니다. 특정 시점의 매매 판단이나 투자 조언을 위한 자료가 아닙니다.
+      </div>
+    </div>
+
+  </div>
 
   <div class="idx-cta-wrap">
     <a href="pattern.html" class="idx-cta">시작해봐요! 개굴 <span class="arrow">→</span></a>
@@ -44,6 +392,175 @@
       }
       onScroll();
       window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      // -------------------------------------------------------------------
+      // 1) 예시 상수 — 실제 API 데이터가 아니라 원리 설명용 고정값입니다.
+      //    (표의 모든 숫자를 이 값들로부터 계산하므로, 값만 바꾸면 표 전체가 맞춰집니다)
+      // -------------------------------------------------------------------
+      var USD_PRICE = 107000;      // 해외 거래소 비트코인 (USD)
+      var KRW_PRICE = 151000000;   // 국내 거래소 비트코인 (KRW)
+      var FX_BASE = 1385;          // 기본 원/달러 환율
+      var FX_ALT = 1410;           // STEP 06에서 바꿔볼 환율
+
+      var FACES = {
+        smile: 'assets/face-smile.svg',
+        happy: 'assets/face-happy.svg',
+        sad: 'assets/face-sad.svg'
+      };
+      // 얼굴 교체 시 깜빡임이 없도록 미리 받아둡니다
+      Object.keys(FACES).forEach(function (k) { var i = new Image(); i.src = FACES[k]; });
+
+      // -------------------------------------------------------------------
+      // 2) 단계 정의
+      //    x: 개구리 가로 위치(%), lift: 잎 위로 얼마나 떠 있는지(px)
+      //    rows: 이 단계까지 보여줄 시세표 줄 수
+      //    fx: 이 단계에서 쓰는 환율
+      // -------------------------------------------------------------------
+      var STEPS = [
+        { x: 17, lift: 56, rows: 1, face: 'smile', pad: 'overseas', fx: FX_BASE, say: '여기 해외 거래소 가격표가 있어요' },
+        { x: 50, lift: 72, rows: 2, face: 'sad',   pad: 'bridge',   fx: FX_BASE, say: '어라, 달러랑 원화는 바로 못 비교하는데요' },
+        { x: 50, lift: 56, rows: 3, face: 'smile', pad: 'bridge',   fx: FX_BASE, say: '환율을 곱해서 원화로 옮겨 적어요' },
+        { x: 83, lift: 56, rows: 4, face: 'smile', pad: 'domestic', fx: FX_BASE, say: '이제 국내 가격을 옆에 놓아볼게요' },
+        { x: 83, lift: 78, rows: 6, face: 'happy', pad: 'domestic', fx: FX_BASE, say: '이 간격이 바로 김치 프리미엄!' },
+        { x: 50, lift: 62, rows: 6, face: 'smile', pad: 'bridge',   fx: FX_ALT,  say: '환율이 바뀌면 간격도 같이 달라져요' }
+      ];
+
+      var frog = document.getElementById('frog');
+      var frogHop = document.getElementById('frogHop');
+      var frogFace = document.getElementById('frogFace');
+      var sayEl = document.getElementById('say');
+      var rowEls = Array.prototype.slice.call(document.querySelectorAll('.intro-quote-row'));
+      var stepEls = Array.prototype.slice.call(document.querySelectorAll('.intro-step'));
+      var pads = {
+        overseas: document.getElementById('padOverseas'),
+        bridge: document.getElementById('bridge'),
+        domestic: document.getElementById('padDomestic')
+      };
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // 진행 표시 점
+      var progress = document.getElementById('progress');
+      progress.innerHTML = STEPS.map(function () { return '<span></span>'; }).join('');
+      var dots = Array.prototype.slice.call(progress.children);
+
+      // -------------------------------------------------------------------
+      // 3) 숫자 렌더링
+      // -------------------------------------------------------------------
+      function won(n) { return Math.round(n).toLocaleString('ko-KR') + '원'; }
+      function signed(n) { return (n >= 0 ? '+' : '−') + Math.abs(Math.round(n)).toLocaleString('ko-KR') + '원'; }
+
+      function renderNumbers(fx, animate) {
+        var conv = USD_PRICE * fx;
+        var diff = KRW_PRICE - conv;
+        var prem = diff / conv * 100;
+
+        document.getElementById('qUsd').textContent = '$' + USD_PRICE.toLocaleString('ko-KR');
+        document.getElementById('qFx').textContent = fx.toLocaleString('ko-KR') + '원';
+        document.getElementById('qConvNote').textContent = USD_PRICE.toLocaleString('ko-KR') + ' × ' + fx.toLocaleString('ko-KR');
+        document.getElementById('qConv').textContent = won(conv);
+        document.getElementById('qKrw').textContent = won(KRW_PRICE);
+        document.getElementById('qDiff').textContent = signed(diff);
+        document.getElementById('qPrem').textContent = (prem >= 0 ? '+' : '−') + Math.abs(prem).toFixed(2) + '%';
+        document.getElementById('bridgeV').textContent = '×' + fx.toLocaleString('ko-KR');
+
+        if (animate && !reduceMotion) {
+          ['qFx', 'qConv', 'qDiff', 'qPrem'].forEach(function (id) {
+            var el = document.getElementById(id);
+            el.classList.remove('is-changed');
+            void el.offsetWidth;      // 애니메이션 재시작
+            el.classList.add('is-changed');
+          });
+        }
+      }
+
+      // -------------------------------------------------------------------
+      // 4) 단계 적용
+      // -------------------------------------------------------------------
+      var current = -1;
+      var currentFx = FX_BASE;
+
+      function applyStep(i) {
+        if (i === current) return;
+        var prev = current;
+        current = i;
+        var s = STEPS[i];
+
+        // 개구리 이동 + 점프
+        frog.style.left = s.x + '%';
+        frog.style.bottom = s.lift + 'px';
+        if (prev !== -1 && !reduceMotion) {
+          frogHop.classList.remove('is-hopping');
+          void frogHop.offsetWidth;
+          frogHop.classList.add('is-hopping');
+        }
+
+        // 표정 교체
+        var nextFace = FACES[s.face];
+        if (frogFace.getAttribute('src') !== nextFace) {
+          frogFace.classList.add('is-swapping');
+          setTimeout(function () {
+            frogFace.setAttribute('src', nextFace);
+            frogFace.classList.remove('is-swapping');
+          }, reduceMotion ? 0 : 150);
+        }
+
+        // 개구리 대사
+        if (sayEl.textContent !== s.say) {
+          sayEl.classList.add('is-swapping');
+          setTimeout(function () {
+            sayEl.textContent = s.say;
+            sayEl.classList.remove('is-swapping');
+          }, reduceMotion ? 0 : 160);
+        }
+
+        // 잎/다리 강조
+        Object.keys(pads).forEach(function (k) { pads[k].classList.toggle('is-active', k === s.pad); });
+
+        // 시세표 줄 노출
+        rowEls.forEach(function (row, idx) { row.classList.toggle('is-on', idx < s.rows); });
+
+        // 환율 시나리오 전환
+        if (s.fx !== currentFx) {
+          currentFx = s.fx;
+          renderNumbers(currentFx, prev !== -1);
+        }
+
+        // 텍스트 카드 / 진행 점
+        stepEls.forEach(function (el, idx) { el.classList.toggle('is-active', idx === i); });
+        dots.forEach(function (d, idx) { d.classList.toggle('is-on', idx <= i); });
+      }
+
+      // -------------------------------------------------------------------
+      // 5) 스크롤 위치 → 현재 단계
+      //    화면 높이의 72% 지점을 지난 마지막 단계를 활성으로 봅니다.
+      // -------------------------------------------------------------------
+      var ticking = false;
+
+      function pickStep() {
+        var line = window.innerHeight * 0.72;
+        var active = 0;
+        for (var i = 0; i < stepEls.length; i++) {
+          if (stepEls[i].getBoundingClientRect().top <= line) active = i;
+        }
+        applyStep(active);
+        ticking = false;
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(pickStep);
+      }
+
+      renderNumbers(FX_BASE, false);
+      applyStep(0);
+      pickStep();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
     })();
   </script>
 </body>

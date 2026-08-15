@@ -55,6 +55,8 @@
   .more-info-toggle:hover { background: var(--panel); }
   .more-info-detail { display: none; margin-top: var(--sp-3); }
   .more-info-detail.show { display: block; }
+  .spark { width: 100%; height: 22px; display: block; margin-top: var(--sp-2); }
+  .stat-card .hint .arrow { font-size: 0.72rem; }
 
   /* ── 프리미엄 추이 ── */
   .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-3); }
@@ -126,7 +128,7 @@
   }
   .pick-reset:hover { color: var(--text); border-color: var(--frog); }
   .pick-reset:disabled { opacity: 0.4; cursor: default; }
-  .bridge-svg { width: 100%; height: 150px; display: block; }
+  .bridge-svg { width: 100%; height: 160px; display: block; }
   .bridge-note {
     font-size: 0.78rem; color: var(--mut); text-align: center;
     border-top: 1px solid var(--border); padding-top: var(--sp-3); margin-top: var(--sp-2);
@@ -221,19 +223,56 @@
           <button class="btn btn-outline" id="refreshBtn" type="button">갱신</button>
         </div>
         <div class="stat-row">
-          <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div><div class="hint" id="stUsdtHint">&nbsp;</div></div>
-          <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div><div class="hint" id="stFxHint">&nbsp;</div></div>
+          <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div></div>
+          <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div></div>
           <div class="stat-card is-focus"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint accent-text" id="stPremHint">&nbsp;</div></div>
         </div>
       </div>
 
       <button class="more-info-toggle" id="moreInfoToggle">더 알아보기 — 지금 시장 상황 ▾</button>
       <div class="more-info-detail" id="moreInfoDetail">
-        <p class="mut-text" style="margin-bottom:var(--sp-3);">여기에 USDT(테더) 거래량, 거래대금, 네이버 검색지수 등 시장 활발도 지표가 들어올 예정입니다</p>
-        <div class="stat-row">
-          <div class="stat-card"><div class="label">거래량</div><div class="value">—</div></div>
-          <div class="stat-card"><div class="label">거래대금</div><div class="value">—</div></div>
-          <div class="stat-card"><div class="label">검색지수</div><div class="value">—</div></div>
+        <div class="sub-label" style="margin-top:var(--sp-3);">시장 활발도<span class="frog-slot" data-help="activity"></span></div>
+
+        <div class="status-box" id="actLoading"><div class="spinner"></div><span>활발도 지표를 불러오는 중…</span></div>
+        <div class="error-box" id="actError" style="display:none;"><h4>불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+
+        <div id="actContent" style="display:none;">
+          <div class="stat-row">
+            <div class="stat-card">
+              <div class="label">거래량</div>
+              <div class="value" id="stVol">–</div>
+              <div class="hint" id="stVolDelta">&nbsp;</div>
+              <svg class="spark" id="sparkVol" viewBox="0 0 120 26" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="stat-card">
+              <div class="label">거래대금</div>
+              <div class="value" id="stVal">–</div>
+              <div class="hint" id="stValDelta">&nbsp;</div>
+              <svg class="spark" id="sparkVal" viewBox="0 0 120 26" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="stat-card" id="searchCard">
+              <div class="label">검색 관심도</div>
+              <div class="value" id="stSearch" style="color:var(--amber);">–</div>
+              <div class="hint" id="stSearchDelta">&nbsp;</div>
+              <svg class="spark" id="sparkSearch" viewBox="0 0 120 26" preserveAspectRatio="none"></svg>
+            </div>
+          </div>
+
+          <div class="caption" id="searchPending" style="display:none; text-align:left; margin-top:var(--sp-3);">
+            검색 관심도는 <span class="mono">naver_trend.json</span> 이 폴더에 놓이면 자동으로 표시됩니다.
+          </div>
+
+          <div id="interestBlock" style="display:none; margin-top:var(--sp-5);">
+            <div class="sub-label">김프가 벌어질 때 사람들도 검색했을까</div>
+            <div class="pane">
+              <div class="legend-row">
+                <span><span class="legend-line" style="background:var(--accent);"></span>김프 순위</span>
+                <span><span class="legend-line" style="background:var(--amber);"></span>검색 관심도 순위</span>
+              </div>
+              <svg class="chart-svg" id="interestChart" viewBox="0 0 760 180"></svg>
+              <div class="caption">둘 다 0~100 순위라 같은 축에서 볼 수 있습니다 · 위로 갈수록 그 시기 기준 높은 편</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -331,7 +370,7 @@
           <button class="pick-reset" id="pickReset" type="button" disabled>오늘로</button>
         </div>
         <div class="pane">
-          <svg class="bridge-svg" id="bridgeChart" viewBox="0 0 760 150"></svg>
+          <svg class="bridge-svg" id="bridgeChart" viewBox="0 0 760 160"></svg>
           <div class="bridge-note" id="bridgeNote"></div>
         </div>
       </div>
@@ -405,9 +444,10 @@ const HELP = {
           '선 끝의 점이 오늘 값이고, 시작일 이전은 상장 전이라 기록 자체가 없어요.'
   },
   gauge: {
-    title: '백분위와 히트맵 읽는 법',
-    body: '<b>백분위</b>는 오늘 김프가 상장 이후 전체 기간 중 몇 번째로 높은지를 뜻해요. 백분위 67이면 지난 날들의 3분의 2보다 높다는 거예요. ' +
-          '상위 30%는 <b>높음</b>, 하위 30%는 <b>낮음</b>, 그 사이는 <b>보통</b>으로 표시해요. 높다고 좋은 것도 낮다고 나쁜 것도 아니고, 지금 위치를 알려줄 뿐이에요.<br><br>' +
+    title: '순위와 히트맵 읽는 법',
+    body: '<b>상위 29%</b>는 상장 이후 모든 날을 김프가 높은 순으로 줄 세웠을 때 오늘이 위에서 29% 안에 든다는 뜻이에요. ' +
+          '반대로 낮은 쪽이면 <b>하위 N%</b>로 표시해요.<br><br>' +
+          '위쪽 30%는 <b>높음</b>, 아래쪽 30%는 <b>낮음</b>, 그 사이는 <b>보통</b> 배지가 붙어요. 높다고 좋은 것도 낮다고 나쁜 것도 아니고, 지금 위치를 알려줄 뿐이에요.<br><br>' +
           '오른쪽 격자는 하루가 한 칸이고 세로가 요일이에요. 색이 진할수록 그날 김프가 높은 편이었다는 뜻이고, 칸에 마우스를 올리면 그날 수치가 나와요.'
   },
   fxrisk: {
@@ -420,6 +460,11 @@ const HELP = {
     title: '두 선의 차이',
     body: '<b class="frog-text">녹색 선</b>은 프리미엄만 따라갔을 때 쌓였을 누적 수익이고, <b class="accent-text">붉은 선</b>은 환율 변동까지 반영한 실제 누적 수익이에요.<br><br>' +
           '두 선 사이 <b>음영이 넓어질수록</b> 그 구간에서 환율이 가져간 몫이 컸다는 뜻이에요. 선 위에 마우스를 올리면 미리보기가 되고, 클릭하면 그 날짜로 고정돼요.'
+  },
+  activity: {
+    title: '활발도 지표 읽는 법',
+    body: '<b>거래량·거래대금</b>은 업비트에서 그날 실제로 오간 양이에요. 절대 숫자만으로는 감이 안 오니 <b>30일 평균과 비교</b>해서 오늘이 평소보다 활발한 날인지 보여줘요.<br><br>' +
+          '<b>검색 관심도</b>는 네이버에서 테더를 얼마나 찾아봤는지예요. 다만 네이버가 주는 값은 실제 검색 건수가 아니라 <b>기간 안에서의 상대값</b>이라 그 자체로는 뜻이 없어요. 그래서 김프와 똑같이 순위로 바꿔서 보여줍니다.'
   },
   bridge: {
     title: '이 화살표가 뜻하는 것',
@@ -490,6 +535,8 @@ document.getElementById('moreInfoToggle').addEventListener('click', function () 
   const detail = document.getElementById('moreInfoDetail');
   const isShown = detail.classList.toggle('show');
   this.textContent = isShown ? '접기 ▴' : '더 알아보기 — 지금 시장 상황 ▾';
+  // 펼칠 때 처음 한 번만 불러온다 (열지 않는 사람에게 요청을 낭비하지 않도록)
+  if (isShown) loadActivity();
 });
 
 function addDateLabels(g, dates, xAt, H, count) {
@@ -604,6 +651,14 @@ function buildColorScale() {
   };
 }
 
+// 백분위(0~100)를 사람이 읽는 순위 표현으로 바꾼다.
+// 위쪽이면 '상위 N%', 아래쪽이면 '하위 N%'.
+// 단어가 방향을 담고 있어서, 게이지 바늘이 가리키는 쪽과 숫자가 어긋나 보이지 않는다.
+// (백분위 71을 그대로 '상위 29%'라고만 쓰면 값이 오를수록 숫자가 줄어 헷갈린다)
+function rankLabel(score) {
+  return score >= 50 ? `상위 ${100 - score}%` : `하위 ${score}%`;
+}
+
 // 상위 30% = 높음 / 중간 40% = 보통 / 하위 30% = 낮음 (중립 서술)
 function getLabel(t) {
   if (t >= 0.7) return { txt: '높음', cls: 'badge-accent', swatch: 'var(--accent)' };
@@ -650,12 +705,15 @@ function renderGauge() {
   gl.className = `gauge-label badge ${lbl.cls}`;
 
   const gs = document.getElementById('gaugeScore');
-  gs.textContent = `백분위 ${score}`;
+  gs.textContent = rankLabel(score);
   gs.style.color = heatColor(pc);
 
+  const higher = sorted.length - lower;
   document.getElementById('gaugeSub').innerHTML =
     `현재 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> · 상장 이후 ${sorted.length}일 중 ` +
-    `${lower}일이 오늘과 같거나 낮았습니다.`;
+    (score >= 50
+      ? `오늘보다 높았던 날은 ${higher}일뿐입니다.`
+      : `오늘보다 낮았던 날은 ${lower}일뿐입니다.`);
 }
 
 // ══════ 히트맵 (기간 선택 · 세로 7칸 고정) ══════
@@ -896,21 +954,54 @@ function drawBridge(i) {
   svg.appendChild(svgEl('line', { x1: PL - 24, x2: W - PR + 24, y1: axisY, y2: axisY, stroke: 'var(--border2)' }));
 
   const from = xAt(d.premium), to = xAt(d.real);
-  const dir = to < from ? 1 : -1;
-  svg.appendChild(svgEl('path', { d: `M${from - dir * 6} ${arrowY} L${to + dir * 12} ${arrowY}`, stroke: color, 'stroke-width': 2.5, fill: 'none' }));
-  svg.appendChild(svgEl('path', { d: `M${to} ${arrowY} L${to + dir * 12} ${arrowY - 6} L${to + dir * 12} ${arrowY + 6} Z`, fill: color }));
+
+  // 두 점이 거의 붙어 있으면 화살표가 의미가 없다
+  if (Math.abs(from - to) >= 3) {
+    const dir = to < from ? 1 : -1;
+    svg.appendChild(svgEl('path', { d: `M${from - dir * 6} ${arrowY} L${to + dir * 12} ${arrowY}`, stroke: color, 'stroke-width': 2.5, fill: 'none' }));
+    svg.appendChild(svgEl('path', { d: `M${to} ${arrowY} L${to + dir * 12} ${arrowY - 6} L${to + dir * 12} ${arrowY + 6} Z`, fill: color }));
+  }
   svg.appendChild(svgText((from + to) / 2, arrowY - 14,
-    `${lost ? '환율이 가져간' : '환율이 더해준'} ${gap.toFixed(2)}%p`,
+    gap < 0.005 ? '환율 영향 거의 없음' : `${lost ? '환율이 가져간' : '환율이 더해준'} ${gap.toFixed(2)}%p`,
     { size: 13, fill: color, weight: 700 }));
 
   const dot = (x, c) => svgEl('circle', { cx: x, cy: axisY, r: 6, fill: c, stroke: 'var(--panel)', 'stroke-width': 2 });
+
+  // ── 라벨 자리 잡기 ──
+  // 두 값이 가까우면 점은 제자리에 두고 글자만 최소 간격만큼 벌린다.
+  // 벌어진 만큼 점과 글자를 잇는 선을 그어서 어느 쪽 라벨인지 알 수 있게 한다.
+  const MIN_GAP = 170;   // '프리미엄만 봤다면' 폭(약 90px) 기준으로 잡은 여유
+  const EDGE = 56;       // 글자가 잘리지 않는 최소 여백
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  let lFrom = from, lTo = to;
+  if (Math.abs(from - to) < MIN_GAP) {
+    const mid = (from + to) / 2;
+    const half = MIN_GAP / 2;
+    // 원래 좌우 순서를 유지한 채 벌린다
+    if (from <= to) { lFrom = mid - half; lTo = mid + half; }
+    else            { lFrom = mid + half; lTo = mid - half; }
+  }
+  lFrom = clamp(lFrom, EDGE, W - EDGE);
+  lTo = clamp(lTo, EDGE, W - EDGE);
+
+  const leader = (dotX, labelX, c) => {
+    if (Math.abs(dotX - labelX) < 4) return;
+    svg.appendChild(svgEl('path', {
+      d: `M${dotX} ${axisY + 8} L${dotX} ${axisY + 14} L${labelX} ${axisY + 14}`,
+      stroke: c, 'stroke-width': 1, fill: 'none', 'stroke-opacity': 0.5
+    }));
+  };
+  leader(from, lFrom, 'var(--frog)');
+  leader(to, lTo, color);
+
   svg.appendChild(dot(from, 'var(--frog)'));
   svg.appendChild(dot(to, color));
 
-  svg.appendChild(svgText(from, axisY + 26, fmtPct(d.premium), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
-  svg.appendChild(svgText(from, axisY + 44, '프리미엄만 봤다면', { size: 11, fill: 'var(--mut)' }));
-  svg.appendChild(svgText(to, axisY + 26, fmtPct(d.real), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
-  svg.appendChild(svgText(to, axisY + 44, '실제로 남은 것', { size: 11, fill: 'var(--mut)' }));
+  svg.appendChild(svgText(lFrom, axisY + 34, fmtPct(d.premium), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(lFrom, axisY + 52, '프리미엄만 봤다면', { size: 11, fill: 'var(--mut)' }));
+  svg.appendChild(svgText(lTo, axisY + 34, fmtPct(d.real), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(lTo, axisY + 52, '실제로 남은 것', { size: 11, fill: 'var(--mut)' }));
 
   const base = 1000000;
   document.getElementById('bridgeNote').innerHTML =
@@ -997,12 +1088,6 @@ function renderKpi() {
   document.getElementById('stFx').textContent = fmtWon(lastFx);
   document.getElementById('stPrem').textContent = fmtPct(REAL.premiumPct[last]);
 
-  if (last > 0) {
-    const fmtDelta = v => (Math.abs(v) < 0.05 ? '변동 없음' : `${v > 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(1)}원`);
-    document.getElementById('stUsdtHint').textContent = fmtDelta(lastUsdt - REAL.usdtPrice[last - 1]);
-    document.getElementById('stFxHint').textContent = fmtDelta(lastFx - REAL.fxRate[last - 1]);
-  }
-
   // 아래 환율 리스크 구획과 같은 계산을 쓴다 (두 숫자가 어긋날 일이 없도록)
   updatePremHint();
 
@@ -1012,6 +1097,195 @@ function renderKpi() {
     `${REAL.dates[last]} 기준<span class="kpi-meta-sep">·</span>` +
     `${pad(fetched.getHours())}:${pad(fetched.getMinutes())}:${pad(fetched.getSeconds())} 갱신`;
 
+}
+
+// ══════ 시장 활발도 (거래량 · 거래대금 · 검색 관심도) ══════
+// 거래량과 거래대금은 업비트 일봉 응답에 이미 들어 있다(candle_acc_trade_*).
+// 최근 90일이면 충분해서 페이지네이션 없이 한 번만 부른다.
+const ACT_DAYS = 90;
+const ACT_BASELINE = 30;   // "N일 평균 대비" 기준
+
+let activityLoading = false;
+let activityDone = false;
+
+const fmtKoNum = (n) => {
+  if (!Number.isFinite(n)) return '–';
+  if (n >= 1e8) return (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + '억';
+  if (n >= 1e4) return (n / 1e4).toFixed(n >= 1e5 ? 0 : 1) + '만';
+  return Math.round(n).toLocaleString('ko-KR');
+};
+
+// 방향은 화살표가 알려준다. 색으로 좋고 나쁨을 칠하지 않는다.
+function deltaText(now, base, unitLabel) {
+  if (!Number.isFinite(base) || base === 0) return '&nbsp;';
+  const pct = (now / base - 1) * 100;
+  if (Math.abs(pct) < 0.5) return `${unitLabel} 비슷`;   // '-0%' 같은 표기를 피한다
+  return `<span class="arrow">${pct > 0 ? '▲' : '▼'}</span> ${unitLabel} ${pct > 0 ? '+' : ''}${pct.toFixed(0)}%`;
+}
+
+function drawSparkline(id, values, color) {
+  const svg = document.getElementById(id);
+  if (!svg || values.length < 2) return;
+  const W = 120, H = 26, P = 3;
+  const min = Math.min(...values), max = Math.max(...values);
+  const span = (max - min) || 1;
+  const pts = values.map((v, i) =>
+    `${(P + (i / (values.length - 1)) * (W - 2 * P)).toFixed(1)},${(H - P - ((v - min) / span) * (H - 2 * P)).toFixed(1)}`
+  ).join(' L');
+  svg.innerHTML = `<path d="M${pts}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+}
+
+async function fetchUpbitActivity(days) {
+  const url = `https://api.upbit.com/v1/candles/days?market=KRW-USDT&count=${Math.min(200, days)}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`업비트 응답 오류 (HTTP ${res.status})`);
+  const rows = await res.json();
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error('거래량 데이터가 비어 있습니다.');
+
+  return rows
+    .map(c => ({
+      date: (c.candle_date_time_kst || c.candle_date_time_utc || '').slice(0, 10),
+      volume: Number(c.candle_acc_trade_volume),
+      value: Number(c.candle_acc_trade_price)
+    }))
+    .filter(r => r.date && Number.isFinite(r.volume) && Number.isFinite(r.value))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// scripts/fetch_naver_trend.py 가 만들어 두는 파일.
+// 아직 없으면 조용히 null 을 돌려주고 카드는 '준비 중' 상태로 둔다.
+async function loadSearchTrend() {
+  try {
+    const res = await fetch('naver_trend.json', { cache: 'no-cache' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const group = json['테더'] || json[Object.keys(json)[0]];
+    if (!group || typeof group !== 'object') return null;
+    const dates = Object.keys(group).sort();
+    if (dates.length === 0) return null;
+    return { dates, values: dates.map(d => Number(group[d])) };
+  } catch (e) {
+    return null;
+  }
+}
+
+function setActState(state, message) {
+  document.getElementById('actLoading').style.display = state === 'loading' ? '' : 'none';
+  document.getElementById('actError').style.display = state === 'error' ? '' : 'none';
+  document.getElementById('actContent').style.display = state === 'loaded' ? '' : 'none';
+  if (state === 'error') {
+    document.getElementById('actError').querySelector('.js-error-msg').textContent =
+      message || '잠시 후 다시 시도해주세요.';
+  }
+}
+
+const mean = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length;
+
+function renderActivity(act, trend) {
+  const last = act[act.length - 1];
+  const volBase = mean(act.slice(-ACT_BASELINE).map(r => r.volume));
+  const valBase = mean(act.slice(-ACT_BASELINE).map(r => r.value));
+
+  document.getElementById('stVol').innerHTML =
+    `${fmtKoNum(last.volume)} <span style="font-size:0.7rem;color:var(--dim);">USDT</span>`;
+  document.getElementById('stVolDelta').innerHTML = deltaText(last.volume, volBase, `${ACT_BASELINE}일 평균 대비`);
+  drawSparkline('sparkVol', act.map(r => r.volume), 'var(--dim)');
+
+  document.getElementById('stVal').innerHTML =
+    `${fmtKoNum(last.value)} <span style="font-size:0.7rem;color:var(--dim);">원</span>`;
+  document.getElementById('stValDelta').innerHTML = deltaText(last.value, valBase, `${ACT_BASELINE}일 평균 대비`);
+  drawSparkline('sparkVal', act.map(r => r.value), 'var(--dim)');
+
+  const pending = document.getElementById('searchPending');
+  const block = document.getElementById('interestBlock');
+
+  if (!trend) {
+    document.getElementById('stSearch').textContent = '준비 중';
+    document.getElementById('stSearchDelta').innerHTML = '&nbsp;';
+    pending.style.display = '';
+    block.style.display = 'none';
+    return;
+  }
+
+  // 데이터랩 값은 요청 구간 안에서의 상대값이라 절대 크기에 의미가 없다.
+  // 그래서 김프와 똑같이 '전체 기간 중 몇 등인지'로 바꿔서 보여준다.
+  const sortedTrend = [...trend.values].sort((a, b) => a - b);
+  const trendPct = v => sortedTrend.filter(x => x <= v).length / sortedTrend.length;
+
+  const nowSearch = trend.values[trend.values.length - 1];
+  const searchBase = mean(trend.values.slice(-ACT_BASELINE));
+  const score = Math.round(trendPct(nowSearch) * 100);
+
+  document.getElementById('stSearch').textContent = rankLabel(score);
+  document.getElementById('stSearchDelta').innerHTML = deltaText(nowSearch, searchBase, `${ACT_BASELINE}일 평균 대비`);
+  drawSparkline('sparkSearch', trend.values.slice(-ACT_DAYS), 'var(--amber)');
+
+  pending.style.display = 'none';
+  block.style.display = '';
+  drawInterestChart(trend, trendPct);
+}
+
+// 김프 순위와 검색 관심도 순위를 같은 0~100 축에 겹친다.
+// 단위가 다른 두 지표를 축 두 개로 그리면 눈금 잡기에 따라 상관관계가
+// 있어 보이게도 없어 보이게도 만들 수 있어서, 둘 다 순위로 바꿔 축을 하나로 둔다.
+function drawInterestChart(trend, trendPct) {
+  const svg = document.getElementById('interestChart');
+  svg.innerHTML = '';
+  if (typeof pctOf !== 'function' || !REAL) return;
+
+  const tmap = new Map(trend.dates.map((d, i) => [d, trend.values[i]]));
+  const rows = [];
+  REAL.dates.forEach((d, i) => {
+    if (!tmap.has(d)) return;
+    rows.push({ date: d, kim: pctOf(REAL.premiumPct[i]) * 100, sea: trendPct(tmap.get(d)) * 100 });
+  });
+
+  const data = rows.slice(-ACT_DAYS);
+  if (data.length < 2) {
+    svg.innerHTML = '';
+    document.getElementById('interestBlock').style.display = 'none';
+    return;
+  }
+
+  const W = 760, H = 180, PL = 40, PR = 14, PT = 12, PB = 22;
+  const pw = W - PL - PR, ph = H - PT - PB;
+  const xAt = i => PL + (i / (data.length - 1)) * pw;
+  const yAt = v => PT + ph - (v / 100) * ph;
+
+  const g = svgEl('g', {});
+  [0, 50, 100].forEach(v => {
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: yAt(v), y2: yAt(v), stroke: 'var(--border)' }));
+    g.appendChild(svgText(PL - 6, yAt(v) + 3, String(v), { anchor: 'end' }));
+  });
+  addDateLabels(g, data.map(r => r.date), xAt, H, 3);
+  svg.appendChild(g);
+
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((r, i) => `${xAt(i)},${yAt(r.sea)}`).join(' '),
+    fill: 'none', stroke: 'var(--amber)', 'stroke-width': 2, 'stroke-linejoin': 'round'
+  }));
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((r, i) => `${xAt(i)},${yAt(r.kim)}`).join(' '),
+    fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2, 'stroke-linejoin': 'round'
+  }));
+}
+
+async function loadActivity() {
+  if (activityDone || activityLoading) return;
+  activityLoading = true;
+  setActState('loading');
+
+  try {
+    const [act, trend] = await Promise.all([fetchUpbitActivity(ACT_DAYS), loadSearchTrend()]);
+    renderActivity(act, trend);
+    setActState('loaded');
+    activityDone = true;
+  } catch (err) {
+    console.error('활발도 지표 로드 실패:', err);
+    setActState('error', err.message);   // 실패해도 대시보드 본문에는 영향이 없다
+  } finally {
+    activityLoading = false;
+  }
 }
 
 // ══════ 로드 ══════

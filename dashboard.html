@@ -53,10 +53,36 @@
     font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
   }
   .more-info-toggle:hover { background: var(--panel); }
-  .more-info-detail { display: none; margin-top: var(--sp-3); }
+  .more-info-detail {
+    display: none; margin-top: var(--sp-3);
+    background: var(--panel2); border-radius: var(--r-md); padding: var(--sp-4);
+  }
   .more-info-detail.show { display: block; }
-  .spark { width: 100%; height: 22px; display: block; margin-top: var(--sp-2); }
   .stat-card .hint .arrow { font-size: 0.72rem; }
+
+  /* 세 카드(거래대금·거래량 / 공포탐욕지수 / 검색 관심도) 세로 중앙 정렬 */
+  #actContent .stat-card { display: flex; flex-direction: column; justify-content: center; }
+
+  /* 공포탐욕지수 카드 */
+  .fng-help {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 15px; height: 15px; margin-left: var(--sp-1); vertical-align: middle;
+    border-radius: var(--r-pill); border: 1px solid var(--border2);
+    background: var(--panel); color: var(--mut);
+    font-size: 0.64rem; font-weight: 700; text-decoration: none;
+  }
+  .fng-help:hover { color: var(--text); border-color: var(--frog); }
+  /* hm-tip과 같은 패턴의 호버 툴팁 */
+  .fng-help .fng-help-tip {
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3);
+    font-size: 11px; white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5;
+  }
+  .fng-help:hover .fng-help-tip, .fng-help:focus-visible .fng-help-tip { display: block; }
+  #fngGauge { margin-top: var(--sp-1); }
+  #fngCard .value { margin-top: var(--sp-2); }
+  #stVal { font-size: 1.05rem; }
 
   /* ── 프리미엄 추이 ── */
   .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-3); }
@@ -239,24 +265,25 @@
         <div id="actContent" style="display:none;">
           <div class="stat-row">
             <div class="stat-card">
-              <div class="label">거래량</div>
-              <div class="value" id="stVol">–</div>
-              <div class="hint" id="stVolDelta">&nbsp;</div>
-              <svg class="spark" id="sparkVol" viewBox="0 0 120 26" preserveAspectRatio="none"></svg>
-            </div>
-            <div class="stat-card">
-              <div class="label">거래대금</div>
+              <div class="label">거래대금 · 거래량</div>
               <div class="value" id="stVal">–</div>
               <div class="hint" id="stValDelta">&nbsp;</div>
-              <svg class="spark" id="sparkVal" viewBox="0 0 120 26" preserveAspectRatio="none"></svg>
+              <div class="hint" id="stVolDelta">&nbsp;</div>
+            </div>
+            <div class="stat-card" id="fngCard">
+              <div class="label">공포탐욕지수<a class="fng-help" href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener noreferrer" title="클릭하면 공포탐욕지수 설명 페이지로 이동합니다" aria-label="클릭하면 공포탐욕지수 설명 페이지로 이동합니다">?<span class="fng-help-tip">클릭하면 공포탐욕지수 설명 페이지로 이동합니다</span></a></div>
+              <svg id="fngGauge" viewBox="0 0 130 92" style="width:100%;max-width:140px;display:block;margin:0 auto"></svg>
+              <div class="value" id="stFng">–</div>
+              <div class="hint" id="stFngLabel">&nbsp;</div>
             </div>
             <div class="stat-card" id="searchCard">
               <div class="label">검색 관심도</div>
               <div class="value" id="stSearch" style="color:var(--amber);">–</div>
               <div class="hint" id="stSearchDelta">&nbsp;</div>
-              <svg class="spark" id="sparkSearch" viewBox="0 0 120 26" preserveAspectRatio="none"></svg>
             </div>
           </div>
+
+          <div class="caption" style="margin-top:var(--sp-3);">출처: Alternative.me</div>
 
           <div class="caption" id="searchPending" style="display:none; text-align:left; margin-top:var(--sp-3);">
             검색 관심도는 <span class="mono">naver_trend.json</span> 이 폴더에 놓이면 자동으로 표시됩니다.
@@ -1110,8 +1137,8 @@ let activityDone = false;
 
 const fmtKoNum = (n) => {
   if (!Number.isFinite(n)) return '–';
-  if (n >= 1e8) return (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + '억';
-  if (n >= 1e4) return (n / 1e4).toFixed(n >= 1e5 ? 0 : 1) + '만';
+  if (n >= 1e8) return (n / 1e8).toLocaleString('ko-KR', { maximumFractionDigits: n >= 1e9 ? 0 : 1 }) + '억';
+  if (n >= 1e4) return (n / 1e4).toLocaleString('ko-KR', { maximumFractionDigits: n >= 1e5 ? 0 : 1 }) + '만';
   return Math.round(n).toLocaleString('ko-KR');
 };
 
@@ -1121,18 +1148,6 @@ function deltaText(now, base, unitLabel) {
   const pct = (now / base - 1) * 100;
   if (Math.abs(pct) < 0.5) return `${unitLabel} 비슷`;   // '-0%' 같은 표기를 피한다
   return `<span class="arrow">${pct > 0 ? '▲' : '▼'}</span> ${unitLabel} ${pct > 0 ? '+' : ''}${pct.toFixed(0)}%`;
-}
-
-function drawSparkline(id, values, color) {
-  const svg = document.getElementById(id);
-  if (!svg || values.length < 2) return;
-  const W = 120, H = 26, P = 3;
-  const min = Math.min(...values), max = Math.max(...values);
-  const span = (max - min) || 1;
-  const pts = values.map((v, i) =>
-    `${(P + (i / (values.length - 1)) * (W - 2 * P)).toFixed(1)},${(H - P - ((v - min) / span) * (H - 2 * P)).toFixed(1)}`
-  ).join(' L');
-  svg.innerHTML = `<path d="M${pts}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`;
 }
 
 async function fetchUpbitActivity(days) {
@@ -1186,15 +1201,11 @@ function renderActivity(act, trend) {
   const volBase = mean(act.slice(-ACT_BASELINE).map(r => r.volume));
   const valBase = mean(act.slice(-ACT_BASELINE).map(r => r.value));
 
-  document.getElementById('stVol').innerHTML =
-    `${fmtKoNum(last.volume)} <span style="font-size:0.7rem;color:var(--dim);">USDT</span>`;
-  document.getElementById('stVolDelta').innerHTML = deltaText(last.volume, volBase, `${ACT_BASELINE}일 평균 대비`);
-  drawSparkline('sparkVol', act.map(r => r.volume), 'var(--dim)');
-
   document.getElementById('stVal').innerHTML =
-    `${fmtKoNum(last.value)} <span style="font-size:0.7rem;color:var(--dim);">원</span>`;
-  document.getElementById('stValDelta').innerHTML = deltaText(last.value, valBase, `${ACT_BASELINE}일 평균 대비`);
-  drawSparkline('sparkVal', act.map(r => r.value), 'var(--dim)');
+    `<span style="white-space:nowrap;">${fmtKoNum(last.value)}원</span> / ` +
+    `<span style="white-space:nowrap;">${fmtKoNum(last.volume)} USDT</span>`;
+  document.getElementById('stValDelta').innerHTML = '거래대금 ' + deltaText(last.value, valBase, `${ACT_BASELINE}일 평균 대비`);
+  document.getElementById('stVolDelta').innerHTML = '거래량 ' + deltaText(last.volume, volBase, `${ACT_BASELINE}일 평균 대비`);
 
   const pending = document.getElementById('searchPending');
   const block = document.getElementById('interestBlock');
@@ -1218,7 +1229,6 @@ function renderActivity(act, trend) {
 
   document.getElementById('stSearch').textContent = rankLabel(score);
   document.getElementById('stSearchDelta').innerHTML = deltaText(nowSearch, searchBase, `${ACT_BASELINE}일 평균 대비`);
-  drawSparkline('sparkSearch', trend.values.slice(-ACT_DAYS), 'var(--amber)');
 
   pending.style.display = 'none';
   block.style.display = '';
@@ -1270,6 +1280,83 @@ function drawInterestChart(trend, trendPct) {
   }));
 }
 
+// ══════ 공포탐욕지수 (Alternative.me) ══════
+async function fetchFearGreed() {
+  const res = await fetch('https://api.alternative.me/fng/?limit=1');
+  const json = await res.json();
+  const latest = json.data[0];
+  return {
+    value: Number(latest.value),
+    classification: latest.value_classification
+  };
+}
+
+const FNG_LABEL_KR = {
+  'Extreme Fear': '극단적 공포', 'Fear': '공포', 'Neutral': '중립',
+  'Greed': '탐욕', 'Extreme Greed': '극단적 탐욕'
+};
+
+// getLabel()이 쓰는 배지 3단계(badge-accent/badge-amber/badge-neutral)와
+// 같은 색상 값을 그대로 재사용한다 — 새 색 규칙을 따로 만들지 않는다.
+// 방향(공포/탐욕)이 아니라 '얼마나 쏠렸는지'로 단계를 나눈다.
+const FNG_TIER_COLOR = { accent: 'var(--accent)', amber: 'var(--amber)', neutral: 'var(--dim)' };
+const FNG_TIER = {
+  'Extreme Fear': 'accent', 'Extreme Greed': 'accent',
+  'Fear': 'amber', 'Greed': 'amber',
+  'Neutral': 'neutral'
+};
+
+// 미니 게이지 아크도 같은 3단계 색으로 칠한다. 경계(24/44/56/76)는
+// alternative.me가 실제로 쓰는 분류 구간과 같다.
+function fngTierColor(pos) {
+  if (pos <= 24 || pos >= 76) return FNG_TIER_COLOR.accent;
+  if (pos <= 44 || pos >= 56) return FNG_TIER_COLOR.amber;
+  return FNG_TIER_COLOR.neutral;
+}
+
+// ⑥ 지금 김프 위치의 gaugeSvg와 같은 반원 아크 + 바늘 패턴을 축소해 재사용한다.
+// 라벨이 아크 획과 겹치지 않도록 중심을 아래로, 반지름을 작게 잡아 상하 여백을 넉넉히 둔다.
+function renderFearGreedGauge(value) {
+  const svg = document.getElementById('fngGauge');
+  const cx = 65, cy = 60, R = 34, r2 = 26;
+  const ang = Math.PI - (value / 100) * Math.PI;
+  const nx = cx + r2 * Math.cos(ang), ny = cy - r2 * Math.sin(ang);
+
+  let arcs = '';
+  for (let s = 0; s < 100; s += 4) {
+    const a0 = Math.PI - s / 100 * Math.PI, a1 = Math.PI - (s + 4.6) / 100 * Math.PI;
+    const x0 = cx + R * Math.cos(a0), y0 = cy - R * Math.sin(a0);
+    const x1 = cx + R * Math.cos(a1), y1 = cy - R * Math.sin(a1);
+    arcs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${fngTierColor(s + 2)}" stroke-width="7" stroke-linecap="round"/>`;
+  }
+
+  svg.innerHTML = `${arcs}
+    <text x="31" y="84" text-anchor="middle" font-size="10" style="fill:var(--dim)">공포</text>
+    <text x="65" y="12" text-anchor="middle" font-size="10" style="fill:var(--dim)">중립</text>
+    <text x="99" y="84" text-anchor="middle" font-size="10" style="fill:var(--dim)">탐욕</text>
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" style="stroke:var(--text)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="3.5" style="fill:var(--text)"/>`;
+}
+
+// 별도 try-catch로 감싸서, 실패해도 나머지 활발도 카드·대시보드는 그대로 동작한다.
+async function loadFearGreed() {
+  try {
+    const { value, classification } = await fetchFearGreed();
+    const color = FNG_TIER_COLOR[FNG_TIER[classification]] || FNG_TIER_COLOR.neutral;
+    const stFng = document.getElementById('stFng');
+    stFng.textContent = String(value);
+    stFng.style.color = color;
+    const stFngLabel = document.getElementById('stFngLabel');
+    stFngLabel.textContent = FNG_LABEL_KR[classification] || classification;
+    stFngLabel.style.color = color;
+    renderFearGreedGauge(value);
+  } catch (err) {
+    console.error('공포탐욕지수 로드 실패:', err);
+    document.getElementById('stFng').textContent = '—';
+    document.getElementById('stFngLabel').textContent = '';
+  }
+}
+
 async function loadActivity() {
   if (activityDone || activityLoading) return;
   activityLoading = true;
@@ -1286,6 +1373,9 @@ async function loadActivity() {
   } finally {
     activityLoading = false;
   }
+
+  // 업비트·네이버 흐름과 독립적으로 동작 — 여기서 실패해도 위 활발도 카드에는 영향이 없다.
+  loadFearGreed();
 }
 
 // ══════ 로드 ══════

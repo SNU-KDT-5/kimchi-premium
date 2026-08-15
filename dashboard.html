@@ -23,6 +23,7 @@
   .group-head {
     font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em;
     text-transform: uppercase; margin-bottom: var(--sp-5);
+    display: flex; align-items: center; gap: var(--sp-2);
   }
   .group-now .group-head { color: var(--frog); }
   .group-fx .group-head { color: var(--accent); }
@@ -30,7 +31,7 @@
   .group-intro b.frog-text { color: var(--frog); }
   .group-intro b.accent-text { color: var(--accent); }
 
-  .sub-label { font-size: 0.78rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2); }
+  .sub-label { font-size: 0.78rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2); display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
   .sub-block + .sub-block { margin-top: var(--sp-5); }
   .pane { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
 
@@ -74,14 +75,19 @@
   .gauge-sub { font-size: 0.72rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; line-height: 1.6; }
 
   /* 히트맵: 세로 7칸(요일) 고정 → 기간을 바꿔도 높이가 변하지 않는다 */
-  .hm-presets { display: flex; gap: var(--sp-1); flex-wrap: wrap; margin-bottom: var(--sp-2); }
-  .hm-preset {
+  .hm-presets, .fx-presets { display: flex; gap: var(--sp-1); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+  .hm-preset, .fx-preset {
     font-size: 0.74rem; padding: 4px 11px; border-radius: var(--r-sm);
     border: 1px solid transparent; background: transparent; color: var(--mut);
     cursor: pointer; font-family: var(--font-body); font-weight: 600;
   }
-  .hm-preset:hover { background: var(--panel2); }
-  .hm-preset.active { background: var(--text); color: #fff; }
+  .hm-preset:hover, .fx-preset:hover { background: var(--panel2); }
+  .hm-preset.active, .fx-preset.active { background: var(--text); color: #fff; }
+
+  /* 보유 기간 선택 */
+  .fx-window { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-5); flex-wrap: wrap; }
+  .fx-window > .label { font-size: 0.78rem; font-weight: 700; color: var(--mut); }
+  .fx-window .fx-presets { margin-bottom: 0; }
   .hm-range { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); flex-wrap: wrap; }
   .hm-date {
     border: 1px solid var(--border2); border-radius: var(--r-sm); padding: 3px var(--sp-2);
@@ -127,6 +133,53 @@
   }
   .bridge-note b { font-family: var(--font-mono); color: var(--text); }
   .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
+
+  /* ── 개구리 도움말 ──
+     설명을 항상 띄워두는 대신, 필요한 지점마다 개구리를 두고
+     누르면 입을 벌리며 말풍선으로 설명한다. */
+  .frog-slot { position: relative; display: inline-flex; vertical-align: middle; }
+  .frog-help {
+    width: 24px; height: 24px; padding: 0; border: none; background: none;
+    color: var(--frog); cursor: pointer; flex: none; display: block;
+    animation: frog-bob 3.2s ease-in-out infinite;
+  }
+  .frog-help svg { width: 100%; height: 100%; display: block; }
+  .frog-help:hover { color: var(--frog-light); }
+  .frog-help:focus-visible { outline: 2px solid var(--frog); outline-offset: 2px; border-radius: var(--r-sm); }
+  .frog-help[aria-expanded="true"] { animation: none; color: var(--frog); }
+
+  @keyframes frog-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3.5px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frog-help { animation: none; }
+  }
+
+  /* 말풍선은 아래 내용 위로 겹쳐서 뜬다 (레이아웃이 밀리지 않도록) */
+  .frog-bubble {
+    position: absolute; top: calc(100% + 10px); left: -10px; z-index: 60;
+    width: 300px; max-width: min(300px, 76vw);
+    background: var(--panel); border: 1px solid var(--border2); border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg); padding: var(--sp-4) var(--sp-5);
+    font-size: 0.82rem; font-weight: 400; color: var(--mut); line-height: 1.75; text-align: left;
+    text-transform: none; letter-spacing: 0;
+  }
+  .frog-bubble::before {
+    content: ''; position: absolute; top: -7px; left: 16px; width: 12px; height: 12px;
+    background: var(--panel); border-left: 1px solid var(--border2); border-top: 1px solid var(--border2);
+    transform: rotate(45deg);
+  }
+  .frog-bubble h5 { font-size: 0.86rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
+  .frog-bubble b { color: var(--text); }
+  .frog-bubble b.frog-text { color: var(--frog); }
+  .frog-bubble b.accent-text { color: var(--accent); }
+  .frog-bubble .frog-bubble-close {
+    display: block; margin-top: var(--sp-3); padding: 0; border: none; background: none;
+    font-family: var(--font-body); font-size: 0.76rem; color: var(--dim); cursor: pointer;
+  }
+  .frog-bubble .frog-bubble-close:hover { color: var(--text); }
+  @media (max-width: 560px) { .frog-bubble { left: auto; right: -10px; } .frog-bubble::before { left: auto; right: 16px; } }
 </style>
 </head>
 <body>
@@ -159,8 +212,8 @@
 
     <!-- 오늘의 숫자 -->
     <div class="sub-block">
-      <div class="sub-label">오늘의 숫자</div>
-      <div class="status-box" id="kpiLoading"><div class="spinner"></div>현재 지표를 불러오는 중…</div>
+      <div class="sub-label">오늘의 숫자<span class="frog-slot" data-help="kpi"></span></div>
+      <div class="status-box" id="kpiLoading"><div class="spinner"></div><span class="js-loading-msg">현재 지표를 불러오는 중…</span></div>
       <div class="error-box" id="kpiError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
       <div id="kpiContent" style="display:none;">
         <div class="kpi-meta-row">
@@ -187,9 +240,9 @@
 
     <!-- 프리미엄 추이 -->
     <div class="sub-block">
-      <div class="sub-label">프리미엄 추이</div>
+      <div class="sub-label">프리미엄 추이<span class="frog-slot" data-help="prem"></span></div>
       <div class="pane">
-        <div class="status-box" id="premLoading"><div class="spinner"></div>프리미엄 추이를 불러오는 중…</div>
+        <div class="status-box" id="premLoading"><div class="spinner"></div><span class="js-loading-msg">프리미엄 추이를 불러오는 중…</span></div>
         <div class="error-box" id="premError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
         <div id="premContent" style="display:none;">
           <div class="period-tabs" id="periodTabs"></div>
@@ -206,13 +259,13 @@
 
     <!-- 지금 김프 위치 -->
     <div class="sub-block">
-      <div class="sub-label">지금 김프 위치</div>
-      <div class="status-box" id="gaugeLoading"><div class="spinner"></div>분포 데이터를 불러오는 중…</div>
+      <div class="sub-label">지금 김프 위치<span class="frog-slot" data-help="gauge"></span></div>
+      <div class="status-box" id="gaugeLoading"><div class="spinner"></div><span class="js-loading-msg">분포 데이터를 불러오는 중…</span></div>
       <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
       <div class="split-row" id="gaugeContent" style="display:none;">
         <div class="pane">
           <div class="gauge-wrap">
-            <svg id="gaugeSvg" viewBox="0 0 320 160" style="width:100%;max-width:260px;display:block;margin:0 auto"></svg>
+            <svg id="gaugeSvg" viewBox="0 0 320 180" style="width:100%;max-width:260px;display:block;margin:0 auto"></svg>
             <div class="gauge-label badge" id="gaugeLabel">–</div>
             <div class="gauge-score" id="gaugeScore">–</div>
             <div class="gauge-sub" id="gaugeSub"></div>
@@ -244,18 +297,22 @@
 
   <!-- ══════ 구획 2: 환율 리스크 ══════ -->
   <section class="group group-fx">
-    <div class="group-head">환율 리스크</div>
-    <p class="group-intro">김프는 사는 순간의 웃돈이지만, 환율은 파는 순간까지 계속 움직입니다. 그래서 벌어진 김프가 그대로 손에 남지는 않습니다. <b id="fxWindowLabel">최근 60일</b> 동안 실제로 어떤 일이 있었는지 봅니다.</p>
+    <div class="group-head">환율 리스크<span class="frog-slot" data-help="fxrisk"></span></div>
+    <p class="group-intro">벌어진 김프가 그대로 손에 남지는 않습니다. <b id="fxWindowLabel">최근 60일</b> 동안 샀다가 오늘 판다면 어떻게 되는지 봅니다.</p>
 
-    <div class="status-box" id="fxLoading"><div class="spinner"></div>환율 분해 데이터를 불러오는 중…</div>
+    <div class="fx-window">
+      <span class="label">얼마나 들고 있었나</span>
+      <div class="fx-presets" id="fxPresets" role="group" aria-label="보유 기간 선택"></div>
+    </div>
+
+    <div class="status-box" id="fxLoading"><div class="spinner"></div><span class="js-loading-msg">환율 분해 데이터를 불러오는 중…</span></div>
     <div class="error-box" id="fxError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
 
     <div id="fxContent" style="display:none;">
       <!-- 위: 그래프(입력) -->
       <div class="sub-block">
-        <div class="sub-label">언제부터 벌어졌나 <span style="font-weight:400;color:var(--dim);">— 선 위를 클릭하면 그날 기준으로 아래가 바뀝니다</span></div>
+        <div class="sub-label">언제부터 벌어졌나<span class="frog-slot" data-help="decomp"></span><span style="font-weight:400;color:var(--dim);">— 선 위를 클릭하면 그날 기준으로 아래가 바뀝니다</span></div>
         <div class="pane">
-          <p class="mut-text" style="font-size:0.84rem;margin-bottom:var(--sp-3);"><b class="frog-text" style="color:var(--frog)">녹색 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b style="color:var(--accent)">붉은 선</b>은 환율까지 반영한 실질 누적 수익입니다. 두 선 사이 음영이 넓어질수록 그 구간에서 환율이 가져간 몫이 큽니다.</p>
           <div class="legend-row">
             <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
             <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
@@ -267,7 +324,10 @@
       <!-- 아래: 수치선(출력) -->
       <div class="sub-block">
         <div class="pick-row">
-          <span class="pick-label" id="pickLabel">–</span>
+          <span style="display:flex;align-items:center;gap:var(--sp-2);">
+            <span class="pick-label" id="pickLabel">–</span>
+            <span class="frog-slot" data-help="bridge"></span>
+          </span>
           <button class="pick-reset" id="pickReset" type="button" disabled>오늘로</button>
         </div>
         <div class="pane">
@@ -283,11 +343,11 @@
 
 <script>
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const LOOKBACK_DAYS = 60;   // 환율 리스크 구획이 기준으로 삼는 보유 기간
 const DAY_MS = 86400000;
+let fxWindow = 60;          // 환율 리스크 구획의 보유 기간 (사용자가 고른다)
 
 let REAL = null;      // { dates, usdtPrice, fxRate, premiumPct, fetchedAt }
-let DECOMP = null;    // [{ premium, real }] — 최근 LOOKBACK_DAYS일
+let DECOMP = null;    // [{ premium, real }] — 선택한 보유 기간(fxWindow)만큼
 let DECOMP_DATES = [];
 let pinnedIdx = null; // 클릭으로 고정한 날짜 (null이면 오늘)
 let pctOf = () => 0;
@@ -315,6 +375,116 @@ function svgText(x, y, content, opts = {}) {
   t.textContent = content;
   return t;
 }
+
+// ══════ 개구리 도움말 ══════
+// 설명이 필요한 지점마다 개구리를 띄우고, 누르면 입을 벌리며 말풍선을 연다.
+const FROG_HEAD = 'M24 16C23 10 20 6 15 6C10 6 7 10 7 16C7 19 2 21 2 27C2 34 11 40 24 40C37 40 46 34 46 27C46 21 41 19 41 16C41 10 38 6 33 6C28 6 25 10 24 16Z';
+const FROG_EYES = '<circle cx="15" cy="12" r="2.1" fill="currentColor"/><circle cx="33" cy="12" r="2.1" fill="currentColor"/>';
+
+const FROG_CLOSED =
+  `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="${FROG_HEAD}"/><path d="M14 29C18 34.5 30 34.5 34 29"/></g>${FROG_EYES}` +
+  `<circle cx="21" cy="21" r="1" fill="currentColor"/><circle cx="27" cy="21" r="1" fill="currentColor"/></svg>`;
+
+const FROG_OPEN =
+  `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="${FROG_HEAD}"/><path d="M13 29Q18.5 23 24 23Q29.5 23 35 29Q29.5 36 24 36Q18.5 36 13 29Z"/></g>${FROG_EYES}` +
+  `<circle cx="21" cy="19" r="1" fill="currentColor"/><circle cx="27" cy="19" r="1" fill="currentColor"/></svg>`;
+
+const HELP = {
+  kpi: {
+    title: '이 숫자들이 뜻하는 것',
+    body: '<b>프리미엄</b>은 업비트 USDT 원화 가격이 그날 원/달러 환율보다 몇 % 비싼지를 뜻해요. ' +
+          '플러스면 국내가 더 비싸다는 뜻이고, 마이너스면 오히려 더 싸게 살 수 있었다는 뜻이에요(역프). ' +
+          '프리미엄 칸 아래 <b class="accent-text">환율 반영 시</b> 숫자는 환율 변동까지 넣었을 때 실제로 남는 몫인데, 아래 환율 리스크에서 자세히 다뤄요.'
+  },
+  prem: {
+    title: '차트 읽는 법',
+    body: '<b>0% 선 아래 붉은 영역</b>이 역프 구간이에요. 국내에서 오히려 더 싸게 살 수 있었던 날이라는 뜻이죠. ' +
+          '전체 보기에서 오른쪽 옅은 띠는 <b>최근 90일</b> 구간이라, 요즘 흐름이 전체 중 어디쯤인지 나란히 비교할 수 있어요. ' +
+          '선 끝의 점이 오늘 값이고, 시작일 이전은 상장 전이라 기록 자체가 없어요.'
+  },
+  gauge: {
+    title: '백분위와 히트맵 읽는 법',
+    body: '<b>백분위</b>는 오늘 김프가 상장 이후 전체 기간 중 몇 번째로 높은지를 뜻해요. 백분위 67이면 지난 날들의 3분의 2보다 높다는 거예요. ' +
+          '상위 30%는 <b>높음</b>, 하위 30%는 <b>낮음</b>, 그 사이는 <b>보통</b>으로 표시해요. 높다고 좋은 것도 낮다고 나쁜 것도 아니고, 지금 위치를 알려줄 뿐이에요.<br><br>' +
+          '오른쪽 격자는 하루가 한 칸이고 세로가 요일이에요. 색이 진할수록 그날 김프가 높은 편이었다는 뜻이고, 칸에 마우스를 올리면 그날 수치가 나와요.'
+  },
+  fxrisk: {
+    title: '왜 환율을 또 따져야 하나요?',
+    body: '김프는 <b>살 때</b> 얹어주는 웃돈이라 사는 순간 정해져요. 그런데 환율은 <b>팔 때까지</b> 계속 움직이죠.<br><br>' +
+          '그래서 김프가 벌어진 만큼 벌었더라도, 들고 있는 동안 환율이 내려가면 원화로 돌아올 때 그만큼 깎여요. ' +
+          '이 구획은 그 깎인 몫이 실제로 얼마였는지를 보여줍니다.'
+  },
+  decomp: {
+    title: '두 선의 차이',
+    body: '<b class="frog-text">녹색 선</b>은 프리미엄만 따라갔을 때 쌓였을 누적 수익이고, <b class="accent-text">붉은 선</b>은 환율 변동까지 반영한 실제 누적 수익이에요.<br><br>' +
+          '두 선 사이 <b>음영이 넓어질수록</b> 그 구간에서 환율이 가져간 몫이 컸다는 뜻이에요. 선 위에 마우스를 올리면 미리보기가 되고, 클릭하면 그 날짜로 고정돼요.'
+  },
+  bridge: {
+    title: '이 화살표가 뜻하는 것',
+    body: '왼쪽 <b class="frog-text">초록 점</b>은 프리미엄만 봤다면 남았을 수익, 오른쪽 <b class="accent-text">붉은 점</b>은 환율까지 반영한 실제 수익이에요. ' +
+          '두 점 사이 <b>화살표 길이가 곧 환율이 가져간 몫</b>이고요.<br><br>' +
+          '화살표가 0% 선을 지나 왼쪽까지 갔다면, 이익이 손실로 뒤집혔다는 뜻이에요.'
+  }
+};
+
+let openFrog = null;
+
+function closeFrogHelp() {
+  if (!openFrog) return;
+  openFrog.btn.setAttribute('aria-expanded', 'false');
+  openFrog.btn.innerHTML = FROG_CLOSED;
+  openFrog.bubble.hidden = true;
+  openFrog = null;
+}
+
+function mountFrogHelp() {
+  document.querySelectorAll('.frog-slot[data-help]').forEach((slot, i) => {
+    const info = HELP[slot.dataset.help];
+    if (!info || slot.dataset.mounted) return;
+    slot.dataset.mounted = '1';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'frog-help';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', `${info.title} — 설명 열기`);
+    btn.style.animationDelay = `${(i * 0.45).toFixed(2)}s`; // 다 같이 움직이면 어색해서 시차를 준다
+    btn.innerHTML = FROG_CLOSED;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'frog-bubble';
+    bubble.hidden = true;
+    bubble.setAttribute('role', 'dialog');
+    bubble.innerHTML = `<h5>${info.title}</h5>${info.body}<button type="button" class="frog-bubble-close">닫기</button>`;
+
+    slot.append(btn, bubble);
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = openFrog && openFrog.btn === btn;
+      closeFrogHelp();
+      if (isOpen) return;
+      btn.setAttribute('aria-expanded', 'true');
+      btn.innerHTML = FROG_OPEN;
+      bubble.hidden = false;
+      openFrog = { btn, bubble };
+    });
+
+    bubble.addEventListener('click', (e) => e.stopPropagation());
+    bubble.querySelector('.frog-bubble-close').addEventListener('click', () => {
+      const focusBack = btn;
+      closeFrogHelp();
+      focusBack.focus();
+    });
+  });
+
+  document.addEventListener('click', closeFrogHelp);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFrogHelp(); });
+}
+
+mountFrogHelp();
 
 document.getElementById('moreInfoToggle').addEventListener('click', function () {
   const detail = document.getElementById('moreInfoDetail');
@@ -452,8 +622,10 @@ function renderGauge() {
   const score = Math.round(pc * 100);
   const lower = Math.round(pc * sorted.length);
 
+  // 호 위쪽(=보통 라벨 자리)에 여백을 두려고 원 중심을 아래로 내렸다.
+  // 호 꼭대기는 cy-R-7(선 두께 절반) = 20 이고, 라벨 baseline 은 그보다 위인 12.
   const svg = document.getElementById('gaugeSvg');
-  const cx = 160, cy = 132, R = 106, r2 = 90;
+  const cx = 160, cy = 145, R = 118, r2 = 100;
   const ang = Math.PI - (score / 100) * Math.PI;
   const nx = cx + r2 * Math.cos(ang), ny = cy - r2 * Math.sin(ang);
 
@@ -466,9 +638,9 @@ function renderGauge() {
   }
 
   svg.innerHTML = `${arcs}
-    <text x="34" y="156" font-size="11" style="fill:var(--dim)">낮음</text>
-    <text x="160" y="20" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
-    <text x="286" y="156" text-anchor="end" font-size="11" style="fill:var(--dim)">높음</text>
+    <text x="42" y="172" text-anchor="middle" font-size="11" style="fill:var(--dim)">낮음</text>
+    <text x="160" y="12" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
+    <text x="278" y="172" text-anchor="middle" font-size="11" style="fill:var(--dim)">높음</text>
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" style="stroke:var(--text)" stroke-width="3" stroke-linecap="round"/>
     <circle cx="${cx}" cy="${cy}" r="6" style="fill:var(--text)"/>`;
 
@@ -591,7 +763,7 @@ function drawHeatmap() {
 
 // ══════ 환율 리스크 ══════
 function buildDecompSeries() {
-  const n = Math.min(LOOKBACK_DAYS, REAL.dates.length);
+  const n = Math.min(fxWindow, REAL.dates.length);
   const start = REAL.dates.length - n;
   const p0 = REAL.premiumPct[start];
   const fx0 = REAL.fxRate[start];
@@ -688,25 +860,39 @@ function drawMarker(i) {
     `<circle cx="${dcX(i)}" cy="${dcY(d.real)}" r="4.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="2"/>`;
 }
 
+// 수치선 축은 전체 구간 기준으로 한 번만 정한다.
+// 날짜를 바꿀 때마다 축이 다시 잡히면 0% 선까지 같이 움직여서 눈이 어지럽다.
+const BR = { W: 760, PL: 70, PR: 70, axisY: 88, arrowY: 50 };
+
+function fixBridgeScale() {
+  const vals = DECOMP.flatMap(d => [d.premium, d.real]).concat(0);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max((hi - lo) * 0.12, 0.3);
+  BR.lo = lo - pad;
+  BR.hi = hi + pad;
+}
+
+function brX(v) {
+  return BR.PL + ((v - BR.lo) / (BR.hi - BR.lo)) * (BR.W - BR.PL - BR.PR);
+}
+
 // 선택한 시점의 수치선을 그린다 (그래프가 입력, 이 함수가 출력)
 function drawBridge(i) {
   const d = DECOMP[i];
   const svg = document.getElementById('bridgeChart');
   svg.innerHTML = '';
 
-  const W = 760, PL = 70, PR = 70, axisY = 88, arrowY = 50;
-  const vals = [d.premium, d.real, 0];
-  const lo = Math.min(...vals), hi = Math.max(...vals);
-  const pad = Math.max((hi - lo) * 0.22, 0.4);
-  const xAt = v => PL + ((v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (W - PL - PR);
+  const W = BR.W, PL = BR.PL, PR = BR.PR, axisY = BR.axisY, arrowY = BR.arrowY;
+  const xAt = brX;
 
   const lost = d.real < d.premium;
   const color = lost ? 'var(--accent)' : 'var(--frog)';
   const gap = Math.abs(d.premium - d.real);
 
+  // 0% 선은 항상 같은 자리 — 점과 화살표만 움직인다
   const zx = xAt(0);
-  svg.appendChild(svgEl('line', { x1: zx, x2: zx, y1: 22, y2: axisY + 8, stroke: 'var(--border2)', 'stroke-dasharray': '3 3' }));
-  svg.appendChild(svgText(zx, 16, '0%', {}));
+  svg.appendChild(svgEl('line', { x1: zx, x2: zx, y1: 22, y2: axisY + 8, stroke: 'var(--mut)', 'stroke-dasharray': '3 3' }));
+  svg.appendChild(svgText(zx, 16, '0%', { fill: 'var(--mut)' }));
   svg.appendChild(svgEl('line', { x1: PL - 24, x2: W - PR + 24, y1: axisY, y2: axisY, stroke: 'var(--border2)' }));
 
   const from = xAt(d.premium), to = xAt(d.real);
@@ -752,6 +938,55 @@ document.getElementById('pickReset').addEventListener('click', () => {
   renderPick(null, false);
 });
 
+// ══════ 보유 기간 선택 ══════
+// 며칠을 들고 있었느냐에 따라 환율이 가져가는 몫이 크게 달라진다.
+// 임의로 60일을 못 박는 대신 직접 만져보게 한다.
+let fxPresetsBound = false;
+
+function renderFxPresets() {
+  const N = REAL.dates.length;
+  const opts = [30, 60, 90].filter(d => d < N).map(d => ({ label: `${d}일`, d }));
+  opts.push({ label: `전체 · ${N}일`, d: N });
+  if (!opts.some(o => o.d === fxWindow)) fxWindow = opts[Math.min(1, opts.length - 1)].d;
+
+  const box = document.getElementById('fxPresets');
+  box.innerHTML = opts.map(o =>
+    `<button type="button" class="fx-preset${o.d === fxWindow ? ' active' : ''}" data-d="${o.d}" aria-pressed="${o.d === fxWindow}">${o.label}</button>`
+  ).join('');
+
+  if (fxPresetsBound) return;
+  fxPresetsBound = true;
+
+  box.addEventListener('click', (e) => {
+    const btn = e.target.closest('.fx-preset');
+    if (!btn) return;
+    fxWindow = parseInt(btn.dataset.d, 10);
+    box.querySelectorAll('.fx-preset').forEach(b => {
+      const on = b === btn;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    applyFxWindow();
+  });
+}
+
+// 기간이 바뀌면 누적 시계열·축·차트·수치선·상단 카드 힌트를 모두 다시 맞춘다
+function applyFxWindow() {
+  DECOMP = buildDecompSeries();
+  fixBridgeScale();
+  pinnedIdx = null;
+  drawDecompChart();
+  renderPick(null, false);
+  updatePremHint();
+}
+
+function updatePremHint() {
+  document.getElementById('stPremHint').textContent =
+    `환율 반영 시 ${fmtPct(DECOMP[DECOMP.length - 1].real)}`;
+  document.getElementById('fxWindowLabel').textContent =
+    DECOMP.length >= REAL.dates.length ? '상장 이후 전체 기간' : `최근 ${DECOMP.length}일`;
+}
+
 // ══════ 오늘의 숫자 ══════
 function renderKpi() {
   const last = REAL.dates.length - 1;
@@ -769,8 +1004,7 @@ function renderKpi() {
   }
 
   // 아래 환율 리스크 구획과 같은 계산을 쓴다 (두 숫자가 어긋날 일이 없도록)
-  document.getElementById('stPremHint').textContent =
-    `환율 반영 시 ${fmtPct(DECOMP[DECOMP.length - 1].real)}`;
+  updatePremHint();
 
   const fetched = new Date(REAL.fetchedAt || Date.now());
   const pad = n => String(n).padStart(2, '0');
@@ -778,7 +1012,6 @@ function renderKpi() {
     `${REAL.dates[last]} 기준<span class="kpi-meta-sep">·</span>` +
     `${pad(fetched.getHours())}:${pad(fetched.getMinutes())}:${pad(fetched.getSeconds())} 갱신`;
 
-  document.getElementById('fxWindowLabel').textContent = `최근 ${DECOMP.length - 1}일`;
 }
 
 // ══════ 로드 ══════
@@ -796,20 +1029,53 @@ function setSectionState(name, state, message) {
   }
 }
 
-async function loadRealData(forceRefresh) {
-  const data = await getUsdtPremiumData({ forceRefresh });
+// shared.js 가 주는 것: { dates, usdtPrice, fxRate }
+// 프리미엄%와 불러온 시각은 이 페이지에서 계산해 붙인다.
+function setLoadingMessage(text) {
+  document.querySelectorAll('.js-loading-msg').forEach(el => { el.textContent = text; });
+}
+
+async function loadRealData(force) {
+  const data = await getUsdtPremiumData({
+    force,
+    onProgress: (n, phase) => {
+      if (phase === 'upbit') setLoadingMessage(`업비트 일봉 ${n.toLocaleString('ko-KR')}일 불러오는 중…`);
+      else if (phase === 'fx') setLoadingMessage('환율 불러오는 중…');
+      else setLoadingMessage('시세 불러오는 중…');
+    }
+  });
+
+  if (!data || !Array.isArray(data.dates) || data.dates.length === 0) {
+    throw new Error('받아온 데이터가 비어 있습니다.');
+  }
+
   const premiumPct = data.usdtPrice.map((p, i) => (p - data.fxRate[i]) / data.fxRate[i] * 100);
-  return { ...data, premiumPct };
+  return { ...data, premiumPct, fetchedAt: readCachedFetchTime() || Date.now() };
+}
+
+// shared.js 는 받아온 시각을 돌려주지 않지만 캐시에 savedAt 으로 적어둔다.
+// 그 값을 읽어야 "몇 시에 받은 데이터인지"를 정확히 보여줄 수 있다.
+// (키가 바뀌면 조용히 현재 시각으로 넘어간다 — shared.js 상단 CACHE_PREFIX 참고)
+function readCachedFetchTime() {
+  try {
+    const raw = localStorage.getItem('premiumData:v2:KRW-USDT');
+    if (!raw) return null;
+    const savedAt = JSON.parse(raw).savedAt;
+    return Number.isFinite(savedAt) ? savedAt : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 const refreshBtn = document.getElementById('refreshBtn');
 
-async function loadAndRenderAll(forceRefresh = false) {
+async function loadAndRenderAll(force = false) {
   DATA_SECTIONS.forEach(name => setSectionState(name, 'loading'));
+  setLoadingMessage('데이터를 불러오는 중…');
   refreshBtn.disabled = true;
 
   try {
-    REAL = await loadRealData(forceRefresh);
+    REAL = await loadRealData(force);
   } catch (err) {
     console.error('데이터 로드 실패:', err);
     DATA_SECTIONS.forEach(name => setSectionState(name, 'error', err.message));
@@ -819,7 +1085,9 @@ async function loadAndRenderAll(forceRefresh = false) {
 
   DATA_SECTIONS.forEach(name => setSectionState(name, 'loaded'));
 
+  renderFxPresets();
   DECOMP = buildDecompSeries();
+  fixBridgeScale();
   pinnedIdx = null;
 
   buildColorScale();
@@ -836,10 +1104,9 @@ async function loadAndRenderAll(forceRefresh = false) {
   refreshBtn.disabled = false;
 }
 
-refreshBtn.addEventListener('click', () => {
-  clearPremiumCache();
-  loadAndRenderAll(true);
-});
+// force: true 면 shared.js 가 캐시를 건너뛰고 다시 받아온다.
+// clearPremiumCache() 는 인자 없이 부르면 다른 페이지(BTC 등) 캐시까지 지워서 쓰지 않는다.
+refreshBtn.addEventListener('click', () => loadAndRenderAll(true));
 
 loadAndRenderAll();
 </script>

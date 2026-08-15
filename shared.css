@@ -274,3 +274,39 @@ body {
    신규 컴포넌트를 추가할 경우, 아래에 이어서 작성하세요.
    반드시 위에 정의된 색상/spacing/radius 변수만 사용합니다.
    ============================================================ */
+
+/* ============================================================
+   상단 네비게이션 — index/dashboard/pattern/simulator 공용
+   ============================================================ */
+.topnav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+}
+.topnav-inner {
+  max-width: 820px; margin: 0 auto; padding: 0 var(--sp-6);
+  height: 56px; display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-4);
+}
+.topnav-logo {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-weight: 800; font-size: 0.98rem; color: var(--text);
+  text-decoration: none; flex: none;
+}
+.topnav-mascot-slot { width: 22px; height: 22px; flex: none; } /* 추후 마스코트 SVG 자리 */
+.topnav-tabs {
+  display: flex; gap: var(--sp-5); overflow-x: auto;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.topnav-tabs::-webkit-scrollbar { display: none; }
+.topnav-tab {
+  flex: none; white-space: nowrap; padding: 8px 2px;
+  font-size: 0.86rem; font-weight: 600; color: var(--mut);
+  text-decoration: none; border-bottom: 2px solid transparent;
+}
+.topnav-tab:hover { color: var(--text); }
+.topnav-tab.active { color: var(--frog); border-bottom-color: var(--frog); font-weight: 700; }
+
+@media (max-width: 768px) {
+  .topnav-inner { padding: 0 var(--sp-4); }
+  .topnav-tabs { justify-content: flex-start; }
+}

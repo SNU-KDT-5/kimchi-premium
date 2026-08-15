@@ -1,33 +1,535 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>실시간 관측 대시보드</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-  <link rel="stylesheet" href="shared.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실시간 관측 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body { padding-bottom: 80px; }
+  .header { padding: var(--sp-10) 0 var(--sp-2); }
+  .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
+
+  .section-block { margin-top: var(--sp-8); }
+  .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
+  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
+  .section-intro b.frog-text { color: var(--frog); }
+  .section-intro b.accent-text { color: var(--accent); }
+
+  /* ① 더 알아보기 아코디언 */
+  .more-info-toggle {
+    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: 9px;
+    background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
+    font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
+  }
+  .more-info-toggle:hover { background: var(--panel); }
+  .more-info-detail { display: none; margin-top: var(--sp-4); }
+  .more-info-detail.show { display: block; }
+  .more-info-detail .section-intro { margin-bottom: var(--sp-3); }
+
+  /* ② 환율 분해 수식 */
+  .formula-box {
+    background: linear-gradient(135deg, var(--frog-bg), var(--amber-bg));
+    border: 1px solid var(--frog-line); border-radius: var(--r-lg); padding: var(--sp-6);
+  }
+  .formula-eq { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; text-align: center; margin-bottom: var(--sp-5); letter-spacing: 0.02em; }
+  .formula-eq .op { color: var(--dim); margin: 0 6px; }
+  .formula-parts { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+  .formula-part { flex: 1; min-width: 150px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); text-align: center; }
+  .formula-part .l { font-size: 0.7rem; color: var(--mut); margin-bottom: 6px; }
+  .formula-part .l .sym { font-family: var(--font-mono); font-weight: 700; }
+  .formula-part .v { font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; }
+  .formula-part .v.accent { color: var(--accent); }
+  .formula-part .v.frog { color: var(--frog); }
+  .formula-note { font-size: 0.78rem; color: var(--mut); margin-top: var(--sp-4); text-align: center; line-height: 1.6; }
+  .formula-note b { color: var(--text); }
+  .formula-note b.frog-text { color: var(--frog); }
+  .formula-note b.accent-text { color: var(--accent); }
+
+  .simple-breakdown { background: var(--panel); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
+  .sb-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+  .sb-label { font-size: 0.88rem; color: var(--text); }
+  .sb-val { font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; }
+  .sb-val.frog { color: var(--frog); }
+  .sb-val.accent { color: var(--accent); }
+  .sb-divider { height: 1px; background: var(--border2); margin: 2px 0; }
+  .sb-total .sb-label { font-weight: 700; }
+  .sb-total .sb-val { font-size: 1.3rem; color: var(--text); }
+
+  .formula-toggle {
+    display: block; width: 100%; text-align: center; margin-top: var(--sp-4); padding: 9px;
+    background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
+    font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
+  }
+  .formula-toggle:hover { background: var(--panel); }
+  .formula-detail { display: none; margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px dashed var(--border2); }
+  .formula-detail.show { display: block; }
+
+  /* ③ 시계열 */
+  .period-tabs { display: flex; gap: 5px; background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; margin-bottom: var(--sp-4); }
+  .period-tab { flex: 1; text-align: center; padding: 8px 6px; border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 600; color: var(--mut); cursor: pointer; }
+  .period-tab.active { background: var(--text); color: #fff; }
+  .chart-svg { width: 100%; height: 180px; display: block; }
+  .legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); }
+  .legend-line { display: inline-block; width: 14px; height: 2px; margin-right: 5px; vertical-align: middle; }
+
+  /* ④ 분해 막대그래프 */
+  .decomp-svg { width: 100%; height: 200px; display: block; }
+  .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+
+  /* ⑤ 워터폴 (사례) */
+  .waterfall { display: flex; align-items: flex-end; gap: var(--sp-2); height: 160px; margin: var(--sp-5) 0 6px; }
+  .wf-bar { flex: 1; border-radius: 5px 5px 0 0; position: relative; min-height: 2px; }
+  .wf-bar .lbl { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-family: var(--font-mono); }
+  .wf-bar .nm { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 0.68rem; color: var(--dim); white-space: nowrap; }
+  .case-desc { font-size: 0.82rem; color: var(--mut); margin-top: 32px; line-height: 1.7; }
+
+  .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
+
+  /* ⑥ 게이지 */
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: 10px 0 0; }
+  .gauge-score { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 800; margin-top: -10px; }
+  .gauge-label { font-size: 0.82rem; font-weight: 700; padding: 3px 12px; border-radius: var(--r-pill); margin-top: 6px; }
+  .gauge-sub { font-size: 0.74rem; color: var(--dim); margin-top: 6px; text-align: center; }
+
+  /* ⑦ 히트맵 */
+  .heatmap-wrap { margin-top: 4px; }
+  .hm-months { display: flex; gap: var(--sp-4); flex-wrap: wrap; }
+  .hm-month {}
+  .hm-month-label { font-size: 0.72rem; font-weight: 700; color: var(--mut); margin-bottom: 6px; }
+  .hm-day-labels { display: grid; grid-template-columns: repeat(7, 22px); gap: 2px; margin-bottom: 3px; }
+  .hm-day-labels span { font-size: 9px; color: var(--dim); text-align: center; font-weight: 600; }
+  .hm-week { display: grid; grid-template-columns: repeat(7, 22px); gap: 2px; margin-bottom: 2px; }
+  .hm-cell { width: 22px; height: 22px; border-radius: 4px; position: relative; cursor: default; transition: transform .1s; }
+  .hm-cell:hover { transform: scale(1.3); z-index: 3; }
+  .hm-cell.empty { background: rgba(0,0,0,.04); }
+  .hm-cell .hm-tip { display: none; position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border-radius: 7px; padding: 6px 9px; font-size: 11px;
+    white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5; }
+  .hm-cell:hover .hm-tip { display: block; }
+  .hm-legend { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-3); font-size: 11px; color: var(--dim); }
+  .hm-legend .bar { flex: 1; height: 6px; border-radius: var(--r-pill); max-width: 160px;
+    background: linear-gradient(90deg, #4a90c4, var(--border2), var(--accent)); }
+</style>
 </head>
 <body>
-  <nav class="topnav">
-    <div class="topnav-inner">
-      <a href="index.html" class="topnav-logo">
-        <span class="topnav-mascot-slot" aria-hidden="true"></span>
-        김프로그
-      </a>
-      <div class="topnav-tabs">
-        <a href="index.html" class="topnav-tab">홈</a>
-        <a href="dashboard.html" class="topnav-tab active">대시보드</a>
-        <a href="pattern.html" class="topnav-tab">패턴분석</a>
-        <a href="simulator.html" class="topnav-tab">시뮬레이터</a>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="index.html" class="topnav-logo">
+      <span class="topnav-mascot-slot" aria-hidden="true"></span>
+      김프로그
+    </a>
+    <div class="topnav-tabs">
+      <a href="index.html" class="topnav-tab">홈</a>
+      <a href="dashboard.html" class="topnav-tab active">대시보드</a>
+      <a href="pattern.html" class="topnav-tab">패턴분석</a>
+      <a href="simulator.html" class="topnav-tab">시뮬레이터</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow mono">현황 대시보드</div>
+    <h1>지금 이 순간의 숫자들</h1>
+    <p>테더 투자의 가장 큰 방해물은 환율입니다. 프리미엄이 아무리 벌어져도, 환율이 함께 흔들리면 실질 수익은 달라집니다.</p>
+  </div>
+
+  <!-- ① 게시판 -->
+  <div class="section-block">
+    <div class="section-label">① 현재 지표</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">1,342원</div><div class="hint">방금 갱신</div></div>
+      <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">1,312원</div><div class="hint">방금 갱신</div></div>
+      <div class="stat-card"><div class="label">프리미엄</div><div class="value accent" id="stPrem">+2.28%</div><div class="hint">방금 갱신</div></div>
+    </div>
+
+    <button class="more-info-toggle" id="moreInfoToggle">더 알아보기 — 지금 시장 상황 ▾</button>
+    <div class="more-info-detail" id="moreInfoDetail">
+      <p class="section-intro">여기에 비트코인 거래량, 거래대금, 네이버 검색지수 등 시장 활발도 지표가 들어올 예정입니다</p>
+      <div class="stat-row">
+        <div class="stat-card"><div class="label">거래량</div><div class="value">—</div></div>
+        <div class="stat-card"><div class="label">거래대금</div><div class="value">—</div></div>
+        <div class="stat-card"><div class="label">검색지수</div><div class="value">—</div></div>
       </div>
     </div>
-  </nav>
+  </div>
 
-  <!--
-    담당: 실시간 관측 대시보드
-    역할: 차트 3종(가격비교/프리미엄추이/달러기준) + 탭 전환(전체/1000일/200일/주별/일별)
-    의존성: shared.js의 getUsdtPremiumData() 함수 필수 - shared 브랜치 머지 후 연결 예정
-    참고: usdt_premium_dashboard3.html 프로토타입 기반으로 만들 것
-  -->
+  <!-- ② 환율 분해 -->
+  <div class="section-block">
+    <div class="section-label">② 번 돈 중 얼마가 환율 때문에 사라졌을까</div>
+    <div class="formula-box">
+      <div class="simple-breakdown">
+        <div class="sb-row">
+          <span class="sb-label">프리미엄으로 벌었어야 할 돈</span>
+          <span class="sb-val frog" id="sbSpread">+2.28%</span>
+        </div>
+        <div class="sb-row">
+          <span class="sb-label">환율이 가져간 몫</span>
+          <span class="sb-val accent" id="sbFx">-1.31%</span>
+        </div>
+        <div class="sb-divider"></div>
+        <div class="sb-row sb-total">
+          <span class="sb-label">실제로 남은 돈</span>
+          <span class="sb-val" id="sbNet">+0.94%</span>
+        </div>
+      </div>
+      <div class="formula-note">프리미엄이 아무리 커도, 환율이 반대로 크게 움직이면 실제로 손에 남는 수익은 줄어듭니다. 반대로 환율이 유리하게 움직이면 실질 수익이 프리미엄보다 커질 수도 있습니다.</div>
+
+      <button class="formula-toggle" id="formulaToggle">계산 방식이 궁금하다면 ▾</button>
+      <div class="formula-detail" id="formulaDetail">
+        <div class="formula-eq">(1 + R<sub>krw</sub>)<span class="op">=</span>(1 + R<sub>usd</sub>)<span class="op">×</span>(1 + fx)</div>
+        <div class="formula-parts">
+          <div class="formula-part"><div class="l">원화 기준 실질수익 <span class="sym">R_krw</span></div><div class="v" id="fKrw">+0.94%</div></div>
+          <div class="formula-part"><div class="l">프리미엄 스프레드 <span class="sym">R_usd</span></div><div class="v frog" id="fUsd">+2.28%</div></div>
+          <div class="formula-part"><div class="l">환율 변동분 <span class="sym">fx</span></div><div class="v accent" id="fFx">-1.31%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 시계열 -->
+  <div class="section-block">
+    <div class="section-label">③ 프리미엄 추이</div>
+    <div class="card">
+      <div class="period-tabs" id="periodTabs">
+        <div class="period-tab" data-p="90">90일</div>
+        <div class="period-tab active" data-p="365">1년</div>
+        <div class="period-tab" data-p="1095">3년</div>
+      </div>
+      <div class="legend-row"><span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span></div>
+      <svg class="chart-svg" id="premChart" viewBox="0 0 760 180" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <!-- ④ 두 선 비교 -->
+  <div class="section-block">
+    <div class="section-label">④ 프리미엄만큼 벌었다면 vs 실제로 번 것</div>
+    <div class="card">
+      <p class="section-intro">만약 처음부터 계속 투자했다면, <b class="frog-text">그린 선</b>은 프리미엄만으로 쌓였을 누적 수익이고 <b class="accent-text">버건디 선</b>은 환율까지 반영한 실제 누적 수익입니다. 두 선 사이가 벌어질수록, 그만큼 환율이 수익에 끼어든 것입니다.</p>
+      <div class="decomp-legend-row">
+        <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
+        <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+      </div>
+      <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
+      <div class="caption">두 선 사이 옅은 음영이 그 시점까지 환율이 누적으로 갉아먹거나 더해준 몫입니다. 선이 벌어질수록 영향이 큽니다.</div>
+    </div>
+  </div>
+
+  <!-- ⑤ 워터폴 사례 -->
+  <div class="section-block">
+    <div class="section-label">⑤ 평상시라면 어떻게 될까</div>
+    <div class="card">
+      <div class="waterfall" id="waterfallChart"></div>
+      <div class="case-desc" id="caseDesc">-</div>
+    </div>
+  </div>
+
+  <!-- ⑥ 게이지 -->
+  <div class="section-block">
+    <div class="section-label">⑥ 지금 투자 안정성 게이지</div>
+    <div class="card">
+      <p class="section-intro">실질 김프가 과거 대비 어느 수준인지 보여줍니다. 높다고 유리하거나 낮다고 불리하다는 뜻은 아닙니다.</p>
+      <div class="gauge-wrap">
+        <svg id="gaugeSvg" viewBox="0 0 320 178" style="width:100%;max-width:320px;display:block;margin:0 auto"></svg>
+        <div class="gauge-score" id="gaugeScore">–</div>
+        <div class="gauge-label" id="gaugeLabel">–</div>
+        <div class="gauge-sub">과거 2년 실질 김프 분포 대비 현재 위치</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ 히트맵 -->
+  <div class="section-block">
+    <div class="section-label">⑦ 일별 투자 안정성 히트맵</div>
+    <div class="card">
+      <p class="section-intro"><b class="accent-text">빨간색</b>일수록 실질 김프가 과거 대비 높은 날, <b style="color:#4a90c4">파란색</b>일수록 낮은 날입니다.</p>
+      <div class="heatmap-wrap">
+        <div class="hm-months" id="heatgrid"></div>
+        <div class="hm-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function seededRandom(seed){ let s=seed; return function(){ s=(s*9301+49297)%233280; return s/233280; }; }
+
+document.getElementById('formulaToggle').addEventListener('click', function(){
+  const detail = document.getElementById('formulaDetail');
+  const isShown = detail.classList.toggle('show');
+  this.textContent = isShown ? '계산 방식 접기 ▴' : '계산 방식이 궁금하다면 ▾';
+});
+
+document.getElementById('moreInfoToggle').addEventListener('click', function(){
+  const detail = document.getElementById('moreInfoDetail');
+  const isShown = detail.classList.toggle('show');
+  this.textContent = isShown ? '접기 ▴' : '더 알아보기 — 지금 시장 상황 ▾';
+});
+
+// ══════════ ③ 시계열 데이터 ══════════
+function genPremSeries(days, seed){
+  const rand = seededRandom(seed);
+  let base = 1.3, arr = [];
+  for(let i=0;i<days;i++){
+    base += (rand()-0.5)*0.045;
+    base = Math.max(-1.2, Math.min(5, base));
+    arr.push(base + (rand()-0.5)*0.7);
+  }
+  return arr;
+}
+
+function drawPremChart(days){
+  const svg = document.getElementById('premChart');
+  svg.innerHTML = '';
+  const series = genPremSeries(days, 101);
+  const W=760,H=180,PL=44,PR=14,PT=14,PB=20;
+  const pw=W-PL-PR, ph=H-PT-PB;
+  const minY=Math.min(...series)-0.4, maxY=Math.max(...series)+0.4;
+  const xAt = i => PL + (i/(series.length-1))*pw;
+  const yAt = v => PT + ph - ((v-minY)/(maxY-minY))*ph;
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  for(let s=0;s<=3;s++){
+    const y = PT + ph - (s/3)*ph;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
+    line.setAttribute('stroke','#e0ecdf');
+    g.appendChild(line);
+  }
+  svg.appendChild(g);
+
+  const pts = series.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
+  const poly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  poly.setAttribute('points',pts); poly.setAttribute('fill','none'); poly.setAttribute('stroke','#b3372a'); poly.setAttribute('stroke-width','2');
+  svg.appendChild(poly);
+}
+
+document.querySelectorAll('.period-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    drawPremChart(parseInt(tab.dataset.p));
+  });
+});
+drawPremChart(365);
+
+// ══════════ ④ 두 선 비교 (프리미엄 누적 vs 실질 누적) ══════════
+function genCumulativeSeries(n, seed){
+  const rand = seededRandom(seed);
+  let premiumCum = 0, realCum = 0;
+  const arr = [];
+  for(let i=0;i<n;i++){
+    const premiumStep = (rand()-0.42)*0.55;   // 프리미엄만으로 쌓인 하루치 변화
+    const fxStep = (rand()-0.5)*0.5;          // 환율이 추가로 준 영향
+    premiumCum += premiumStep;
+    realCum += premiumStep + fxStep;
+    arr.push({ premium: premiumCum, real: realCum });
+  }
+  return arr;
+}
+
+function drawDecompChart(){
+  const svg = document.getElementById('decompChart');
+  svg.innerHTML = '';
+  const data = genCumulativeSeries(60, 202);
+  const W=760,H=200,PL=44,PR=14,PT=14,PB=20;
+  const pw=W-PL-PR, ph=H-PT-PB;
+  const allVals = data.flatMap(d=>[d.premium, d.real]);
+  const minY = Math.min(...allVals, 0) - 0.5, maxY = Math.max(...allVals, 0) + 0.5;
+  const xAt = i => PL + (i/(data.length-1))*pw;
+  const yAt = v => PT + ph - ((v-minY)/(maxY-minY))*ph;
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  for(let s=0;s<=3;s++){
+    const y = PT + ph - (s/3)*ph;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
+    line.setAttribute('stroke','#e0ecdf');
+    g.appendChild(line);
+  }
+  svg.appendChild(g);
+
+  // 두 선 사이 음영
+  const premiumLine = data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' L');
+  const realLineRev = data.slice().reverse().map((d,i)=>`${xAt(data.length-1-i)},${yAt(d.real)}`).join(' L');
+  const fillPath = `M${premiumLine} L${realLineRev} Z`;
+
+  const fill = document.createElementNS('http://www.w3.org/2000/svg','path');
+  fill.setAttribute('d', fillPath);
+  fill.setAttribute('fill', '#b3372a');
+  fill.setAttribute('fill-opacity', '0.14');
+  svg.appendChild(fill);
+
+  const premPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  premPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' '));
+  premPoly.setAttribute('fill','none'); premPoly.setAttribute('stroke','#3fa15e'); premPoly.setAttribute('stroke-width','2');
+  svg.appendChild(premPoly);
+
+  const realPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  realPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.real)}`).join(' '));
+  realPoly.setAttribute('fill','none'); realPoly.setAttribute('stroke','#b3372a'); realPoly.setAttribute('stroke-width','2.2');
+  svg.appendChild(realPoly);
+}
+drawDecompChart();
+
+// ══════════ ⑤ 워터폴 사례 (평상시 한 가지만) ══════════
+const CASES = [
+  {
+    id:'normal', label:'평상시',
+    spread: 3.2, fee: -0.8, fx: -0.6,
+    desc:'평상시에는 환율 변동이 크지 않아, 프리미엄 스프레드가 실질 수익에 대체로 반영됩니다.'
+  },
+];
+
+function renderWaterfall(c){
+  const net = c.spread + c.fee + c.fx;
+  const steps = [
+    { name:'프리미엄 스프레드', val:c.spread, color:'#3fa15e' },
+    { name:'수수료', val:c.fee, color:'#c48a1f' },
+    { name:'환율분', val:c.fx, color:'#b3372a' },
+    { name:'실질 수익', val:net, color: net>=0 ? '#3fa15e' : '#b3372a', isTotal:true },
+  ];
+  const wf = document.getElementById('waterfallChart');
+  wf.innerHTML = '';
+  const maxV = Math.max(c.spread, Math.abs(net), 1);
+  steps.forEach(s=>{
+    const bar = document.createElement('div');
+    bar.className = 'wf-bar';
+    const hpct = Math.max(6, (Math.abs(s.val)/maxV)*100);
+    bar.style.height = hpct + '%';
+    bar.style.background = s.color;
+    bar.innerHTML = `<span class="lbl" style="color:${s.color};">${s.val>=0?'+':''}${s.val.toFixed(2)}%</span><span class="nm">${s.name}</span>`;
+    wf.appendChild(bar);
+  });
+  document.getElementById('caseDesc').textContent = c.desc;
+}
+renderWaterfall(CASES[0]);
+
+
+// ══════════ ⑥ 게이지 + ⑦ 히트맵 (실질 김프 백분위 기준, 2년치) ══════════
+(function(){
+  const rand = seededRandom(303);
+  const randFx = seededRandom(707);
+
+  // 실질 김프 시계열 (730일 = 2년) = 겉보기 김프 - 환율 변동분
+  const realPrems = [];
+  let p = 1.0, fx = 0;
+  for(let i=0;i<730;i++){
+    p += (rand()-.5)*.04;
+    p = Math.max(-1.5, Math.min(4.5, p));
+    fx += (randFx()-.5)*.006;
+    fx = Math.max(-.02, Math.min(.02, fx));
+    realPrems.push(+(p - fx*100 + (rand()-.5)*.3).toFixed(3));
+  }
+
+  // 과거 2년 정렬 → 백분위 계산
+  const sorted = [...realPrems].sort((a,b)=>a-b);
+  const cur = realPrems[realPrems.length-1];
+  const pc = sorted.filter(v=>v<=cur).length / sorted.length;
+  const score = Math.round(pc*100);
+
+  // 색상 스케일: 파랑 → 회색 → 빨강 (수치의 상대적 높낮이만 표현)
+  function heatColor(t){
+    t = Math.max(0, Math.min(1, t));
+    if(t < 0.5){
+      const f = t/0.5;
+      return `rgb(${Math.round(74+f*(180-74))},${Math.round(144+f*(180-144))},${Math.round(196+f*(180-196))})`;
+    } else {
+      const f = (t-.5)/.5;
+      return `rgb(${Math.round(180+f*(179-180))},${Math.round(180+f*(55-180))},${Math.round(180+f*(42-180))})`;
+    }
+  }
+
+  // 라벨 결정 (상위30%=높음, 하위30%=낮음, 중간=보통) — 매수/매도 프레이밍 대신 중립 서술
+  function getLabel(t){
+    if(t >= 0.7) return { txt:'높음', bg:'rgba(179,55,42,.12)', col:'#b3372a' };
+    if(t >= 0.3) return { txt:'보통', bg:'rgba(196,138,31,.12)', col:'#c48a1f' };
+    return { txt:'낮음', bg:'rgba(74,144,196,.12)', col:'#4a90c4' };
+  }
+
+  // ── 게이지 ──
+  const svg = document.getElementById('gaugeSvg');
+  const cx=160, cy=148, R=118, r2=102;
+  const ang = Math.PI-(score/100)*Math.PI;
+  const nx = cx+r2*Math.cos(ang), ny = cy-r2*Math.sin(ang);
+  let arcs='';
+  for(let s=0;s<100;s+=2){
+    const a0=Math.PI-s/100*Math.PI, a1=Math.PI-(s+2.4)/100*Math.PI;
+    const x0=cx+R*Math.cos(a0),y0=cy-R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy-R*Math.sin(a1);
+    arcs+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s/100)}" stroke-width="16" stroke-linecap="round"/>`;
+  }
+  svg.innerHTML = `${arcs}
+    <text x="24" y="172" font-size="11" fill="#7c9080">낮음</text>
+    <text x="160" y="22" text-anchor="middle" font-size="11" fill="#7c9080">보통</text>
+    <text x="296" y="172" text-anchor="end" font-size="11" fill="#7c9080">높음</text>
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1f2b21" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="6" fill="#1f2b21"/>`;
+
+  const gs = document.getElementById('gaugeScore');
+  const topPct = 100 - score;
+  gs.textContent = `상위 ${topPct}%`;
+  gs.style.color = heatColor(pc);
+  gs.style.fontSize = '1.8rem';
+  gs.style.letterSpacing = '-0.5px';
+
+  const lbl = getLabel(pc);
+  const gl = document.getElementById('gaugeLabel');
+  gl.textContent = lbl.txt;
+  gl.setAttribute('style', `background:${lbl.bg};color:${lbl.col};font-size:0.82rem;font-weight:700;padding:3px 12px;border-radius:20px;margin-top:6px;`);
+
+  const sub = document.querySelector('.gauge-sub');
+  sub.innerHTML = `현재 실질 김프 <b style="color:#b3372a">${cur.toFixed(2)}%</b> — 과거 2년 대비 상위 <b>${100-score}%</b> 수준`;
+
+  // ── 히트맵 (최근 91일 표시) ──
+  const TODAY = new Date(2026,7,9);
+  const DATES = [];
+  for(let i=0;i<91;i++){const d=new Date(TODAY);d.setDate(d.getDate()-(90-i));DATES.push(d);}
+
+  const recent = realPrems.slice(-91);
+  const pcAll = recent.map(v => sorted.filter(x=>x<=v).length/sorted.length);
+
+  const months={};
+  DATES.forEach((d,i)=>{
+    const key=d.getFullYear()+'-'+(d.getMonth()+1);
+    if(!months[key])months[key]={label:d.getFullYear()+'년 '+(d.getMonth()+1)+'월',days:[]};
+    months[key].days.push({d, t:pcAll[i], prem:recent[i]});
+  });
+
+  const DOW=['일','월','화','수','목','금','토'];
+  let html='';
+  Object.values(months).forEach(mo=>{
+    html+=`<div class="hm-month"><div class="hm-month-label">${mo.label}</div>`;
+    html+=`<div class="hm-day-labels">${DOW.map(d=>`<span>${d}</span>`).join('')}</div>`;
+    const weeks=[];let week=[];
+    const fd=mo.days[0].d.getDay();
+    for(let pp=0;pp<fd;pp++)week.push(null);
+    mo.days.forEach(day=>{week.push(day);if(week.length===7){weeks.push(week);week=[];}});
+    if(week.length){while(week.length<7)week.push(null);weeks.push(week);}
+    weeks.forEach(wk=>{
+      html+='<div class="hm-week">';
+      wk.forEach(day=>{
+        if(!day)html+='<div class="hm-cell empty"></div>';
+        else{
+          const col=heatColor(day.t);
+          const lbl2=getLabel(day.t);
+          const dd=day.d;
+          const dateStr=(dd.getMonth()+1)+'/'+(dd.getDate());
+          html+=`<div class="hm-cell" style="background:${col}"><span class="hm-tip">${dateStr}<br>실질 김프 ${day.prem.toFixed(2)}%<br><span style="color:${lbl2.col};font-weight:700">${lbl2.txt}</span></span></div>`;
+        }
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('heatgrid').innerHTML=html;
+})();
+</script>
+
 </body>
 </html>

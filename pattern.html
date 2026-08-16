@@ -17,7 +17,6 @@
 
   .section-block { margin-top: var(--sp-8); }
   .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
-  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
   .chart-scroll {
     width: 100%;
     overflow-x: auto;
@@ -31,6 +30,35 @@
 
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .kimp-line { fill: none; stroke: var(--accent); stroke-width: 2.2; }
+  /* 실제 김프 선과 데모 사건 점을 구분하는 기본 범례입니다. */
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-4);
+    font-size: 0.74rem;
+    color: var(--mut);
+  }
+
+  .chart-legend__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  .chart-legend__line {
+    width: var(--sp-6);
+    border-top: 2px solid var(--accent);
+  }
+
+  .chart-legend__dot {
+    width: var(--sp-2);
+    height: var(--sp-2);
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
   .zero-line { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
   .axis-line { stroke: var(--border); stroke-width: 1; }
   .axis-label { fill: var(--mut); font-size: 10px; }
@@ -120,13 +148,24 @@
   <div class="header">
     <div class="eyebrow mono">패턴분석</div>
     <h1>환율조정 BTC 김프 — 언제, 어떻게 크게 움직였나</h1>
-    <p>2017.09 ~ 현재 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다. <span class="badge badge-neutral">라인차트 실제 데이터 · 사건 상세 데모</span></p>
+    <p>2017년 09월부터 현재까지의 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다. <span class="badge badge-neutral">라인차트 실제 데이터 · 사건 상세 데모</span></p>
   </div>
 
   <div class="section-block">
     <div class="section-label">환율조정 BTC 김프 (%) · 2017.09 ~ 현재 </div>
     <div class="card">
-      <p class="section-intro">점을 클릭하면 해당 시점의 상세 정보가 아래에 펼쳐집니다.</p>
+      <div class="chart-legend">
+        <span class="chart-legend__item">
+          <span class="chart-legend__line"></span>
+          <span>환율조정 BTC 김프 · 실제 데이터</span>
+        </span>
+
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot"></span>
+          <span>주요 사건 · 상세 데모</span>
+        </span>
+      </div>
+
       <div id="chartLoading" class="status-box" role="status" aria-live="polite" hidden>
         <div class="spinner" aria-hidden="true"></div>
         <p>BTC·환율 데이터를 불러오는 중입니다.</p>

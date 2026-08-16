@@ -11,3 +11,6 @@
 | `shared` | `shared.js` | 공용 데이터 fetch |
 | `design-system` | `shared.css` | 공용 디자인 시스템 |
 | `backend` | `main.py` | FastAPI 뉴스 프록시 |
+
+<!-- coderabbit test PR, will be closed -->
+

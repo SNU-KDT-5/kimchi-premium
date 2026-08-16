@@ -123,6 +123,11 @@
         <p id="chartErrorMessage">잠시 후 페이지를 새로고침해 주세요.</p>
       </div>
 
+      <div id="chartEmpty" class="status-box" role="status" hidden>
+        <p>현재 표시할 수 있는 BTC·환율 데이터가 없습니다.</p>
+        <p>잠시 후 다시 확인해 주세요.</p>
+      </div>
+
       <div
         class="chart-scroll"
         role="region"
@@ -191,11 +196,13 @@
   const chartLoading = document.getElementById('chartLoading');
   const chartError = document.getElementById('chartError');
   const chartErrorMessage = document.getElementById('chartErrorMessage');
+  const chartEmpty = document.getElementById('chartEmpty');
   const chartSvg = document.getElementById('chart');
   const chartHint = document.querySelector('.pat-hint');
 
   chartLoading.hidden = false;
   chartError.hidden = true;
+  chartEmpty.hidden = true;
   chartSvg.hidden = true;
   chartHint.hidden = true;
   document.getElementById('detail').hidden = true;
@@ -240,13 +247,24 @@
       );
     })
     .catch(function (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      const hasNoData =
+        errorMessage.startsWith('no-upbit-data:') ||
+        errorMessage.startsWith('no-overlap:');
+
       chartLoading.hidden = true;
-      chartError.hidden = false;
+      chartError.hidden = hasNoData;
+      chartEmpty.hidden = !hasNoData;
       chartSvg.hidden = true;
       chartHint.hidden = true;
       document.getElementById('detail').hidden = true;
-      chartErrorMessage.textContent =
-        '네트워크 상태를 확인한 뒤 페이지를 새로고침해 주세요.';
+
+      if (!hasNoData) {
+        chartErrorMessage.textContent =
+          '네트워크 상태를 확인한 뒤 페이지를 새로고침해 주세요.';
+      }
 
       console.error('BTC API 오류:', error);
     });

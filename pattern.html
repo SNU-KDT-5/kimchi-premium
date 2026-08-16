@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
 <style>
   body { padding-bottom: 80px; }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
@@ -95,13 +96,22 @@
   <div class="header">
     <div class="eyebrow mono">패턴분석</div>
     <h1>환율조정 BTC 김프 — 언제, 어떻게 크게 움직였나</h1>
-    <p>2017~2026 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다. <span class="badge badge-neutral">데모 데이터 · 실제 수치 아님</span></p>
+    <p>2017~2026 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다. <span class="badge badge-neutral">라인차트 실제 데이터 · 사건 상세 데모</span></p>
   </div>
 
   <div class="section-block">
     <div class="section-label">환율조정 BTC 김프 (%) · 2017 ~ 2026</div>
     <div class="card">
       <p class="section-intro">점을 클릭하면 해당 시점의 상세 정보가 아래에 펼쳐집니다.</p>
+      <div id="chartLoading" class="status-box" role="status" aria-live="polite" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p>BTC·환율 데이터를 불러오는 중입니다.</p>
+      </div>
+
+      <div id="chartError" class="error-box" role="alert" hidden>
+        <h4>데이터를 불러오지 못했습니다.</h4>
+        <p id="chartErrorMessage">잠시 후 페이지를 새로고침해 주세요.</p>
+      </div>
 
       <svg id="chart" viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" aria-label="환율조정 BTC 김프 장기 추이 차트">
         <!-- JS가 이 안을 채웁니다 -->
@@ -153,18 +163,83 @@
     </div>
   </div>
 
-  <p class="caption" style="margin-top: var(--sp-8);">뷰1 인터랙티브 프로토타입 · 표시 데이터는 데모 · 실제 API 연동 전 레이아웃·인터랙션 검증용</p>
+<p class="caption" style="margin-top: var(--sp-8);">
+  라인차트는 업비트·Bitstamp·ECB 기반 실제 데이터를 사용합니다.
+  주말·공휴일 환율은 직전 영업일 값을 적용하며, 사건 상세 수치는 현재 검증 전 데모입니다.
+</p>
 </div>
 
 <script>
 (function () {
+  const chartLoading = document.getElementById('chartLoading');
+  const chartError = document.getElementById('chartError');
+  const chartErrorMessage = document.getElementById('chartErrorMessage');
+  const chartSvg = document.getElementById('chart');
+  const chartHint = document.querySelector('.pat-hint');
+
+  chartLoading.hidden = false;
+  chartError.hidden = true;
+  chartSvg.hidden = true;
+  chartHint.hidden = true;
+  document.getElementById('detail').hidden = true;
+
+  getBtcPremiumData()
+    .then(function (data) {
+      const realSeriesPoints = [];
+      const premiumValues = [];
+
+      data.dates.forEach(function (date, i) {
+        const convertedPrice = data.foreignUsd[i] * data.fxRate[i];
+        const premium =
+          ((data.btcPrice[i] - convertedPrice) / convertedPrice) * 100;
+
+        if (!Number.isFinite(premium)) return;
+
+        const parts = date.split('-').map(Number);
+        const year = parts[0];
+        const currentDate = Date.UTC(year, parts[1] - 1, parts[2]);
+        const yearStart = Date.UTC(year, 0, 1);
+        const nextYearStart = Date.UTC(year + 1, 0, 1);
+        const decimalYear =
+          year + (currentDate - yearStart) / (nextYearStart - yearStart);
+
+        realSeriesPoints.push([decimalYear, premium]);
+        premiumValues.push(premium);
+      });
+
+      kimpPath.setAttribute('d', buildPath(realSeriesPoints));
+
+      chartLoading.hidden = true;
+      chartError.hidden = true;
+      chartSvg.hidden = false;
+      chartHint.hidden = false;
+      document.getElementById('detail').hidden = false;
+
+      console.log('실제 차트 데이터 건수:', realSeriesPoints.length);
+      console.log(
+        '실제 김프 범위:',
+        Math.min.apply(null, premiumValues).toFixed(2) + '% ~ ' +
+        Math.max.apply(null, premiumValues).toFixed(2) + '%'
+      );
+    })
+    .catch(function (error) {
+      chartLoading.hidden = true;
+      chartError.hidden = false;
+      chartSvg.hidden = true;
+      chartHint.hidden = true;
+      document.getElementById('detail').hidden = true;
+      chartErrorMessage.textContent =
+        '네트워크 상태를 확인한 뒤 페이지를 새로고침해 주세요.';
+
+      console.error('BTC API 오류:', error);
+    });
   // ---------------------------------------------------------------------
   // 1) 데모 시계열 데이터 생성
   //    - 실제 API 대신, 알려진 시장 흐름을 참고해 만든 예시 값입니다.
   //    - 앵커(주요 시점) 사이를 보간 + 약간의 노이즈로 채워 라인 형태를 만듭니다.
   // ---------------------------------------------------------------------
   const START_YEAR = 2017.0;
-  const END_YEAR = 2026.6;
+  const END_YEAR = 2026.7;
 
   // [연도(소수), 김프%] 앵커 포인트
   const anchors = [
@@ -258,7 +333,7 @@
   const plotW = W - M.left - M.right;
   const plotH = H - M.top - M.bottom;
 
-  const minY = -8, maxY = 46;
+  const minY = -10, maxY = 65;
 
   function xScale(year) {
     return M.left + ((year - START_YEAR) / (END_YEAR - START_YEAR)) * plotW;
@@ -284,8 +359,8 @@
     class: 'zero-line', x1: M.left, x2: W - M.right, y1: yScale(0), y2: yScale(0)
   }));
 
-  // y축 라벨 (0%, 20%, 40%)
-  [0, 20, 40].forEach(v => {
+  // y축 라벨 (0%, 20%, 40%, 60%)
+  [0, 20, 40, 60].forEach(v => {
     const t = el('text', { class: 'axis-label', x: M.left - 8, y: yScale(v) + 3, 'text-anchor': 'end' });
     t.textContent = v + '%';
     svg.appendChild(t);
@@ -302,8 +377,19 @@
   }
 
   // 라인
-  const pathD = seriesPoints.map((p, i) => (i === 0 ? 'M' : 'L') + xScale(p[0]).toFixed(1) + ',' + yScale(p[1]).toFixed(1)).join(' ');
-  svg.appendChild(el('path', { class: 'kimp-line', d: pathD }));
+  function buildPath(points) {
+    return points.map(function (p, i) {
+      return (i === 0 ? 'M' : 'L') +
+        xScale(p[0]).toFixed(1) + ',' +
+        yScale(p[1]).toFixed(1);
+    }).join(' ');
+  }
+
+  const kimpPath = el('path', {
+    class: 'kimp-line',
+    d: buildPath(seriesPoints)
+  });
+  svg.appendChild(kimpPath);
 
   // 연결선 (선택된 점 -> 아래 상세박스 방향으로의 시각적 힌트)
   const connector = el('line', { class: 'connector', id: 'connector' });

@@ -27,6 +27,40 @@
     width: 140%;
     max-width: none;
   }
+  /* 주간 개요와 일봉 상세를 구분하는 차트 패널입니다. */
+  .chart-panel + .chart-panel {
+    margin-top: var(--sp-8);
+    padding-top: var(--sp-8);
+    border-top: 1px solid var(--border);
+  }
+
+  .chart-panel__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-4);
+    flex-wrap: wrap;
+  }
+
+  .chart-panel__title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .chart-panel__desc {
+    margin-top: var(--sp-1);
+    font-size: 0.76rem;
+    color: var(--mut);
+    line-height: 1.6;
+  }
+
+  /* 전체 주간 데이터를 유지하되 한 화면에는 약 4년이 보이게 합니다. */
+  .chart-scroll--weekly #weeklyChart {
+    width: 140%;
+    max-width: none;
+  }
 
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .kimp-line { fill: none; stroke: var(--accent); stroke-width: 2.2; }
@@ -181,15 +215,48 @@
         <p>잠시 후 다시 확인해 주세요.</p>
       </div>
 
-      <div
-        class="chart-scroll"
-        role="region"
-        tabindex="0"
-        aria-label="환율조정 BTC 김프 장기 차트. 좌우로 스크롤할 수 있습니다."
-      >
-        <svg id="chart" viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" aria-label="환율조정 BTC 김프 장기 추이 차트">
-          <!-- JS가 이 안을 채웁니다 -->
-        </svg>
+      <div id="weeklyChartBlock" class="chart-panel" hidden>
+        <div class="chart-panel__head">
+          <div>
+            <div class="chart-panel__title">주간 김프 추이 · 주간 평균</div>
+            <p class="chart-panel__desc">
+              주를 선택하면 아래 일봉 차트가 해당 시기를 중심으로 이동합니다.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="chart-scroll chart-scroll--weekly"
+          role="region"
+          tabindex="0"
+          aria-label="주간 평균 김프 차트. 좌우로 스크롤할 수 있습니다."
+        >
+          <svg id="weeklyChart" viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg" aria-label="주간 평균 김프 추이 차트">
+            <!-- JS가 주간 평균 차트를 채웁니다 -->
+          </svg>
+        </div>
+      </div>
+
+      <div id="dailyChartBlock" class="chart-panel">
+        <div class="chart-panel__head">
+          <div>
+            <div class="chart-panel__title">일별 김프 상세</div>
+            <p class="chart-panel__desc">
+              전체 일별 데이터를 좌우로 이동하며 세부 변화를 확인할 수 있습니다.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="chart-scroll chart-scroll--daily"
+          role="region"
+          tabindex="0"
+          aria-label="일별 환율조정 BTC 김프 차트. 좌우로 스크롤할 수 있습니다."
+        >
+          <svg id="chart" viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" aria-label="일별 환율조정 BTC 김프 추이 차트">
+            <!-- JS가 일봉 차트를 채웁니다 -->
+          </svg>
+        </div>
       </div>
 
       <div class="pat-hint"><span class="dot-sample"></span> 점을 클릭해서 사건별 상세 보기 (다시 클릭하면 닫힘)</div>
@@ -251,6 +318,10 @@
   const chartErrorMessage = document.getElementById('chartErrorMessage');
   const chartEmpty = document.getElementById('chartEmpty');
   const chartSvg = document.getElementById('chart');
+  // 주간 차트 선택과 일봉 차트 중심 이동을 연결하기 위한 요소입니다.
+  const weeklyChartBlock = document.getElementById('weeklyChartBlock');
+  const weeklySvg = document.getElementById('weeklyChart');
+  const dailyChartScroll = document.querySelector('.chart-scroll--daily');
   const chartHint = document.querySelector('.pat-hint');
 
   chartLoading.hidden = false;
@@ -259,11 +330,135 @@
   chartSvg.hidden = true;
   chartHint.hidden = true;
   document.getElementById('detail').hidden = true;
+  // 일별 김프를 월요일~일요일 단위로 묶어 주간 평균을 계산합니다.
+  function buildWeeklyRecords(dailyRecords) {
+    const weeklyGroups = new Map();
 
+    dailyRecords.forEach(function (record) {
+      const recordDate = new Date(record.date + 'T00:00:00Z');
+      const daysFromMonday = (recordDate.getUTCDay() + 6) % 7;
+
+      recordDate.setUTCDate(
+        recordDate.getUTCDate() - daysFromMonday
+      );
+
+      const weekStart = recordDate.toISOString().slice(0, 10);
+
+      if (!weeklyGroups.has(weekStart)) {
+        weeklyGroups.set(weekStart, {
+          date: weekStart,
+          year: record.year,
+          sum: 0,
+          count: 0
+        });
+      }
+
+      const group = weeklyGroups.get(weekStart);
+      group.sum += record.premium;
+      group.count += 1;
+    });
+
+    return Array.from(weeklyGroups.values()).map(function (group) {
+      return {
+        date: group.date,
+        year: group.year,
+        premium: group.sum / group.count
+      };
+    });
+  }
+
+  // 주간 평균 김프를 상단 개요 차트에 그립니다.
+  function renderWeeklyChart(weeklyRecords) {
+    const WEEKLY_W = 1000;
+    const WEEKLY_H = 300;
+    const WEEKLY_M = {
+      left: 46,
+      right: 20,
+      top: 20,
+      bottom: 34
+    };
+
+    const weeklyPlotW =
+      WEEKLY_W - WEEKLY_M.left - WEEKLY_M.right;
+    const weeklyPlotH =
+      WEEKLY_H - WEEKLY_M.top - WEEKLY_M.bottom;
+
+    function weeklyXScale(year) {
+      return WEEKLY_M.left +
+        ((year - START_YEAR) / (END_YEAR - START_YEAR)) *
+        weeklyPlotW;
+    }
+
+    function weeklyYScale(value) {
+      return WEEKLY_M.top + weeklyPlotH -
+        ((value - minY) / (maxY - minY)) *
+        weeklyPlotH;
+    }
+
+    weeklySvg.replaceChildren();
+
+    weeklySvg.appendChild(el('line', {
+      class: 'zero-line',
+      x1: WEEKLY_M.left,
+      x2: WEEKLY_W - WEEKLY_M.right,
+      y1: weeklyYScale(0),
+      y2: weeklyYScale(0)
+    }));
+
+    [0, 20, 40, 60].forEach(function (value) {
+      const label = el('text', {
+        class: 'axis-label',
+        x: WEEKLY_M.left - 8,
+        y: weeklyYScale(value) + 3,
+        'text-anchor': 'end'
+      });
+
+      label.textContent = value + '%';
+      weeklySvg.appendChild(label);
+    });
+
+    for (
+      let year = 2018;
+      year <= Math.floor(END_YEAR);
+      year += 1
+    ) {
+      const label = el('text', {
+        class: 'axis-label',
+        x: weeklyXScale(year),
+        y: WEEKLY_H - 10,
+        'text-anchor': 'middle'
+      });
+
+      label.textContent = year;
+      weeklySvg.appendChild(label);
+
+      weeklySvg.appendChild(el('line', {
+        class: 'axis-line',
+        x1: weeklyXScale(year),
+        x2: weeklyXScale(year),
+        y1: WEEKLY_M.top,
+        y2: WEEKLY_H - WEEKLY_M.bottom,
+        opacity: 0.35
+      }));
+    }
+
+    const weeklyPath = weeklyRecords.map(function (record, index) {
+      return (index === 0 ? 'M' : 'L') +
+        weeklyXScale(record.year).toFixed(1) + ',' +
+        weeklyYScale(record.premium).toFixed(1);
+    }).join(' ');
+
+    weeklySvg.appendChild(el('path', {
+      class: 'kimp-line',
+      d: weeklyPath
+    }));
+  }
   getBtcPremiumData()
+
     .then(function (data) {
       const realSeriesPoints = [];
       const premiumValues = [];
+      const dailyRecords = [];
 
       data.dates.forEach(function (date, i) {
         const convertedPrice = data.foreignUsd[i] * data.fxRate[i];
@@ -282,7 +477,16 @@
 
         realSeriesPoints.push([decimalYear, premium]);
         premiumValues.push(premium);
+        dailyRecords.push({
+          date: date,
+          year: decimalYear,
+          premium: premium
+        });
       });
+      // 실제 일별 김프를 주간 평균으로 묶어 상단 차트에 표시합니다.
+      const weeklyRecords = buildWeeklyRecords(dailyRecords);
+      renderWeeklyChart(weeklyRecords);
+      weeklyChartBlock.hidden = false;
 
       kimpPath.setAttribute('d', buildPath(realSeriesPoints));
 

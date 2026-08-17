@@ -64,7 +64,7 @@
 
   svg { display: block; width: 100%; height: auto; overflow: visible; }
   .kimp-line { fill: none; stroke: var(--accent); stroke-width: 2.2; }
-  /* 실제 김프 선과 데모 사건 점을 구분하는 기본 범례입니다. */
+  /* 김프 선과 사건 점·구간을 구분하는 기본 범례입니다. */
   .chart-legend {
     display: flex;
     flex-wrap: wrap;
@@ -126,6 +126,10 @@
     font-size: 10px;
     font-weight: 700;
     pointer-events: none;
+  }
+  #chartModeTabs { max-width: 220px; margin-bottom: var(--sp-5); }
+  .period-related-list {
+    display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3);
   }
   .zero-line { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
   .axis-line { stroke: var(--border); stroke-width: 1; }
@@ -219,12 +223,16 @@
   <div class="header">
     <div class="eyebrow mono">패턴분석</div>
     <h1>환율조정 BTC 김프 — 언제, 어떻게 크게 움직였나</h1>
-    <p>2017년 09월부터 현재까지의 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다. <span class="badge badge-neutral">라인차트·주간 사건 실제 데이터 · 일봉 사건 상세 데모</span></p>
+    <p>2017년 09월부터 현재까지의 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다. <span class="badge badge-neutral">라인차트·주간·일봉 사건 실제 데이터</span></p>
   </div>
 
   <div class="section-block">
     <div class="section-label">환율조정 BTC 김프 (%) · 2017.09 ~ 현재 </div>
     <div class="card">
+      <div class="tabs" id="chartModeTabs" role="tablist" aria-label="주봉/일봉 보기 전환" hidden>
+        <button type="button" class="tab active" id="weeklyModeTab" role="tab" aria-selected="true">주봉</button>
+        <button type="button" class="tab" id="dailyModeTab" role="tab" aria-selected="false">일봉</button>
+      </div>
       <div class="chart-legend">
         <span class="chart-legend__item">
           <span class="chart-legend__line"></span>
@@ -233,7 +241,7 @@
 
         <span class="chart-legend__item">
           <span class="chart-legend__dot"></span>
-          <span>점 · 일봉 상세 있음 (데모)</span>
+          <span>점 · 일봉 상세 있음</span>
         </span>
 
         <span class="chart-legend__item">
@@ -297,8 +305,9 @@
 
           <div id="periodRelated">
             <div class="card-title">관련 상세 사건</div>
+            <div class="period-related-list" id="periodRelatedList"></div>
             <p class="caption" id="periodRelatedEmpty">
-              연결된 상세 사건은 팀 데이터 입력 후 표시됩니다.
+              이 시기에 연결된 일봉 상세 사건이 없습니다.
             </p>
           </div>
         </div>
@@ -368,8 +377,8 @@
 
 <p class="caption" style="margin-top: var(--sp-8);">
   라인차트는 업비트·Bitstamp·Frankfurter(ECB 기준) 기반 실제 데이터를 사용합니다.
-  주말·공휴일 환율은 직전 영업일 값을 적용하며, 주간 사건 구간의 최고·최저치는 이 데이터로 계산한 값입니다.
-  일봉 사건 상세 수치는 현재 검증 전 데모입니다.
+  주말·공휴일 환율은 직전 영업일 값을 적용하며, 주간·일봉 사건 카드의 수치는 모두 이 데이터로 계산한 값입니다.
+  일봉 카드의 "당일 저점"은 BTC 장중 저가 기준 추정치이며, 환율·해외 시세는 종가 기준입니다.
 </p>
 </div>
 
@@ -389,12 +398,46 @@
   const periodDate = document.getElementById('periodDate');
   const periodDescription =
     document.getElementById('periodDescription');
+  const periodRelatedList = document.getElementById('periodRelatedList');
+  const periodRelatedEmpty = document.getElementById('periodRelatedEmpty');
 
   const dailyChartBlock =
     document.getElementById('dailyChartBlock');
   const dailyChartScroll =
     document.querySelector('.chart-scroll--daily');
   const chartHint = document.querySelector('.pat-hint');
+
+  // 주봉/일봉 전체 전환 탭. 특정 사건과 상관없이 언제든 두 뷰를 오갈 수 있습니다.
+  const chartModeTabs = document.getElementById('chartModeTabs');
+  const weeklyModeTab = document.getElementById('weeklyModeTab');
+  const dailyModeTab = document.getElementById('dailyModeTab');
+
+  function showWeeklyMode() {
+    weeklyChartBlock.hidden = false;
+    dailyChartBlock.hidden = true;
+    chartHint.hidden = true;
+    detailWrap.hidden = true;
+    closeDetail();
+    weeklyModeTab.classList.add('active');
+    weeklyModeTab.setAttribute('aria-selected', 'true');
+    dailyModeTab.classList.remove('active');
+    dailyModeTab.setAttribute('aria-selected', 'false');
+  }
+
+  function showDailyMode() {
+    weeklyChartBlock.hidden = true;
+    periodDetail.hidden = true;
+    dailyChartBlock.hidden = false;
+    chartHint.hidden = false;
+    detailWrap.hidden = false;
+    dailyModeTab.classList.add('active');
+    dailyModeTab.setAttribute('aria-selected', 'true');
+    weeklyModeTab.classList.remove('active');
+    weeklyModeTab.setAttribute('aria-selected', 'false');
+  }
+
+  weeklyModeTab.addEventListener('click', showWeeklyMode);
+  dailyModeTab.addEventListener('click', showDailyMode);
 
   // getBtcPremiumData()로 받은 실제 환율·BTC 가격·김프 데이터를 저장해두는 곳입니다.
   // 이벤트 카드를 열 때마다 API를 다시 부르지 않고, 이미 받아온 배열에서
@@ -425,6 +468,7 @@
       date: marketData.dates[idx],
       index: idx,
       btcPrice: marketData.btcPrice[idx],
+      btcPriceLow: marketData.btcPriceLow ? marketData.btcPriceLow[idx] : null,
       foreignUsd: marketData.foreignUsd[idx],
       fxRate: marketData.fxRate[idx],
       premium: marketData.premium[idx]
@@ -439,6 +483,46 @@
     if (idx === -1 || beforeIdx < 0) return null;
 
     return marketData.premium[idx] - marketData.premium[beforeIdx];
+  }
+
+  // 날짜 기준 N일 전 대비 변화율(%)을 구합니다. field는 marketData의
+  // 배열 키('btcPrice' 또는 'fxRate')입니다.
+  function getFieldChangePct(dateString, daysBefore, field) {
+    const idx = findMarketIndex(dateString);
+    const beforeIdx = idx - daysBefore;
+    if (idx === -1 || beforeIdx < 0) return null;
+
+    const before = marketData[field][beforeIdx];
+    const after = marketData[field][idx];
+    if (!before) return null;
+
+    return (after - before) / before * 100;
+  }
+
+  // 일봉 이벤트 카드에서 쓰는 실제 수치 묶음.
+  // event.date 하나만 있으면 premium/fx/btc/d1/d3/d7을 여기서 계산합니다.
+  // lowPremium: 그날 BTC 저가 기준으로 추정한 "당일 저점" 김프
+  // (환율·해외시세는 여전히 종가 기준이라 근사치입니다).
+  function getEventStats(ev) {
+    const record = getMarketRecord(ev.date);
+    if (!record) return null;
+
+    let lowPremium = null;
+    if (record.btcPriceLow && record.foreignUsd && record.fxRate) {
+      const convertedPrice = record.foreignUsd * record.fxRate;
+      lowPremium = (record.btcPriceLow - convertedPrice) / convertedPrice * 100;
+    }
+
+    return {
+      year: dateToDecimalYear(record.date),
+      premium: record.premium,
+      lowPremium: lowPremium,
+      fx: getFieldChangePct(ev.date, 7, 'fxRate'),
+      btc: getFieldChangePct(ev.date, 7, 'btcPrice'),
+      d1: getPremiumChange(ev.date, 1),
+      d3: getPremiumChange(ev.date, 3),
+      d7: getPremiumChange(ev.date, 7)
+    };
   }
 
   // 구간(startDate~endDate) 안에서 김프 최고/최저점을 찾습니다.
@@ -521,7 +605,7 @@
       context:
         '해외 시세가 국내보다 먼저 크게 움직이는 흐름이 반복되며, ' +
         '한때 마이너스였던 김프가 두 달여 만에 크게 반전된 시기입니다.',
-      relatedEventIds: []
+      relatedEventIds: ['d-eunsungsoo-2021']
     },
     {
       id: 'w-ftx-normalize',
@@ -683,6 +767,31 @@
           periodDescription.textContent =
             buildPeriodNarrative(period);
 
+          // 이 구간에 연결된 일봉 사건이 있으면 버튼으로 보여주고,
+          // 누르면 일봉 차트로 이동해 그 사건 상세를 바로 엽니다.
+          periodRelatedList.innerHTML = '';
+          const relatedIndexes = (period.relatedEventIds || [])
+            .map(function (id) {
+              return events.findIndex(function (e) { return e.id === id; });
+            })
+            .filter(function (idx) { return idx !== -1; });
+
+          periodRelatedEmpty.hidden = relatedIndexes.length > 0;
+
+          relatedIndexes.forEach(function (idx) {
+            const relatedEvent = events[idx];
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline';
+            btn.textContent = relatedEvent.title + ' (' + relatedEvent.date + ')';
+            btn.addEventListener('click', function () {
+              showDailyMode();
+              scrollDailyChartToDate(relatedEvent.date);
+              openDetail(idx);
+            });
+            periodRelatedList.appendChild(btn);
+          });
+
           periodDetail.hidden = false;
           dailyChartBlock.hidden = true;
           chartHint.hidden = true;
@@ -690,10 +799,7 @@
           return;
         }
 
-        periodDetail.hidden = true;
-        dailyChartBlock.hidden = false;
-        chartHint.hidden = false;
-        detailWrap.hidden = false;
+        showDailyMode();
 
         const startTime = Date.parse(
           period.startDate + 'T00:00:00Z'
@@ -877,6 +983,7 @@
       marketData = {
         dates: data.dates,
         btcPrice: data.btcPrice,
+        btcPriceLow: data.btcPriceLow,
         foreignUsd: data.foreignUsd,
         fxRate: data.fxRate,
         premium: premiumFull,
@@ -886,18 +993,17 @@
       // 실제 일별 김프를 주간 평균으로 묶어 상단 차트에 표시합니다.
       const weeklyRecords = buildWeeklyRecords(dailyRecords);
       renderWeeklyChart(weeklyRecords);
-      weeklyChartBlock.hidden = false;
 
       kimpPath.setAttribute('d', buildPath(realSeriesPoints));
+      // 일봉 이벤트 점도 실제 데이터가 준비된 지금 그립니다.
+      // (전에는 데모 anchors 기준 좌표로 그려서 실제 라인과 어긋나 보였습니다.)
+      renderDailyEvents();
 
       chartLoading.hidden = true;
       chartError.hidden = true;
       chartSvg.hidden = false;
-      dailyChartBlock.hidden = true;
-      periodDetail.hidden = true;
-      chartHint.hidden = true;
-      document.getElementById('detail').hidden = true;
-      closeDetail();
+      chartModeTabs.hidden = false;
+      showWeeklyMode();
 
       console.log('실제 차트 데이터 건수:', realSeriesPoints.length);
       console.log(
@@ -928,11 +1034,6 @@
 
       console.error('BTC API 오류:', error);
     });
-  // ---------------------------------------------------------------------
-  // 1) 데모 시계열 데이터 생성
-  //    - 실제 API 대신, 알려진 시장 흐름을 참고해 만든 예시 값입니다.
-  //    - 앵커(주요 시점) 사이를 보간 + 약간의 노이즈로 채워 라인 형태를 만듭니다.
-  // ---------------------------------------------------------------------
   // API 시계열은 2017-09-25부터 제공됩니다.
   // 선이 왼쪽 경계에 붙지 않도록 차트 축은 2017.6부터 시작하고,
   // 종료 시점은 오늘 날짜를 기준으로 자동 갱신합니다.
@@ -944,89 +1045,51 @@
   const END_YEAR =
     currentYear + (today - yearStart) / (nextYearStart - yearStart);
 
-  // [연도(소수), 김프%] 앵커 포인트
-  const anchors = [
-    [2017.00, 2], [2017.40, 4], [2017.75, 14], [2017.95, 42], // 2017 말 폭등
-    [2018.08, 36], [2018.14, 4],  // 박상기의 난 급락
-    [2018.50, 8], [2019.00, 3], [2019.50, 2],
-    [2020.00, 3], [2020.20, -3], // 코로나 쇼크(역프)
-    [2020.60, 2], [2021.00, 8],
-    [2021.28, 20], // 2021 상반기 불장
-    [2021.40, 3],  // 중국 채굴 금지
-    [2021.75, 6], [2022.00, 4],
-    [2022.37, -1], // 테라루나
-    [2022.60, 2],
-    [2022.85, -4], // FTX 파산
-    [2023.10, 1], [2023.50, 2],
-    [2024.03, 6],  // 미국 현물 ETF 승인
-    [2024.30, 4], [2024.55, 3],
-    [2024.95, 9],  // 계엄·탄핵 정국
-    [2025.15, 5], [2025.45, 3],
-    [2025.80, 6],  // 트럼프 정부 우호적 정책 기조
-    [2026.10, 4], [2026.60, 3],
-  ];
-
-  // 이벤트(클릭 가능한 점) — 팀에서 논의한 대표 사례 + 장기 맥락용 주요 변곡점
-  // d1/d3/d7: 사건 시점 기준 1일 전/3일 전/7일 전 대비 김프 변화(%p) — 데모 값
+  // 일봉 이벤트 — 발생 시점이 명확하고 며칠 내 반응이 끝나는 단기 충격.
+  // premium/fx/btc/d1/d3/d7은 손으로 넣지 않고, 클릭 시 getEventStats()가
+  // marketData(실제 API 데이터)에서 계산합니다.
   const events = [
-    { year: 2017.95, premium: 42, date: '2017년 12월', title: '2017년 말 김프 대폭등', chartLabel: '2017 김프 폭등',
-      desc: '국내 개인투자자 열풍이 정점에 달하며 김프가 사상 최고 수준까지 치솟은 시기입니다.',
-      fx: 0.5, btc: 85, d1: 3.5, d3: 9.2, d7: 18.4 },
-    { year: 2018.14, premium: 4, date: '2018년 2월', title: '정부 규제 발표 (박상기의 난)', chartLabel: '정부 규제 발표',
-      desc: '거래소 폐쇄 검토 발언 이후 투자심리가 급격히 얼어붙으며 김프가 단기간에 크게 축소됐습니다.',
-      fx: 1.2, btc: -38, d1: -12.0, d3: -18.5, d7: -22.0 },
-    { year: 2020.20, premium: -3, date: '2020년 3월', title: '코로나19 팬데믹 쇼크', chartLabel: '코로나19 쇼크',
-      desc: '글로벌 금융시장 패닉 속에 BTC가 폭락하고, 원화 약세까지 겹치며 김프가 일시적으로 역전(역프)됐습니다.',
-      fx: 6.8, btc: -50, d1: -4.2, d3: -6.8, d7: -5.1 },
-    { year: 2021.28, premium: 20, date: '2021년 4월', title: '2021년 상반기 불장', chartLabel: '2021 상승장',
-      desc: '기관 자금 유입과 개인투자 열풍이 겹치며 김프가 다시 크게 확대된 시기입니다.',
-      fx: 1.1, btc: 95, d1: 1.8, d3: 5.6, d7: 11.3 },
-    { year: 2021.40, premium: 3, date: '2021년 5월', title: '중국 채굴 전면 금지', chartLabel: '중국 채굴 금지',
-      desc: '중국 정부의 채굴 단속 발표로 글로벌 시장이 급락하며 김프도 빠르게 축소됐습니다.',
-      fx: 0.3, btc: -45, d1: -8.4, d3: -13.2, d7: -15.0 },
-    { year: 2022.85, premium: -4, date: '2022년 11월', title: 'FTX 거래소 파산', chartLabel: 'FTX 파산',
-      desc: '대형 거래소 파산 사태로 신뢰 위기가 확산되며 국내외 가격이 동반 급락했습니다.',
-      fx: 3.5, btc: -25, d1: -3.0, d3: -5.5, d7: -6.2 },
-    { year: 2024.03, premium: 6, date: '2024년 1월', title: '미국 현물 ETF 승인', chartLabel: '현물 ETF 승인',
-      desc: '미국 SEC의 비트코인 현물 ETF 승인으로 글로벌 자금 유입이 재개된 시기입니다.',
-      fx: 0.8, btc: 18, d1: 2.2, d3: 3.8, d7: 4.5 },
-    { year: 2024.95, premium: 9, date: '2024년 12월', title: '비상계엄·탄핵 정국', chartLabel: '계엄·탄핵 정국',
-      desc: '비상계엄 선포와 탄핵 정국으로 원화 가치가 흔들리며, BTC 자체 변동보다 환율 요인이 두드러진 김프 급등이 나타났습니다.',
-      fx: 4.2, btc: 5, d1: 4.1, d3: 6.0, d7: 5.2 },
+    {
+      id: 'd-corona-2020',
+      date: '2020-03-12',
+      title: '코로나19 팬데믹 쇼크',
+      chartLabel: '코로나19 쇼크',
+      desc: '글로벌 금융시장 패닉 속에 BTC가 폭락한 날입니다. 해외 가격이 국내보다 더 크게 빠지며 김프가 급등했습니다.'
+    },
+    {
+      id: 'd-eunsungsoo-2021',
+      date: '2021-04-22',
+      title: '은성수 거래소 폐쇄 발언',
+      chartLabel: '은성수 발언',
+      desc: '금융위원장의 거래소 폐쇄 가능성 발언 이후 투자심리가 얼어붙으며, 김프가 하루 만에 크게 축소됐습니다.'
+    },
+    {
+      id: 'd-519-2021',
+      date: '2021-05-19',
+      title: '5·19 크래시와 중국 채굴 전면 금지',
+      chartLabel: '5·19 크래시',
+      desc: '중국의 채굴 단속 발표와 겹쳐 글로벌 시장이 급락한 날입니다. 해외 낙폭이 국내보다 커서 김프가 급등했습니다.'
+    },
+    {
+      id: 'd-terra-2022',
+      date: '2022-05-11',
+      title: '테라·루나 UST 디페깅',
+      chartLabel: '테라·루나 사태',
+      desc: '스테이블코인 UST의 디페깅으로 루나 생태계가 무너지며 글로벌 시장이 크게 흔들린 시기입니다.'
+    },
+    {
+      id: 'd-martial-law-2024',
+      date: '2024-12-03',
+      title: '비상계엄 선포',
+      chartLabel: '비상계엄 선포',
+      milestone: true,
+      desc: '비상계엄이 선포된 날입니다. 종가 기준 하루 변화는 크지 않지만, 선포 이후 짧은 시간 안에 급락과 되돌림이 있었던 것으로 보입니다(아래 "당일 저점" 참고).'
+    }
   ];
 
   // ---------------------------------------------------------------------
-  // 2) 보간 + 노이즈로 월별 시계열 만들기 (시드 고정 - 새로고침해도 같은 모양)
+  // 좌표 변환 (스케일)
   // ---------------------------------------------------------------------
-  function seededRandom(seed) {
-    let s = seed % 2147483647;
-    if (s <= 0) s += 2147483646;
-    return function () {
-      s = (s * 16807) % 2147483647;
-      return (s - 1) / 2147483646;
-    };
-  }
-  const rand = seededRandom(42);
-
-  function interpolate(anchors, x) {
-    for (let i = 0; i < anchors.length - 1; i++) {
-      const [x0, y0] = anchors[i];
-      const [x1, y1] = anchors[i + 1];
-      if (x >= x0 && x <= x1) {
-        const t = (x - x0) / (x1 - x0);
-        return y0 + (y1 - y0) * t;
-      }
-    }
-    return anchors[anchors.length - 1][1];
-  }
-
-  const seriesPoints = [];
-  const stepMonths = 1 / 12;
-  for (let y = START_YEAR; y <= END_YEAR; y += stepMonths) {
-    const base = interpolate(anchors, y);
-    const noise = (rand() - 0.5) * 1.6;
-    seriesPoints.push([y, base + noise]);
-  }
 
   // ---------------------------------------------------------------------
   // 3) 좌표 변환 (스케일)
@@ -1090,7 +1153,7 @@
 
   const kimpPath = el('path', {
     class: 'kimp-line',
-    d: buildPath(seriesPoints)
+    d: ''
   });
   svg.appendChild(kimpPath);
 
@@ -1098,42 +1161,47 @@
   const connector = el('line', { class: 'connector', id: 'connector' });
   svg.appendChild(connector);
 
-  // 이벤트 점 (클릭 가능). 마지막 이벤트(계엄·탄핵)만 환율 변동폭이 유독 커서
-  // 다른 색(amber)으로 강조합니다.
-  const MILESTONE_IDX = events.length - 1;
+  // 이벤트 점(클릭 가능)은 실제 데이터(marketData)가 준비된 뒤에 그려야
+  // 라인과 점이 같은 값을 가리킵니다. renderDailyEvents()는 fetch가
+  // 끝난 뒤(.then 콜백 안)에 호출됩니다.
   let activeIndex = null;
   const dotEls = [];
 
-  events.forEach((ev, idx) => {
-    const cx = xScale(ev.year), cy = yScale(ev.premium);
-    const isMilestone = idx === MILESTONE_IDX;
+  function renderDailyEvents() {
+    events.forEach((ev, idx) => {
+      const stats = getEventStats(ev);
+      if (!stats) return;
 
-    const dot = el('circle', {
-      class: 'event-dot' + (isMilestone ? ' milestone' : ''),
-      cx, cy, r: 5.5, stroke: 'var(--panel)', 'stroke-width': 2
+      const cx = xScale(stats.year), cy = yScale(stats.premium);
+      const isMilestone = ev.milestone === true;
+
+      const dot = el('circle', {
+        class: 'event-dot' + (isMilestone ? ' milestone' : ''),
+        cx, cy, r: 5.5, stroke: 'var(--panel)', 'stroke-width': 2
+      });
+      const hit = el('circle', { class: 'event-hitbox', cx, cy, r: 14 });
+      hit.addEventListener('click', () => toggleEvent(idx));
+      dot.addEventListener('click', () => toggleEvent(idx));
+
+      svg.appendChild(dot);
+      svg.appendChild(hit);
+
+      const dotLabel = el('text', {
+        class: 'event-dot-label',
+        x: cx,
+        y: Math.max(
+          M.top + 12,
+          cy - 14 - (idx % 2) * 12
+        ),
+        'text-anchor': 'middle'
+      });
+
+      dotLabel.textContent = ev.chartLabel;
+      svg.appendChild(dotLabel);
+
+      dotEls.push(dot);
     });
-    const hit = el('circle', { class: 'event-hitbox', cx, cy, r: 14 });
-    hit.addEventListener('click', () => toggleEvent(idx));
-    dot.addEventListener('click', () => toggleEvent(idx));
-
-    svg.appendChild(dot);
-    svg.appendChild(hit);
-
-    const dotLabel = el('text', {
-      class: 'event-dot-label',
-      x: cx,
-      y: Math.max(
-        M.top + 12,
-        cy - 14 - (idx % 2) * 12
-      ),
-      'text-anchor': 'middle'
-    });
-
-    dotLabel.textContent = ev.chartLabel;
-    svg.appendChild(dotLabel);
-
-    dotEls.push(dot);
-  });
+  }
 
   // ---------------------------------------------------------------------
   // 5) 클릭 → 상세 박스 열기/닫기
@@ -1231,11 +1299,22 @@
 
   // 숫자들을 조합한 자동 줄글 요약.
   // 인과를 단정하지 않고("만들었다"), 함께 나타난 관찰 사실로만 서술합니다.
-  function buildNarrative(ev, fmtPct, fmtPP) {
-    const fxWord = ev.fx >= 0 ? '상승(원화 약세)' : '하락(원화 강세)';
-    const btcWord = ev.btc >= 0 ? '상승' : '하락';
-    return `이 시기 원/달러 환율은 ${fmtPct(ev.fx)} ${fxWord}했고, BTC 가격은 ${fmtPct(ev.btc)} ${btcWord}했습니다. ` +
-           `김프는 사건 7일 전 대비 ${fmtPP(ev.d7)} 움직이며 이 변화와 함께 나타났습니다.`;
+  // lowPremium이 종가 기준 premium보다 뚜렷이 낮으면(5%p 이상, 하루 중
+  // 정상적인 등락 범위를 넘어선 경우만) 당일 저점 문장을 덧붙입니다 —
+  // 종가만으로는 하루 안의 급락·되돌림이 가려지기 때문입니다.
+  function buildNarrative(stats, fmtPct, fmtPP) {
+    const fxWord = stats.fx >= 0 ? '상승(원화 약세)' : '하락(원화 강세)';
+    const btcWord = stats.btc >= 0 ? '상승' : '하락';
+    let sentence =
+      `이 시기 원/달러 환율은 7일 전 대비 ${fmtPct(stats.fx)} ${fxWord}했고, ` +
+      `BTC 가격은 ${fmtPct(stats.btc)} ${btcWord}했습니다. ` +
+      `김프는 사건 7일 전 대비 ${fmtPP(stats.d7)} 움직이며 이 변화와 함께 나타났습니다.`;
+
+    if (stats.lowPremium !== null && stats.premium - stats.lowPremium > 5) {
+      sentence += ` BTC 장중 저가 기준으로 보면 이날 김프가 한때 ${fmtPct(stats.lowPremium)}까지 ` +
+        `내려갔던 것으로 추정됩니다(환율·해외 시세는 종가 기준이라 근사치입니다).`;
+    }
+    return sentence;
   }
 
   function toggleEvent(idx) {
@@ -1248,7 +1327,10 @@
 
   function openDetail(idx) {
     const ev = events[idx];
-    const isMilestone = idx === MILESTONE_IDX;
+    const stats = getEventStats(ev);
+    if (!stats) return;
+
+    const isMilestone = ev.milestone === true;
 
     dotEls.forEach((d, i) => d.classList.toggle('active', i === idx));
     activeIndex = idx;
@@ -1256,34 +1338,36 @@
     dTitle.textContent = ev.title;
     dMilestone.classList.toggle('show', isMilestone);
     dDate.textContent = ev.date;
-    dPremium.textContent = (ev.premium > 0 ? '+' : '') + ev.premium.toFixed(1) + '%';
+    dPremium.textContent = (stats.premium > 0 ? '+' : '') + stats.premium.toFixed(1) + '%';
     dDesc.textContent = ev.desc;
 
     const fmtPct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
     const fmtPP = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%p';
 
-    dNarrative.innerHTML = buildNarrative(ev, fmtPct, fmtPP);
+    dNarrative.innerHTML = buildNarrative(stats, fmtPct, fmtPP);
 
     // 1일 / 3일 / 7일 전 대비 김프 변화 표 (방향은 화살표로만 표시, 색으로 신호등 프레이밍하지 않음)
-    [[dW1, ev.d1], [dW3, ev.d3], [dW7, ev.d7]].forEach(([elm, v]) => {
-      elm.textContent = (v >= 0 ? '▲ ' : '▼ ') + Math.abs(v).toFixed(1) + '%p';
+    [[dW1, stats.d1], [dW3, stats.d3], [dW7, stats.d7]].forEach(([elm, v]) => {
+      elm.textContent = v === null
+        ? '—'
+        : (v >= 0 ? '▲ ' : '▼ ') + Math.abs(v).toFixed(1) + '%p';
     });
 
     // ② 환율 전/후 — 점-선 슬로프 차트 (변화폭이 작아 0기준 막대보다 이 방식이 잘 보임)
-    drawSlope(dFxSlope, ev.fx, { fmt: fmtPct, color: 'var(--accent)' });
+    drawSlope(dFxSlope, stats.fx, { fmt: fmtPct, color: 'var(--accent)' });
 
     // ③ BTC 가격 전/후 — 발산형 막대 차트 (②와 다른 형태)
-    drawDivergingBar(dBtcBar, ev.btc, { fmt: fmtPct, color: 'var(--frog)' });
+    drawDivergingBar(dBtcBar, stats.btc, { fmt: fmtPct, color: 'var(--frog)' });
 
     // 말풍선 화살표를 선택된 점의 x좌표(퍼센트)에 맞춤
-    const cx = xScale(ev.year);
+    const cx = xScale(stats.year);
     const pct = (cx / W) * 100;
     detailBox.style.setProperty('--arrow-x', 'calc(' + pct.toFixed(2) + '% - 7px)');
 
     // 연결선 표시
     connector.setAttribute('x1', cx);
     connector.setAttribute('x2', cx);
-    connector.setAttribute('y1', yScale(ev.premium));
+    connector.setAttribute('y1', yScale(stats.premium));
     connector.setAttribute('y2', H - M.bottom);
     connector.classList.add('show');
 

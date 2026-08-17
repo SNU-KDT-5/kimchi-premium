@@ -10,11 +10,12 @@
        → { dates: [...], usdtPrice: [...], fxRate: [...] }
 
    getBtcPremiumData(options?)
-       → { dates: [...], btcPrice: [...], foreignUsd: [...],
+       → { dates: [...], btcPrice: [...], btcPriceLow: [...], foreignUsd: [...],
            fxRate: [...], foreignSource: 'Bitstamp' }
+       btcPriceLow는 그날 장중 저가(업비트 일봉의 low_price)입니다.
 
    getPremiumData(market, options?)      // 임의의 KRW 마켓
-       → { market, dates, price, fxRate, foreignUsd?, foreignSource? }
+       → { market, dates, price, lowPrice, fxRate, foreignUsd?, foreignSource? }
 
    clearPremiumCache(market?)            // 캐시 비우기
 
@@ -49,7 +50,8 @@
   'use strict';
 
   // ── 설정 ────────────────────────────────────────────────
-  var CACHE_PREFIX = 'premiumData:v2:';
+  // v3: 캐시 payload에 lowPrice(일봉 저가)가 추가되어 버전을 올렸습니다.
+  var CACHE_PREFIX = 'premiumData:v3:';
   var CACHE_TTL_MS = 60 * 60 * 1000;  // 1시간
   var DEFAULT_MAX_YEARS = 10;
 
@@ -105,7 +107,10 @@
     all.forEach(function (d) {
       var date = d.candle_date_time_utc.split('T')[0];
       if (cutoffDateStr && date < cutoffDateStr) return;
-      map[date] = d.trade_price;
+      // close: 종가(그날 대표값), low: 그날 장중 저가.
+      // 종가만으로는 하루 안에 급락 후 되돌아온 움직임(예: 짧은 시간의 패닉)이
+      // 가려지므로, 이벤트 카드에서 "당일 저점"을 추정할 때 low를 함께 씁니다.
+      map[date] = { close: d.trade_price, low: d.low_price };
     });
     return map;
   }
@@ -304,7 +309,8 @@
     var result = {
       market: market,
       dates: dates,
-      price:  dates.map(function (d) { return localMap[d]; }),
+      price:    dates.map(function (d) { return localMap[d].close; }),
+      lowPrice: dates.map(function (d) { return localMap[d].low; }),
       fxRate: dates.map(function (d) { return filledFxMap[d]; })
     };
     if (foreignMap) {
@@ -322,6 +328,7 @@
       market: market,
       dates: cached.dates,
       price: cached.price,
+      lowPrice: cached.lowPrice,
       fxRate: cached.fxRate
     };
     if (cached.foreignUsd) {
@@ -354,6 +361,7 @@
           savedAt: Date.now(),
           dates: result.dates,
           price: result.price,
+          lowPrice: result.lowPrice,
           fxRate: result.fxRate
         };
         if (result.foreignUsd) {
@@ -384,14 +392,17 @@
 
   /**
    * 비트코인(BTC) 데이터. 해외 시세까지 포함해 김프 계산이 가능하다.
-   * @returns {Promise<{dates:string[], btcPrice:number[], foreignUsd:number[],
-   *                    fxRate:number[], foreignSource:string}>}
+   * btcPriceLow: 그날 장중 저가(업비트 종가만으로 가려지는 일중 급락을
+   * 이벤트 카드에서 추정할 때 씀). foreignUsd/fxRate는 여전히 종가 기준입니다.
+   * @returns {Promise<{dates:string[], btcPrice:number[], btcPriceLow:number[],
+   *                    foreignUsd:number[], fxRate:number[], foreignSource:string}>}
    */
   function getBtcPremiumData(options) {
     return getPremiumData('KRW-BTC', options).then(function (r) {
       return {
         dates: r.dates,
         btcPrice: r.price,
+        btcPriceLow: r.lowPrice,
         foreignUsd: r.foreignUsd,
         fxRate: r.fxRate,
         foreignSource: r.foreignSource

@@ -8,6 +8,7 @@
 import asyncio
 import json
 import os
+import re
 from collections import defaultdict
 from datetime import date, timedelta
 from pathlib import Path
@@ -46,6 +47,29 @@ MAX_OUTPUT_TOKENS = 500
 
 SIGNOFF = "개굴!"
 REPLY_SUFFIX = SIGNOFF
+
+# 모델이 스스로 매기는 is_investment_directive는 같은 응답 안에서 모델이
+# 직접 써내는 값이라, response_schema로는 "불리언 타입인지"만 검증될 뿐 그
+# 판단이 실제로 맞는지는 검증되지 않는다. 프롬프트 인젝션 등으로 모델이
+# 매매 지시를 쓰면서 false라고 잘못(혹은 속아서) 표시할 경우를 대비해,
+# 아주 명확한 명령형 어미만 잡는 좁은 서버 사이드 백스톱을 둔다. 예전에
+# 지웠던 "매수"/"매도" 단독 명사나 "오를 것"/"내릴 것" 같은 넓은 패턴은
+# 설명 질문까지 오탐을 냈으므로 다시 넣지 않는다 — 모델 판단은 여전히
+# 주 신호이고, 이건 명백한 경우만 잡는 보조 안전망이다.
+DIRECTIVE_BACKSTOP_PATTERNS = [
+    re.compile(pattern)
+    for pattern in [
+        r"사세요",
+        r"파세요",
+        r"매수(하세요|하십시오)",
+        r"매도(하세요|하십시오)",
+        r"목표가는?\s*[\d,]+\s*원",
+    ]
+]
+
+
+def _contains_directive_backstop(reply: str) -> bool:
+    return any(p.search(reply) for p in DIRECTIVE_BACKSTOP_PATTERNS)
 
 if not GEMINI_API_KEY:
     # 서버는 계속 기동되지만(문서 확인 등은 가능), /api/chat 호출 시 명확한 에러를 반환한다.
@@ -339,6 +363,11 @@ async def chat(
     if (
         output is None
         or output.is_investment_directive
+        # 모델의 자기판단(is_investment_directive)은 신뢰하되 100% 의존하지
+        # 않는다 — body.message를 통한 프롬프트 인젝션으로 모델이 매매
+        # 지시를 쓰면서 false라고 잘못 표시할 수 있어, 명백한 명령형 문구는
+        # 모델 판단과 무관하게 서버가 독립적으로 한 번 더 검사한다.
+        or _contains_directive_backstop(output.reply)
         or len(output.reply) > MAX_REPLY_LENGTH
         or not output.reply.endswith(REPLY_SUFFIX)
     ):

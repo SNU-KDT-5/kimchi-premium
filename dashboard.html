@@ -1287,8 +1287,9 @@ function renderKpi() {
 }
 
 // ══════ 시장 활발도 (거래량 · 거래대금 · 검색 관심도) ══════
-// 거래량과 거래대금은 업비트 일봉 응답에 이미 들어 있다(candle_acc_trade_*).
-// 최근 90일이면 충분해서 페이지네이션 없이 한 번만 부른다.
+// 거래량과 거래대금은 update_data.py 가 하루 1회 미리 계산해 data/history.json에
+// volume/value 필드로 저장해 둔다. 브라우저가 업비트 API를 직접 부르지 않으므로
+// shared.js의 getUsdtPremiumData/getBtcPremiumData와 같은 방식이다.
 const ACT_DAYS = 90;
 const ACT_BASELINE = 30;   // "N일 평균 대비" 기준
 
@@ -1310,21 +1311,51 @@ function deltaText(now, base, unitLabel) {
   return `<span class="arrow">${pct > 0 ? '▲' : '▼'}</span> ${unitLabel} ${pct > 0 ? '+' : ''}${pct.toFixed(0)}%`;
 }
 
-async function fetchUpbitActivity(days) {
-  const url = `https://api.upbit.com/v1/candles/days?market=KRW-USDT&count=${Math.min(200, days)}`;
-  const res = await fetch(url, { headers: { Accept: 'application/json' } });
-  if (!res.ok) throw new Error(`업비트 응답 오류 (HTTP ${res.status})`);
-  const rows = await res.json();
-  if (!Array.isArray(rows) || rows.length === 0) throw new Error('거래량 데이터가 비어 있습니다.');
+const HISTORY_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-  return rows
-    .map(c => ({
-      date: (c.candle_date_time_kst || c.candle_date_time_utc || '').slice(0, 10),
-      volume: Number(c.candle_acc_trade_volume),
-      value: Number(c.candle_acc_trade_price)
-    }))
-    .filter(r => r.date && Number.isFinite(r.volume) && Number.isFinite(r.value))
+// data/history.json의 각 행이 실제로 쓸 수 있는 데이터인지 검사한다.
+// r이 null/배열/원시값이 아닌 객체인지, date가 YYYY-MM-DD 형식의 문자열인지,
+// 그 문자열이 실존하는 달력 날짜인지(예: "2026-99-99"나 "2026-02-30" 같은
+// 값은 new Date로 파싱해도 다른 날짜로 굴러가거나 Invalid Date가 될 수 있어
+// 파싱 결과를 다시 문자열로 만들어 원래 값과 비교해야 걸러진다), volume/value가
+// 유한한 숫자인지까지 확인한다.
+function isValidHistoryRow(r) {
+  if (r === null || typeof r !== 'object' || Array.isArray(r)) return false;
+  if (typeof r.date !== 'string' || !HISTORY_DATE_RE.test(r.date)) return false;
+
+  const d = new Date(`${r.date}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return false;
+  const roundTrip = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  if (roundTrip !== r.date) return false;
+
+  return Number.isFinite(r.volume) && Number.isFinite(r.value);
+}
+
+async function fetchUpbitActivity(days) {
+  let rows;
+  try {
+    const res = await fetch('/data/history.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    rows = await res.json();
+  } catch (err) {
+    console.error('fetchUpbitActivity: /data/history.json 을(를) 불러오지 못했습니다 —', err);
+    throw new Error('거래량·거래대금 데이터를 불러오지 못했습니다.');
+  }
+
+  if (!Array.isArray(rows)) {
+    console.error('fetchUpbitActivity: /data/history.json 형식 오류 — 배열이 아님', rows);
+    throw new Error('거래량·거래대금 데이터 형식이 올바르지 않습니다.');
+  }
+
+  // 당일 마감 전 등에는 volume/value가 아직 없는 날짜도 섞여 있어 걸러낸다.
+  const filtered = rows
+    .filter(isValidHistoryRow)
+    .map(r => ({ date: r.date, volume: r.volume, value: r.value }))
     .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (filtered.length === 0) throw new Error('거래량 데이터가 비어 있습니다.');
+
+  return filtered.slice(-days);
 }
 
 // scripts/fetch_naver_trend.py 가 만들어 두는 파일.

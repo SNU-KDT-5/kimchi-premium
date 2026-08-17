@@ -3,5 +3,9 @@
   "fx_rate": 1411.27,
   "percentile": 32,
   "recent_event": "특이 이벤트 없음",
-  "as_of": "2026-08-17"
+  "as_of": "2026-08-17",
+  "historical_max_premium_pct": 8.33,
+  "historical_max_premium_date": "2025-02-05",
+  "historical_min_premium_pct": -3.22,
+  "historical_min_premium_date": "2026-06-01"
 }

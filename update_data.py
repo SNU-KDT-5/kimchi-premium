@@ -237,12 +237,21 @@ def main() -> int:
     events = load_events()
     recent_event = resolve_recent_event(events, date.fromisoformat(latest["date"]))
 
+    # "역대 최고/최저가 언제였나요?" 같은 질문에 답할 수 있도록, 상장일 이후
+    # 전체 기간 중 프리미엄 최고/최저 시점을 미리 계산해 둔다.
+    highest_row = max(rows, key=lambda row: row["premium_pct"])
+    lowest_row = min(rows, key=lambda row: row["premium_pct"])
+
     result = {
         "premium_pct": round(latest["premium_pct"], 2),
         "fx_rate": round(latest["fx_rate"], 2),
         "percentile": percentile,
         "recent_event": recent_event,
         "as_of": latest["date"],
+        "historical_max_premium_pct": round(highest_row["premium_pct"], 2),
+        "historical_max_premium_date": highest_row["date"],
+        "historical_min_premium_pct": round(lowest_row["premium_pct"], 2),
+        "historical_min_premium_date": lowest_row["date"],
     }
 
     # 매 실행마다 상장일부터 오늘까지 전체를 다시 계산하므로, history.json은

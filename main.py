@@ -41,6 +41,9 @@ GEMINI_RETRY_DELAY_SECONDS = 2
 # 주말/공휴일에 update-data 워크플로우가 안 돌 수 있어 여유를 둔다.
 MAX_DATA_AGE_DAYS = 3
 MAX_REPLY_LENGTH = 220
+# 응답 폭주(끝없이 길게 생성)를 막는 1차 방어선. MAX_REPLY_LENGTH(글자수) 검증은
+# 그대로 유지하고, 이건 토큰 단위의 하드 캡이다.
+MAX_OUTPUT_TOKENS = 500
 
 BANNED_WORDS = [
     "매수",
@@ -83,7 +86,6 @@ NEGATION_CUE_PATTERNS = [
         r"결정.{0,15}없",
     ]
 ]
-BANNED_WORD_CONTEXT_WINDOW = 30
 DISCLAIMER = "(본 내용은 투자 조언이 아니며 데이터 해석 참고용입니다.)"
 SIGNOFF = "개굴!"
 REPLY_SUFFIX = f"{DISCLAIMER}\n{SIGNOFF}"
@@ -149,6 +151,10 @@ class MarketData(BaseModel):
     percentile: int
     recent_event: str
     as_of: date
+    historical_max_premium_pct: float
+    historical_max_premium_date: date
+    historical_min_premium_pct: float
+    historical_min_premium_date: date
 
 
 # 가드레일 설정
@@ -194,6 +200,12 @@ def _load_market_data() -> MarketData:
     return data
 
 
+def _format_date_kr(d: date) -> str:
+    # 모델이 isoformat()을 직접 한글로 풀어 쓰다가 어색하게 뭉개는 걸 막기
+    # 위해, 서버에서 미리 "YYYY년 M월 D일" 형태로 만들어 프롬프트에 넣는다.
+    return f"{d.year}년 {d.month}월 {d.day}일"
+
+
 def _build_system_prompt(data: MarketData) -> str:
     # Tool Use(함수 호출) 대신, 매 요청마다 서버가 먼저 data/current.json을 읽어
     # 그 내용을 시스템 프롬프트에 텍스트로 끼워 넣는다.
@@ -202,14 +214,18 @@ def _build_system_prompt(data: MarketData) -> str:
     return f"""당신은 '김치프리미엄' 데이터를 설명해주는 금융 데이터 해설 챗봇입니다.
 
 다음은 현재 시점의 실제 데이터입니다. 답변은 반드시 이 수치에 근거해야 합니다:
-- 기준일(as_of): {data.as_of.isoformat()}
+- 기준일(as_of): {_format_date_kr(data.as_of)}
 - 프리미엄(premium_pct): {data.premium_pct}%
 - 원/달러 환율(fx_rate): {data.fx_rate}
 - USDT 상장(2024-06-07) 이후 전체 기간 대비 백분위(percentile): {data.percentile}
 - 최근 이벤트(recent_event): {data.recent_event}
+- 상장 이후 역대 최고 프리미엄: {data.historical_max_premium_pct}% ({_format_date_kr(data.historical_max_premium_date)})
+- 상장 이후 역대 최저 프리미엄: {data.historical_min_premium_pct}% ({_format_date_kr(data.historical_min_premium_date)})
 
 [답변 원칙 - 반드시 지킬 것]
 1. 위 데이터의 실제 수치를 근거로만 답변하세요. 데이터에 없는 내용은 추측해서 말하지 마세요.
+   날짜를 언급할 때는 위에 주어진 "OOOO년 O월 O일" 형식을 그대로 사용하고, 다른 형식으로
+   직접 변환하거나 줄여 쓰지 마세요.
 2. "매수", "매도", "지금 사세요", "지금 파세요"와 같은 투자 행동 지시나 수익률 예측은 절대 하지 마세요.
 3. 데이터가 무엇을 의미하는지는 설명하되, 최종 판단은 항상 사용자 본인이 하도록 유도하세요. AI가 대신 판단해주지 마세요.
 4. "지금 살까요?", "팔까요?", "얼마에 사야 해요?", "언제가 저점이에요?"처럼 매수/매도/매매
@@ -227,24 +243,20 @@ def _build_system_prompt(data: MarketData) -> str:
 """
 
 
+_SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?\n])")
+
+
 def _violates_safety_policy(reply: str) -> bool:
-    lowered = reply.lower()
-    for word in BANNED_WORDS:
-        needle = word.lower()
-        start = 0
-        while True:
-            idx = lowered.find(needle, start)
-            if idx == -1:
-                break
-            window = reply[
-                max(0, idx - BANNED_WORD_CONTEXT_WINDOW) : idx
-                + len(word)
-                + BANNED_WORD_CONTEXT_WINDOW
-            ]
-            # 근처에 거절/완곡 표현이 없을 때만 실제 위반으로 판단한다.
-            if not any(p.search(window) for p in NEGATION_CUE_PATTERNS):
+    # 고정 글자수 윈도우 대신 "같은 문장 안"에서만 완곡 표현을 인정한다.
+    # 글자수 윈도우는 문장 경계를 넘어가서, 전혀 다른 문장에 있는 완곡
+    # 표현이 실제 투자 지시 문장을 잘못 면제해주는 문제가 있었다.
+    for sentence in _SENTENCE_SPLIT_PATTERN.split(reply):
+        lowered = sentence.lower()
+        for word in BANNED_WORDS:
+            if word.lower() not in lowered:
+                continue
+            if not any(p.search(sentence) for p in NEGATION_CUE_PATTERNS):
                 return True
-            start = idx + len(needle)
     return False
 
 
@@ -312,6 +324,7 @@ async def chat(
                     contents=body.message,
                     config=genai_types.GenerateContentConfig(
                         system_instruction=system_prompt,
+                        max_output_tokens=MAX_OUTPUT_TOKENS,
                     ),
                 ),
                 timeout=GEMINI_TIMEOUT_SECONDS,

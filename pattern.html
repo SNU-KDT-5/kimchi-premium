@@ -128,6 +128,13 @@
     pointer-events: none;
   }
   #chartModeTabs { max-width: 220px; margin-bottom: var(--sp-5); }
+  /* 주간 카드 안의 구간 요약 블록. 카드 본문과 시각적으로 구분합니다. */
+  #periodSwing {
+    margin: var(--sp-6) 0;
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--border);
+  }
+  #periodSwing .window-stats { margin-top: var(--sp-3); }
   .period-related-list {
     display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3);
   }
@@ -303,6 +310,38 @@
             -
           </p>
 
+          <!-- 구간 안에서 김프 등락폭이 가장 컸던 기간을 잡아, 그 기간의
+               김프·환율·BTC 변화를 일봉 카드와 같은 형식으로 보여줍니다. -->
+          <div id="periodSwing">
+            <div class="card-title" id="periodSwingLabel">등락폭이 가장 컸던 기간</div>
+
+            <div class="window-stats stat-row">
+              <div class="stat-card">
+                <div class="label" id="pSwingStartLabel">시작</div>
+                <div class="value" id="pSwingStart">-</div>
+              </div>
+              <div class="stat-card">
+                <div class="label" id="pSwingEndLabel">끝</div>
+                <div class="value" id="pSwingEnd">-</div>
+              </div>
+              <div class="stat-card">
+                <div class="label">김프 변화폭</div>
+                <div class="value" id="pSwingDiff">-</div>
+              </div>
+            </div>
+
+            <div class="subgrid">
+              <div class="subcard">
+                <div class="subcard-label">원/달러 환율 (기간 시작 → 끝)</div>
+                <svg class="slope-svg" id="pFxSlope" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg"></svg>
+              </div>
+              <div class="subcard">
+                <div class="subcard-label">BTC 가격 (기간 시작 → 끝)</div>
+                <svg class="bar-svg" id="pBtcBar" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg"></svg>
+              </div>
+            </div>
+          </div>
+
           <div id="periodRelated">
             <div class="card-title">관련 상세 사건</div>
             <div class="period-related-list" id="periodRelatedList"></div>
@@ -400,6 +439,16 @@
     document.getElementById('periodDescription');
   const periodRelatedList = document.getElementById('periodRelatedList');
   const periodRelatedEmpty = document.getElementById('periodRelatedEmpty');
+
+  const periodSwing = document.getElementById('periodSwing');
+  const periodSwingLabel = document.getElementById('periodSwingLabel');
+  const pSwingStartLabel = document.getElementById('pSwingStartLabel');
+  const pSwingEndLabel = document.getElementById('pSwingEndLabel');
+  const pSwingStart = document.getElementById('pSwingStart');
+  const pSwingEnd = document.getElementById('pSwingEnd');
+  const pSwingDiff = document.getElementById('pSwingDiff');
+  const pFxSlope = document.getElementById('pFxSlope');
+  const pBtcBar = document.getElementById('pBtcBar');
 
   const dailyChartBlock =
     document.getElementById('dailyChartBlock');
@@ -551,6 +600,39 @@
     };
   }
 
+  // 구간 안에서 "김프 등락폭이 가장 컸던 기간"을 잡습니다.
+  // 최저점과 최고점 사이가 그 구간에서 김프가 가장 크게 움직인 구간이므로,
+  // 두 날짜를 시간 순서대로 놓고 그 사이의 환율·BTC 변화까지 함께 계산합니다.
+  // (상승 구간이면 최저→최고, 하락 구간이면 최고→최저가 됩니다.)
+  function getPeriodSwing(period) {
+    const extremes = getRangeExtremes(period.startDate, period.endDate);
+    if (!extremes) return null;
+
+    const rising = extremes.minDate <= extremes.maxDate;
+    const fromDate = rising ? extremes.minDate : extremes.maxDate;
+    const toDate = rising ? extremes.maxDate : extremes.minDate;
+
+    const fromIdx = findMarketIndex(fromDate);
+    const toIdx = findMarketIndex(toDate);
+    if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return null;
+
+    const days = toIdx - fromIdx;
+    const pctChange = (field) =>
+      getFieldChangePct(toDate, days, field);
+
+    return {
+      rising: rising,
+      fromDate: fromDate,
+      toDate: toDate,
+      days: days,
+      fromPremium: marketData.premium[fromIdx],
+      toPremium: marketData.premium[toIdx],
+      premiumDiff: marketData.premium[toIdx] - marketData.premium[fromIdx],
+      fx: pctChange('fxRate'),
+      btc: pctChange('btcPrice')
+    };
+  }
+
   // 주간 사건 카드 줄글 = 손으로 쓴 배경 설명(period.context) +
   // 실제 데이터에서 그때그때 계산한 최고/최저 문장. 수치를 손으로 넣지 않습니다.
   function buildPeriodNarrative(period) {
@@ -564,6 +646,41 @@
         '(' + stats.maxDate + ')까지 움직였습니다.';
     }
     return sentence;
+  }
+
+  // 주간 카드의 "등락폭이 가장 컸던 기간" 블록을 채웁니다.
+  // 일봉 카드와 같은 구성(스탯 3개 + 환율 슬로프 + BTC 발산형 막대)이되,
+  // 기준이 "N일 전 대비"가 아니라 "그 구간에서 가장 크게 움직인 기간"입니다.
+  function renderPeriodSwing(period) {
+    const swing = getPeriodSwing(period);
+
+    if (!swing) {
+      periodSwing.hidden = true;
+      return;
+    }
+    periodSwing.hidden = false;
+
+    const fmtPct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+    const fmtPP = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%p';
+
+    periodSwingLabel.textContent =
+      '등락폭이 가장 컸던 기간 · ' + swing.fromDate + ' ~ ' + swing.toDate +
+      ' (' + swing.days + '일)';
+
+    pSwingStartLabel.textContent = '시작 (' + swing.fromDate + ')';
+    pSwingEndLabel.textContent = '끝 (' + swing.toDate + ')';
+    pSwingStart.textContent = fmtPct(swing.fromPremium);
+    pSwingEnd.textContent = fmtPct(swing.toPremium);
+    pSwingDiff.textContent =
+      (swing.premiumDiff >= 0 ? '▲ ' : '▼ ') +
+      Math.abs(swing.premiumDiff).toFixed(1) + '%p';
+
+    // 일봉 카드와 같은 계열 색을 씁니다(환율=accent, BTC=frog).
+    const rangeLabels = { beforeLabel: '기간 시작', afterLabel: '기간 끝' };
+    drawSlope(pFxSlope, swing.fx === null ? 0 : swing.fx,
+      Object.assign({ fmt: fmtPct, color: 'var(--accent)' }, rangeLabels));
+    drawDivergingBar(pBtcBar, swing.btc === null ? 0 : swing.btc,
+      Object.assign({ fmt: fmtPct, color: 'var(--frog)' }, rangeLabels));
   }
 
   // 주간 큰 사건 기간입니다. type은 전부 'summary'(구간 설명 카드).
@@ -766,6 +883,8 @@
               : '');
           periodDescription.textContent =
             buildPeriodNarrative(period);
+
+          renderPeriodSwing(period);
 
           // 이 구간에 연결된 일봉 사건이 있으면 버튼으로 보여주고,
           // 누르면 일봉 차트로 이동해 그 사건 상세를 바로 엽니다.
@@ -1254,10 +1373,10 @@
     svgEl.appendChild(afterLabel);
 
     const t1 = make('text', { x: x1, y: h - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--mut)' });
-    t1.textContent = '사건 전';
+    t1.textContent = opts.beforeLabel || '사건 전';
     svgEl.appendChild(t1);
     const t2 = make('text', { x: x2, y: h - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--mut)' });
-    t2.textContent = '사건 후';
+    t2.textContent = opts.afterLabel || '사건 후';
     svgEl.appendChild(t2);
   }
 
@@ -1289,11 +1408,11 @@
     svgEl.appendChild(val);
 
     const lbl1 = make('text', { x: 18, y: axisY - 9, 'font-size': 11, fill: 'var(--mut)' });
-    lbl1.textContent = '사건 전 0%';
+    lbl1.textContent = (opts.beforeLabel || '사건 전') + ' 0%';
     svgEl.appendChild(lbl1);
 
     const lbl2 = make('text', { x: w - 18, y: axisY - 9, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--mut)' });
-    lbl2.textContent = '사건 후';
+    lbl2.textContent = opts.afterLabel || '사건 후';
     svgEl.appendChild(lbl2);
   }
 

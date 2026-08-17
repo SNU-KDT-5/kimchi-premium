@@ -48,11 +48,14 @@
   }
   .quiz-opt:hover:not(:disabled) { border-color: var(--border2); background: var(--panel); }
   .quiz-opt.correct { border-color: var(--frog); background: var(--frog-bg); color: var(--frog); font-weight: 700; }
-  .quiz-opt.wrong { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+  /* 오답은 --accent(빨강)가 아니라 --amber 로 표시한다.
+     질책이 아니라 "다시 생각해보자"에 가까운 톤이 목적이다. */
+  .quiz-opt.wrong { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
   .quiz-opt:disabled { cursor: default; }
+  /* 오답 선택지 바로 아래에 붙는 힌트. .quiz-opts 의 gap 이 위아래 간격을 준다. */
+  .quiz-hint { font-size: 0.76rem; color: var(--mut); line-height: 1.65; margin: 0; padding: 0 var(--sp-4); }
   .quiz-msg { font-size: 0.78rem; font-weight: 600; margin-top: var(--sp-2); min-height: 1.2em; }
   .quiz-msg.ok { color: var(--frog); }
-  .quiz-msg.no { color: var(--amber); }
 
   /* ── 퀴즈 통과 전 잠금 ────────────────────────────────────────────
      블러는 눈에만 걸리는 장치라, 그것만으로는 Tab 으로 잠긴 섹션에
@@ -457,9 +460,40 @@ function dateFromIdx(idx) {
 
 // ② 퀴즈
 const QUIZ = [
-  { q: '김치프리미엄이란 무엇인가요?', opts: ['국내 거래소 가격이 해외보다 높은(또는 낮은) 정도', '비트코인의 하루 변동폭', '거래 수수료의 총합', '환전 수수료율'], ans: 0, hint: '국내 vs 해외 가격 격차를 말해요.' },
-  { q: '"김프가 높다"는 건 어떤 상황인가요?', opts: ['해외 가격이 국내보다 비싸다', '국내 가격이 해외보다 비싸다', '환율이 고정됐다', '거래량이 0이다'], ans: 1, hint: '국내가 상대적으로 비싼 상태예요.' },
-  { q: '이 시뮬레이터가 보여주는 수치는 무엇인가요?', opts: ['확실한 미래 수익 보장', '지금 사라는 신호', '과거 데이터를 가정한 참고용 계산 결과', '실시간 매매 주문'], ans: 2, hint: '예측이나 권유가 아니라 참고용 계산이에요.' },
+  // hints 는 opts 와 인덱스가 1:1 로 맞물린다. 정답 자리는 null.
+  {
+    q: '김치프리미엄이란 무엇인가요?',
+    opts: ['국내 거래소 가격이 해외보다 높은(또는 낮은) 정도', '비트코인의 하루 변동폭', '거래 수수료의 총합', '환전 수수료율'],
+    ans: 0,
+    hints: [
+      null,
+      '이건 시간에 따른 가격 변화예요. 김프는 같은 시각에 두 시장을 비교한 값입니다. 어디와 어디를 비교하는 걸까요?',
+      '수수료는 거래할 때 내는 비용이고, 김프는 가격 자체의 차이예요. 아래 계산기에서는 둘을 따로 다룹니다.',
+      '환율이 김프 계산에 쓰이긴 하지만, 김프는 환전 비용이 아니라 환율로 맞춰본 뒤에도 남는 가격 차이입니다.',
+    ],
+  },
+  {
+    q: '"김프가 높다"는 건 어떤 상황인가요?',
+    opts: ['해외 가격이 국내보다 비싸다', '국내 가격이 해외보다 비싸다', '환율이 고정됐다', '거래량이 0이다'],
+    ans: 1,
+    hints: [
+      '방향이 반대예요. 이건 김프가 마이너스인 상황(역프)입니다. 김프가 높다는 건 그 반대 방향이에요.',
+      null,
+      '환율은 김프를 계산할 때 쓰는 재료일 뿐이에요. 김프가 높다는 건 환율로 환산한 뒤에도 국내 가격이 더 비싸다는 뜻입니다.',
+      '거래량은 김프에 영향을 주는 요인 중 하나지만, "김프가 높다"는 표현 자체는 가격 차이의 크기를 말합니다.',
+    ],
+  },
+  {
+    q: '이 시뮬레이터가 보여주는 수치는 무엇인가요?',
+    opts: ['확실한 미래 수익 보장', '지금 사라는 신호', '과거 데이터를 가정한 참고용 계산 결과', '실시간 매매 주문'],
+    ans: 2,
+    hints: [
+      '아니에요. 여기 숫자는 전부 이미 지나간 날짜의 데이터로 계산한 값입니다. 과거가 그랬다고 앞으로도 그렇다는 보장은 없어요.',
+      '이 사이트는 매수·매도를 권하지 않습니다. 김프가 어떻게 움직였는지 이해를 돕는 것이 목적이에요.',
+      null,
+      '여기서는 아무것도 사고팔 수 없어요. 과거 날짜를 골라 가정해서 계산해보는 도구입니다.',
+    ],
+  },
 ];
 const quizDone = new Array(QUIZ.length).fill(false);
 let quizPassed = false;
@@ -468,7 +502,10 @@ function renderQuiz(){
   document.getElementById('quizPanel').innerHTML = QUIZ.map((it, qi) => `
     <div class="quiz-q">
       <div class="quiz-q-head"><span class="qi">Q${qi+1}</span>${it.q}</div>
-      <div class="quiz-opts">${it.opts.map((o, oi) => `<button class="quiz-opt" data-q="${qi}" data-o="${oi}">${o}</button>`).join('')}</div>
+      <div class="quiz-opts">${it.opts.map((o, oi) => `<button class="quiz-opt" data-q="${qi}" data-o="${oi}">${o}</button>` +
+        // 힌트 자리는 미리 만들어 두고 내용만 채운다. 라이브 영역은 DOM 에 먼저 있어야 낭독된다.
+        (it.hints[oi] ? `<p class="quiz-hint" id="hint-${qi}-${oi}" role="status" aria-live="polite" hidden></p>` : '')
+      ).join('')}</div>
       <div class="quiz-msg" data-msg="${qi}"></div>
     </div>
   `).join('');
@@ -479,6 +516,9 @@ function renderQuiz(){
       if (quizDone[qi]) return;
       const it = QUIZ[qi];
       const msg = document.querySelector(`[data-msg="${qi}"]`);
+
+      clearHints(qi);   // 한 문항에 힌트는 항상 하나만 남는다
+
       if (oi === it.ans) {
         btn.classList.add('correct');
         quizDone[qi] = true;
@@ -487,14 +527,58 @@ function renderQuiz(){
         document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.disabled = true);
         checkUnlock();
       } else {
+        // 오답이어도 잠그지 않는다. 힌트를 읽고 다시 고를 수 있다.
         btn.classList.add('wrong');
-        msg.textContent = it.hint + ' 다시 골라보세요.';
-        msg.className = 'quiz-msg no';
-        setTimeout(() => btn.classList.remove('wrong'), 700);
+        const el = document.getElementById(`hint-${qi}-${oi}`);
+        el.innerHTML = it.hints[oi];   // 라이브 영역은 내용이 "바뀌어야" 낭독된다
+        el.hidden = false;
+        msg.textContent = '';
+        msg.className = 'quiz-msg';
       }
     });
   });
+
+  reserveHintSpace();
 }
+
+// 이전에 고른 오답의 표시와 힌트를 지운다.
+function clearHints(qi){
+  document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.classList.remove('wrong'));
+  QUIZ[qi].hints.forEach((h, oi) => {
+    if (!h) return;
+    const el = document.getElementById(`hint-${qi}-${oi}`);
+    el.hidden = true;
+    el.textContent = '';
+  });
+}
+
+// 힌트가 떠도 아래 문항이 밀려 올라오지 않도록, 문항 높이를 미리 "가장 긴 힌트가
+// 떴을 때"로 잡아 둔다. 힌트는 한 번에 하나만 뜨므로 그 최댓값이면 충분하다.
+// 글자 크기·폭이 바뀌면 줄바꿈이 달라지므로 리사이즈 때 다시 잰다.
+function reserveHintSpace(){
+  const qs = document.querySelectorAll('#quizPanel .quiz-q');
+  QUIZ.forEach((it, qi) => {
+    const q = qs[qi];
+    if (!q) return;
+    q.style.minHeight = '';
+    let max = q.offsetHeight;
+    it.hints.forEach((h, oi) => {
+      if (!h) return;
+      const el = document.getElementById(`hint-${qi}-${oi}`);
+      const wasHidden = el.hidden, prev = el.innerHTML;
+      el.innerHTML = h; el.hidden = false;
+      max = Math.max(max, q.offsetHeight);
+      el.hidden = wasHidden; el.innerHTML = prev;
+    });
+    if (max > 0) q.style.minHeight = max + 'px';   // 레이아웃을 못 재는 환경(테스트 등)에서는 건너뛴다
+  });
+}
+
+let hintResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(hintResizeTimer);
+  hintResizeTimer = setTimeout(reserveHintSpace, 150);
+});
 
 // ══════════ 퀴즈 잠금 ══════════
 // 여는 조건이 둘이다 — 퀴즈 통과(quizPassed) + 실데이터 도착(dataReady).

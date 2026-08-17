@@ -39,6 +39,18 @@
   .quiz-msg.ok { color: var(--frog); }
   .quiz-msg.no { color: var(--amber); }
 
+  /* ⑤ 리스크 체크리스트 — 바탕은 .quiz-opt 를 그대로 쓴다 */
+  .risk-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .risk-item { display: flex; gap: var(--sp-3); align-items: flex-start; }
+  .risk-item.checked { border-color: var(--frog); background: var(--frog-bg); }
+  .risk-mark { font-family: var(--font-mono); color: var(--dim); flex: none; }
+  .risk-item.checked .risk-mark { color: var(--frog); }
+  .risk-body { min-width: 0; }   /* 긴 한글 제목이 flex 안에서 줄바꿈되도록 */
+  .risk-title { display: block; font-weight: 700; margin-bottom: 2px; }
+  .risk-desc { display: block; font-size: 0.8rem; color: var(--mut); line-height: 1.6; }
+  .risk-progress { font-size: 0.82rem; font-weight: 600; color: var(--mut); margin-top: var(--sp-4); text-align: center; }
+  .risk-progress.done { color: var(--frog); }
+
   .intro-banner {
     display: flex; gap: var(--sp-3); align-items: flex-start;
     background: var(--frog-bg); border: 1px solid var(--frog-line); border-radius: var(--r-lg);
@@ -283,9 +295,20 @@
     </div>
   </div>
 
-  <!-- ⑤ 결과 차트 -->
+  <!-- ⑤ 리스크 체크리스트 -->
+  <div class="section-block" id="riskSection" hidden>
+    <div class="section-label">⑤ 계산에 안 들어간 것들</div>
+    <div class="card">
+      <p class="section-intro">위 숫자는 <b>사고파는 순간이 동시에 이뤄지고 그 사이에 아무 마찰도 없다</b>고 가정한 값입니다.
+        실제로는 아래 다섯 가지가 결과를 갉아먹습니다. 하나씩 읽고 눌러서 확인해보세요.</p>
+      <div class="risk-list" id="riskList"></div>
+      <p class="risk-progress" id="riskProgress" role="status" aria-live="polite">-</p>
+    </div>
+  </div>
+
+  <!-- ⑥ 결과 차트 -->
   <div class="section-block" id="chartSection" hidden>
-    <div class="section-label">⑤ 그 시점부터 지금까지</div>
+    <div class="section-label">⑥ 그 시점부터 지금까지</div>
     <div class="card">
       <p class="section-intro"><b class="frog-text">초록색 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b class="accent-text">빨간색 선</b>은 환율까지 반영한 실제 누적 수익입니다.</p>
       <div class="decomp-legend-row">
@@ -374,6 +397,68 @@ function renderQuiz(){
       }
     });
   });
+}
+
+// ⑤ 리스크 체크리스트
+// 계산기가 "동시 체결 / 마찰 없음"으로 가정하고 지워버린 것들을 되짚는다.
+const RISKS = [
+  {
+    t: '송금이 끝날 때까지 김프는 기다려주지 않습니다',
+    d: '계산기는 살 때와 팔 때가 같은 순간에 체결된다고 봅니다. 실제로는 입금·전송·매도까지 수십 분에서 며칠이 걸리고, 그 사이 김프가 먼저 좁혀지면 화면의 숫자는 남지 않습니다.'
+  },
+  {
+    t: '출금 한도와 심사 지연',
+    d: '거래소마다 1일 출금 한도가 있고, 큰 금액은 추가 심사로 며칠 묶일 수 있습니다. 한 번에 옮기지 못하는 동안에도 김프는 계속 움직입니다.'
+  },
+  {
+    t: '해외 거래소 KYC와 외환 송금 규제',
+    d: '해외 거래소는 신원확인(KYC)을 통과해야 출금이 되고, 국내에서 해외로 보내는 자금은 외국환거래 신고 대상이 될 수 있습니다. 준비가 안 돼 있으면 시점을 놓치거나 실행 자체가 막힙니다.'
+  },
+  {
+    t: '호가 스프레드와 슬리피지',
+    d: '화면의 가격은 마지막 체결가일 뿐입니다. 사는 쪽은 조금 비싸고 파는 쪽은 조금 쌉니다. 주문이 호가 한 칸에 다 들어가지 않으면 다음 칸까지 밀려 체결되고, 위 계산기에 큰 금액을 넣을수록 이 차이는 커집니다.'
+  },
+  {
+    t: '세금',
+    d: '계산기 숫자는 세전입니다. 가상자산 소득의 과세 여부·시기·세율은 제도 변화에 따라 달라집니다. 해외 거래소를 이용하는 경우에는 요건에 따라 해외금융계좌 신고 대상이 될 수도 있습니다. 실제로 손에 남는 금액은 이보다 적을 수 있습니다.'
+  },
+];
+const riskChecked = new Array(RISKS.length).fill(false);
+
+function renderRisks(){
+  document.getElementById('riskList').innerHTML = RISKS.map((r, i) => `
+    <button type="button" class="quiz-opt risk-item" data-i="${i}" aria-pressed="false">
+      <span class="risk-mark" aria-hidden="true">□</span>
+      <span class="risk-body">
+        <b class="risk-title">${r.t}</b>
+        <span class="risk-desc">${r.d}</span>
+      </span>
+    </button>`).join('');
+
+  // 목록을 다시 그리면 키보드 포커스가 날아가므로, 누른 항목만 그 자리에서 바꾼다.
+  document.querySelectorAll('.risk-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.i;
+      riskChecked[i] = !riskChecked[i];
+      btn.classList.toggle('checked', riskChecked[i]);
+      btn.setAttribute('aria-pressed', String(riskChecked[i]));
+      btn.querySelector('.risk-mark').textContent = riskChecked[i] ? '☑' : '□';
+      renderRiskProgress();
+    });
+  });
+
+  renderRiskProgress();
+}
+
+function renderRiskProgress(){
+  const done = riskChecked.filter(Boolean).length;
+  const total = RISKS.length;
+  const el = document.getElementById('riskProgress');
+  el.classList.toggle('done', done === total);
+
+  if (done === 0) el.textContent = `아직 확인하지 않은 위험이 ${total}가지 있습니다.`;
+  else if (done < total) el.textContent = `${done}가지 확인했습니다. ${total - done}가지가 남았습니다.`;
+  else el.textContent = `${total}가지 모두 확인했습니다. 위 계산기 숫자는 이 마찰들을 빼기 전 값입니다.`;
 }
 
 // ③ 달력
@@ -672,7 +757,7 @@ const elLoading = document.getElementById('dataLoading');
 const elLoadMsg = document.getElementById('dataLoadingMsg');
 const elError = document.getElementById('dataError');
 const elEmpty = document.getElementById('dataEmpty');
-const DATA_SECTIONS = ['pickSection', 'resultSection', 'chartSection'];
+const DATA_SECTIONS = ['pickSection', 'resultSection', 'riskSection', 'chartSection'];
 
 function showSections(show){
   DATA_SECTIONS.forEach(id => { document.getElementById(id).hidden = !show; });
@@ -737,7 +822,8 @@ function loadData(){
     });
 }
 
-renderQuiz();   // 퀴즈는 데이터 없이 바로 풀 수 있다
+renderQuiz();   // 퀴즈와 체크리스트는 데이터 없이 바로 쓸 수 있다
+renderRisks();
 loadData();
 </script>
 

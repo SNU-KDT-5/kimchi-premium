@@ -9,26 +9,41 @@
 <link rel="stylesheet" href="shared.css">
 <script src="shared.js"></script>
 <style>
+  /* ── 타이포 스케일 ────────────────────────────────────────────────
+     shared.css 에는 font-size 토큰(--fs-*)이 없고 클래스별 값만 있다.
+     그래서 아래 값들은 전부 shared.css 가 실제로 쓰는 값에서만 골랐다.
+       1.3rem  (.h2)                 페이지 제목
+       1.02rem (.info-card-head .name) 큰 수치
+       1rem    (.h3)                 스탯 값
+       0.9rem  (.body-text)          항목·카드 제목
+       0.86rem (.btn)                본문
+       0.78rem (.info-card-head .date) 보조 설명
+       0.76rem (.caption)            캡션·폼 라벨
+       0.74rem (.card-title/.badge)  섹션 라벨
+       0.72rem (.stat-card .label)   마이크로 라벨
+       0.68rem (.stat-card .hint)    최소 (달력·워터폴)
+     line-height 는 shared.css 기준 1.7(본문)·1.65(조밀)·1.4(마이크로).
+     ───────────────────────────────────────────────────────────────── */
   body { padding-bottom: 80px; }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
-  .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .header h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
   .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
 
   .section-block { margin-top: var(--sp-8); }
   .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
-  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
+  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.7; margin-bottom: var(--sp-4); }
   .section-intro b.frog-text { color: var(--frog); }
   .section-intro b.accent-text { color: var(--accent); }
 
   /* ② 퀴즈 */
   .quiz-q { margin-bottom: var(--sp-6); }
   .quiz-q:last-child { margin-bottom: 0; }
-  .quiz-q-head { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: var(--sp-3); display: flex; gap: var(--sp-2); }
+  .quiz-q-head { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: var(--sp-3); display: flex; gap: var(--sp-2); }
   .quiz-q-head .qi { color: var(--frog); font-family: var(--font-mono); }
   .quiz-opts { display: flex; flex-direction: column; gap: var(--sp-2); }
   .quiz-opt {
     text-align: left; background: var(--panel2); border: 1.5px solid var(--border);
-    border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); font-family: inherit;
+    border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); font-family: var(--font-body);
     font-size: 0.86rem; color: var(--text); cursor: pointer; transition: border-color .15s, background .15s;
   }
   .quiz-opt:hover:not(:disabled) { border-color: var(--border2); background: var(--panel); }
@@ -39,19 +54,39 @@
   .quiz-msg.ok { color: var(--frog); }
   .quiz-msg.no { color: var(--amber); }
 
-  /* ⑤ 리스크 체크리스트 — 바탕은 .quiz-opt 를 그대로 쓴다 */
+  /* ⑤ 리스크 체크리스트 — 카드 겉모습은 .quiz-opt 를 그대로 쓴다.
+     "확인함"(aria-pressed)과 "설명 펼치기"(aria-expanded)는 뜻이 다르므로
+     한 버튼에 두 상태를 얹지 않고 컨트롤을 둘로 나눈다. */
   .risk-list { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .risk-item { display: flex; gap: var(--sp-3); align-items: flex-start; }
+  .risk-item { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: flex-start; }
   .risk-item.checked { border-color: var(--frog); background: var(--frog-bg); }
-  .risk-mark { font-family: var(--font-mono); color: var(--dim); flex: none; }
+  .risk-check, .risk-head {
+    background: none; border: none; padding: 0; margin: 0; cursor: pointer;
+    font-family: var(--font-body); color: inherit; text-align: left;
+  }
+  .risk-check { flex: none; min-width: 24px; min-height: 24px; }
+  .risk-mark { font-family: var(--font-mono); font-size: 0.9rem; color: var(--dim); }
   .risk-item.checked .risk-mark { color: var(--frog); }
-  .risk-body { min-width: 0; }   /* 긴 한글 제목이 flex 안에서 줄바꿈되도록 */
-  .risk-title { display: block; font-weight: 700; margin-bottom: 2px; }
-  .risk-desc { display: block; font-size: 0.8rem; color: var(--mut); line-height: 1.6; }
-  .risk-progress { font-size: 0.82rem; font-weight: 600; color: var(--mut); margin-top: var(--sp-4); text-align: center; }
+  .risk-head { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: var(--sp-2); }
+  .risk-title { font-size: 0.9rem; font-weight: 700; }
+  .risk-head::after { content: '▾'; font-size: 0.68rem; color: var(--dim); flex: none; transition: transform .15s; }
+  .risk-head[aria-expanded="true"]::after { transform: rotate(180deg); }
+  .risk-desc { flex-basis: 100%; font-size: 0.78rem; color: var(--mut); line-height: 1.65; }
+  .risk-progress { font-size: 0.78rem; font-weight: 600; color: var(--mut); margin-top: var(--sp-4); text-align: center; }
   .risk-progress.done { color: var(--frog); }
   /* 근거 문단은 .caption 을 쓰되, 여러 줄이라 가운데 정렬만 푼다 */
   .risk-source { text-align: left; line-height: 1.7; margin-top: var(--sp-5); }
+
+  /* 데이터 출처 접기 — shared.css 에 details 스타일이 없어 최소한만 둔다 */
+  .src-details { margin-top: var(--sp-4); }
+  .src-details > summary {
+    cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: var(--sp-2);
+    font-size: 0.74rem; font-weight: 700; color: var(--mut);
+  }
+  .src-details > summary::-webkit-details-marker { display: none; }
+  .src-details > summary::after { content: '▾'; font-size: 0.68rem; transition: transform .15s; }
+  .src-details[open] > summary::after { transform: rotate(180deg); }
+  .src-details .calc-footnote { margin-top: var(--sp-3); }
 
   .intro-banner {
     display: flex; gap: var(--sp-3); align-items: flex-start;
@@ -59,8 +94,8 @@
     padding: var(--sp-4) var(--sp-5); margin-bottom: var(--sp-5);
   }
   .intro-banner-icon { height: 34px; width: auto; flex: none; display: block; margin-top: var(--sp-2); }
-  .intro-banner-title { font-weight: 800; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
-  .intro-banner-text { font-size: 0.82rem; color: var(--mut); line-height: 1.65; }
+  .intro-banner-title { font-weight: 700; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
+  .intro-banner-text { font-size: 0.78rem; color: var(--mut); line-height: 1.65; }
 
   /* ③ 매수 시점 달력 + 투입 정보 (좌우 배치) */
   .pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); align-items: start; }
@@ -68,7 +103,7 @@
 
   .cal-picked-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
   .cal-picked-label { font-size: 0.76rem; color: var(--mut); }
-  .cal-picked-value { font-family: var(--font-mono); font-size: 0.92rem; font-weight: 800; color: var(--text); }
+  .cal-picked-value { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 800; color: var(--text); }
 
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
   .cal-nav-center { display: flex; align-items: center; gap: var(--sp-2); }
@@ -82,17 +117,17 @@
   .cal-nav-btn {
     border: 1px solid var(--border2); background: var(--panel); color: var(--mut);
     border-radius: var(--r-sm); width: 22px; height: 22px; font-size: 0.72rem; line-height: 1;
-    font-family: inherit; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-body); cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center;
   }
   .cal-nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--frog); }
   .cal-nav-btn:disabled { opacity: .35; cursor: default; }
   .cal-nav-label { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 700; color: var(--text); }
   .cal-day-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
-  .cal-day-labels span { font-size: 0.6rem; color: var(--dim); text-align: center; font-weight: 600; }
+  .cal-day-labels span { font-size: 0.68rem; color: var(--dim); text-align: center; font-weight: 600; }
   .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
   .cal-cell {
     aspect-ratio: 1; max-height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; cursor: pointer; color: var(--text);
+    font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; cursor: pointer; color: var(--text);
     background: var(--panel2); border: 1px solid var(--border); transition: background .12s, border-color .12s;
   }
   .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
@@ -105,7 +140,7 @@
   .cal-presets { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
   .cal-preset {
     background: var(--panel2); border: 1px solid var(--border2); border-radius: var(--r-pill);
-    padding: 5px var(--sp-3); font-family: inherit; font-size: 0.72rem; font-weight: 600;
+    padding: 5px var(--sp-3); font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
     color: var(--mut); cursor: pointer; line-height: 1.4;
   }
   .cal-preset:hover { border-color: var(--frog); color: var(--text); }
@@ -140,7 +175,7 @@
   .calc-hero-flow { display: flex; align-items: baseline; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
   .calc-hero-flow .from { font-family: var(--font-mono); font-size: 0.78rem; color: var(--dim); text-decoration: line-through; text-decoration-color: var(--border2); }
   .calc-hero-flow .arrow { color: var(--dim); font-size: 0.78rem; }
-  .calc-hero-flow .to { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 800; color: var(--text); }
+  .calc-hero-flow .to { font-family: var(--font-mono); font-size: 1.02rem; font-weight: 800; color: var(--text); }
   .calc-hero-badge {
     display: block; margin-top: 3px;
     font-family: var(--font-mono); font-weight: 700; font-size: 0.76rem;
@@ -149,7 +184,7 @@
   .calc-hero-badge.down { color: var(--accent); }
 
   .stat-row .value { font-size: 1rem; }
-  .stat-row .label { font-size: 0.66rem; }
+  .stat-row .label { font-size: 0.68rem; }
 
   /* 결과 상단 고정 안내 (투자조언 아님 + 계산 가정) */
   .calc-disclaim { margin-bottom: var(--sp-3); }
@@ -162,7 +197,7 @@
   .wf-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
   .wf-bar { width: 100%; max-width: 46px; border-radius: 4px 4px 0 0; min-height: 3px; position: relative; }
   .wf-val { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; }
-  .wf-name { font-size: 0.66rem; color: var(--mut); margin-top: var(--sp-2); text-align: center; }
+  .wf-name { font-size: 0.68rem; color: var(--mut); margin-top: var(--sp-2); text-align: center; }
   .wf-axis { width: 100%; height: 1px; background: var(--border2); }
   .wf-val.wf-frog   { color: var(--frog); }    .wf-bar.wf-frog   { background: var(--frog); }
   .wf-val.wf-accent { color: var(--accent); }  .wf-bar.wf-accent { background: var(--accent); }
@@ -171,16 +206,16 @@
   .breakeven-card {
     background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5);
   }
-  .breakeven-head { display: flex; align-items: center; gap: 6px; font-size: 0.66rem; font-weight: 700; color: var(--frog); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--sp-2); }
-  .breakeven-value { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
-  .breakeven-desc { font-size: 0.78rem; color: var(--mut); line-height: 1.6; margin-bottom: var(--sp-3); }
+  .breakeven-head { display: flex; align-items: center; gap: var(--sp-2); font-size: 0.68rem; font-weight: 700; color: var(--frog); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--sp-2); }
+  .breakeven-value { font-family: var(--font-mono); font-size: 1.02rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
+  .breakeven-desc { font-size: 0.78rem; color: var(--mut); line-height: 1.65; margin-bottom: var(--sp-3); }
   .breakeven-gauge { position: relative; height: 6px; border-radius: var(--r-pill); background: var(--border); margin-bottom: var(--sp-2); }
   .breakeven-gauge .fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--frog-light), var(--frog)); }
   .breakeven-gauge .marker {
     position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%;
     background: var(--text); border: 2px solid var(--panel2); transform: translate(-50%, -50%);
   }
-  .breakeven-labels { display: flex; justify-content: space-between; font-size: 0.64rem; color: var(--dim); font-family: var(--font-mono); }
+  .breakeven-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--dim); font-family: var(--font-mono); }
 
   /* ⑥ 결과 차트 — SVG 색은 표현속성 대신 클래스로 준다(표현속성은 var() 지원이 들쭉날쭉) */
   .decomp-svg { width: 100%; height: 200px; display: block; }
@@ -190,18 +225,15 @@
   .decomp-line-real { fill: none; stroke: var(--accent); stroke-width: 2.2; }
   .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
   .legend-line { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
-  .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-4); text-align: center; }
+  /* .caption 은 shared.css(0.76rem) 를 그대로 쓴다. 여기서 크기를 덮어쓰지 않는다. */
+  .caption { margin-top: var(--sp-4); text-align: center; }
 
   .result-summary { margin-top: var(--sp-8); text-align: center; }
-  .result-summary .headline { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+  .result-summary .headline { font-size: 0.9rem; font-weight: 700; color: var(--text); }
   .result-summary .headline .frog-text { color: var(--frog); }
   .result-summary .headline .accent-text { color: var(--accent); }
   .result-summary .sub { font-size: 0.76rem; color: var(--dim); margin-top: var(--sp-3); }
 
-  .repeat-note {
-    text-align: center; font-size: 0.84rem; color: var(--mut);
-    margin-top: var(--sp-8); padding: 0 var(--sp-4); line-height: 1.7;
-  }
 </style>
 </head>
 <body>
@@ -302,9 +334,12 @@
       <div class="wf-row" id="wfRow"></div>
 
       <div class="breakeven-card" id="breakEvenBox"></div>
-      <p class="calc-footnote">이 페이지는 Upbit·Bitstamp 시세와 ECB(Frankfurter) 환율로 김프를 계산하며, 주말·공휴일 환율은 직전 영업일 값을 씁니다.<br>
-        Upbit·Binance 시세와 한국은행 매매기준율로 계산한 옥현민(2023)은 2017년 11월~2022년 9월 일평균 2.20%, 최대 59.40%를 보고했습니다.
-        어느 거래소와 어느 환율을 쓰느냐에 따라 수치는 조금씩 달라집니다.</p>
+      <details class="src-details">
+        <summary>데이터 출처와 계산 기준</summary>
+        <p class="calc-footnote">이 페이지는 Upbit·Bitstamp 시세와 ECB(Frankfurter) 환율로 김프를 계산하며, 주말·공휴일 환율은 직전 영업일 값을 씁니다.</p>
+        <p class="calc-footnote">Upbit·Binance 시세와 한국은행 매매기준율로 계산한 옥현민(2023)은 2017년 11월~2022년 9월 일평균 2.20%, 최대 59.40%를 보고했습니다.
+          어느 거래소와 어느 환율을 쓰느냐에 따라 수치는 조금씩 달라집니다.</p>
+      </details>
     </div>
   </div>
 
@@ -318,9 +353,8 @@
       <div class="risk-list" id="riskList"></div>
       <p class="risk-progress" id="riskProgress" role="status" aria-live="polite">-</p>
 
-      <p class="caption risk-source">국가 간 가격 차이는 자본시장이 나뉘어 있거나 국경을 넘는 돈의 흐름이 느릴 때에만 오래 유지된다는 연구가 있습니다(Makarov &amp; Schoar, 2020).
-        위에 적은 마찰들이 바로 그 &lsquo;느린 흐름&rsquo;에 해당하며, 김프가 곧바로 메워지지 않고 남아 있는 이유이기도 합니다.
-        <br>재인용: 옥현민(2023), 「김치프리미엄의 발생 원인에 대한 실증적 분석」, 서울시립대학교 석사학위논문.</p>
+      <p class="caption risk-source">한 연구에 따르면 국가 간 가격 차이는 자본시장이 나뉘어 있거나 국경을 넘는 돈의 흐름이 느릴 때에만 오래 유지됩니다.
+        위에 적은 마찰들이 바로 그 &lsquo;느린 흐름&rsquo;에 해당하며, 김프가 곧바로 메워지지 않고 남아 있는 이유이기도 합니다.</p>
     </div>
   </div>
 
@@ -445,23 +479,33 @@ const riskChecked = new Array(RISKS.length).fill(false);
 
 function renderRisks(){
   document.getElementById('riskList').innerHTML = RISKS.map((r, i) => `
-    <button type="button" class="quiz-opt risk-item" data-i="${i}" aria-pressed="false">
-      <span class="risk-mark" aria-hidden="true">□</span>
-      <span class="risk-body">
-        <b class="risk-title">${r.t}</b>
-        <span class="risk-desc">${r.d}</span>
-      </span>
-    </button>`).join('');
+    <div class="quiz-opt risk-item" data-i="${i}">
+      <button type="button" class="risk-check" data-i="${i}" aria-pressed="false" aria-label="확인함 표시: ${r.t}">
+        <span class="risk-mark" aria-hidden="true">□</span>
+      </button>
+      <button type="button" class="risk-head" data-i="${i}" aria-expanded="false" aria-controls="riskDesc${i}">
+        <span class="risk-title">${r.t}</span>
+      </button>
+      <p class="risk-desc" id="riskDesc${i}" hidden>${r.d}</p>
+    </div>`).join('');
 
-  // 목록을 다시 그리면 키보드 포커스가 날아가므로, 누른 항목만 그 자리에서 바꾼다.
-  document.querySelectorAll('.risk-item').forEach(btn => {
+  // 눌린 컨트롤만 그 자리에서 바꾼다. 목록을 다시 그리면 키보드 포커스가 날아간다.
+  document.querySelectorAll('.risk-check').forEach(btn => {
     btn.addEventListener('click', () => {
       const i = +btn.dataset.i;
       riskChecked[i] = !riskChecked[i];
-      btn.classList.toggle('checked', riskChecked[i]);
+      btn.closest('.risk-item').classList.toggle('checked', riskChecked[i]);
       btn.setAttribute('aria-pressed', String(riskChecked[i]));
       btn.querySelector('.risk-mark').textContent = riskChecked[i] ? '☑' : '□';
       renderRiskProgress();
+    });
+  });
+
+  document.querySelectorAll('.risk-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      document.getElementById('riskDesc' + btn.dataset.i).hidden = open;
     });
   });
 
@@ -759,8 +803,7 @@ function renderAll(){
   let desc;
   if (netPremiumEdge >= 0) {
     const gapPct = (fxNow - breakEvenFx) / breakEvenFx * 100;
-    desc = `매수 시점(${commas(fxAt)}원) 대비 환율이 ${Math.abs(netPremiumEdge).toFixed(2)}% 넘게 떨어지면 손실로 전환됩니다.
-      오늘 환율(${commas(fxNow)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
+    desc = `매수 시점(${commas(fxAt)}원)보다 환율이 ${Math.abs(netPremiumEdge).toFixed(2)}% 넘게 떨어지면 손실로 바뀌는데, 오늘 환율(${commas(fxNow)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
   } else {
     desc = `프리미엄과 수수료만 놓고 보면 이미 ${Math.abs(netPremiumEdge).toFixed(2)}%p 손해인 상태라,
       환율이 매수 시점(${commas(fxAt)}원)보다 더 올라야 본전이 됩니다.`;

@@ -48,6 +48,8 @@
 
     .kf-scrolly { position: relative; height: 980vh; }
     .kf-scrolly2 { height: 520vh; }
+    .kf-scrolly3 { height: 820vh; }
+    .kf-scrolly4 { height: 460vh; }
 
     /* 56px = shared.css의 .topnav-inner 높이 */
     .kf-stage {
@@ -196,9 +198,55 @@
 
     .kf-note { text-align: center; }
 
+    /* ── 세 번째 장면: 테더 김프 ── */
+    /* 테더는 1달러에 고정 — y축 왼쪽에 붙는 기준선 표시 */
+    .kf-dollar {
+      fill: var(--mut); font-family: 'Pretendard', sans-serif;
+      font-size: 30px; font-weight: 800;
+    }
+    /* 이 장면의 화살표는 김프가 아니라 눈금을 재는 자라서 검은색 */
+    #t3Arrows .kf-arrow { stroke: var(--text); }
+    #t3Arrows .kf-arrow-head { fill: var(--text); }
+    #t3Arrows .kf-arrow-label { fill: var(--text); }
+
+    /* Sell! / Buy! — 김프로그가 사고판 자리에 남는다 */
+    .kf-trade {
+      font-family: 'Pretendard', sans-serif; font-size: 34px; font-weight: 800;
+      text-anchor: middle;
+    }
+    .kf-trade.sell { fill: var(--accent); }
+    /* 파랑은 shared.css 토큰엔 없는 색 — 산 자리를 판 자리와 갈라 보이려고 쓴다 */
+    .kf-trade.buy { fill: #2c6da3; }
+    /* 사고판 자리를 형광펜으로 동그랗게 짚어 준다 */
+    .kf-mark { fill-opacity: 0.42; }
+    .kf-mark.sell { fill: #d9584a; }
+    .kf-mark.buy { fill: #5b9bd5; }
+
+    /* ── 네 번째 장면: 코인과 테더를 나란히 ── */
+    /* 형광펜 노랑도 shared.css 토큰엔 없는 색 */
+    .kf-floor {
+      fill: none; stroke: #ffd93d; stroke-width: 17;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .kf-floor.is-blink { animation: kf-floor-blink 1.15s ease-in-out infinite; }
+    @keyframes kf-floor-blink { 0%, 100% { opacity: 0.95; } 50% { opacity: 0.3; } }
+    .kf-mini-line { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+    .kf-mini-kimp { fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linejoin: round; }
+    .kf-mini-fill { fill: var(--accent); fill-opacity: 0.16; }
+    .kf-mini-axis { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; fill: none; }
+    /* 얼굴 오른쪽에 붙을 때는 꼬리가 왼쪽을 향한다 */
+    .kf-say.is-side:after {
+      left: -8px; bottom: auto; top: var(--tail-y, 50%); margin-left: 0; margin-top: -7px;
+      transform: rotate(45deg);
+    }
+
     @media (max-width: 560px) {
       .kf-scrolly { height: 880vh; }
       .kf-scrolly2 { height: 470vh; }
+      .kf-scrolly3 { height: 740vh; }
+      .kf-scrolly4 { height: 430vh; }
+      .kf-dollar { font-size: 34px; }
+      .kf-trade { font-size: 38px; }
       .kf-say { font-size: 0.86rem; padding: var(--sp-2) var(--sp-4); max-width: 84%; }
       .kf-say .big { font-size: 1.02rem; }
       .kf-axis-label { font-size: 26px; }
@@ -209,6 +257,7 @@
     @media (prefers-reduced-motion: reduce) {
       .kf-scroll-hint .arr { animation: none; }
       .kf-say { transition: none; }
+      .kf-floor.is-blink { animation: none; }
     }
   </style>
 </head>
@@ -339,6 +388,69 @@
             <image id="f2Spill" href="assets/%EC%A0%91%EC%8B%9C%EB%A5%BC%20%EC%97%8E%EC%9D%80%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.png" opacity="0"></image>
           </svg>
           <div class="kf-say is-hidden" id="say2"><span id="say2Text"></span></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════ 세 번째 장면 ══════════ 테더에 붙는 김프 -->
+    <div class="kf-scrolly kf-scrolly3" id="scrolly3">
+      <div class="kf-stage" id="stage3">
+        <div class="kf-chart-wrap" id="chartWrap3">
+          <svg class="kf-chart" id="chart3" viewBox="0 0 1080 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path class="kf-axis" d="M70 40 L70 580 L960 580"></path>
+
+            <!-- 좌상단 테더 로고 -->
+            <image id="t3Logo" class="kf-fade" opacity="0" href="assets/%ED%85%8C%EB%8D%94.png"
+                   x="88" y="46" width="180" height="65"></image>
+
+            <!-- 1달러 고정선(검정) — 김프로그가 밟고 다니는 땅 -->
+            <text class="kf-dollar kf-fade" id="t3Dollar" opacity="0" x="56" y="519" text-anchor="end">1$</text>
+            <path class="kf-line-price" id="t3Price"></path>
+
+            <!-- 김프가 붙은 테더 시세(빨강) + 두 선 사이 -->
+            <path class="kf-gap-fill kf-fade" id="t3Fill" opacity="0"></path>
+            <path class="kf-line-kimp" id="t3Kimp"></path>
+
+            <!-- 5% · 10% 화살표 -->
+            <g class="kf-fade" id="t3Arrows" opacity="0"></g>
+            <!-- 사고판 자리 표시 (선 위, 캐릭터보다 아래) -->
+            <g id="t3Marks"></g>
+
+            <!-- 머리만 있는 김프로그 + 그 옆에 쌓이는 김치 -->
+            <image id="t3Face" class="kf-fade" opacity="0" href="assets/face-smile.svg"
+                   x="530" y="88" width="170" height="123"></image>
+            <g id="t3Pile"></g>
+
+            <!-- 시세선 위를 걷는 김프로그 -->
+            <!-- 김치가 김프로그를 가리지 않도록 개구리보다 뒤에 그린다 -->
+            <g id="t3Frog" opacity="0">
+              <g id="t3KimchiG"><image id="t3Kimchi" href="assets/%EA%B9%80%EC%B9%98.svg"></image></g>
+              <image id="t3Stand" href="assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
+              <image id="t3Run" href="assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
+            </g>
+
+            <!-- 팔린 김치가 얼굴 옆으로 날아가는 중 -->
+            <g id="t3Fly"></g>
+            <!-- Sell! / Buy! -->
+            <g id="t3Trade"></g>
+          </svg>
+
+          <div class="kf-say is-hidden" id="say3"><span id="say3Text"></span></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════ 네 번째 장면 ══════════ 코인엔 없는 바닥, 테더엔 있는 바닥 -->
+    <div class="kf-scrolly kf-scrolly4" id="scrolly4">
+      <div class="kf-stage" id="stage4">
+        <div class="kf-chart-wrap" id="chartWrap4">
+          <svg class="kf-chart" id="chart4" viewBox="0 0 1080 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <g id="p4Panels" opacity="0"></g>
+            <image id="p4Face" class="kf-fade" opacity="0" href="assets/face-smile.svg"></image>
+          </svg>
+          <div class="kf-say is-hidden" id="say4a"><span id="say4aText"></span></div>
         </div>
       </div>
     </div>
@@ -1057,29 +1169,12 @@
       // 6) 그리기
       // ═══════════════════════════════════════════════════════════
       var lastSayIdx = -1, swapTimer = null;
+      var sayAnchor = { x: 0, y: 0 };   // 마지막으로 알아낸 김프로그 머리 위치
       var SAY_GAP = 34;   // 김치·빨간 선과 겹치지 않게 띄우는 여백(px)
 
-      function updateSay(p, frogX, frogTopY, frogScale) {
-        var idx = -1;
-        for (var i = 0; i < SAYS.length; i++) {
-          if (p >= SAYS[i].from && p < SAYS[i].to) { idx = i; break; }
-        }
-        foot.classList.toggle('is-off', !(idx !== -1 && SAYS[idx].foot));
-        if (idx !== lastSayIdx) {
-          lastSayIdx = idx;
-          if (idx === -1) {
-            sayBox.classList.add('is-hidden');
-          } else {
-            sayBox.classList.add('is-hidden');
-            clearTimeout(swapTimer);
-            swapTimer = setTimeout(function () {
-              sayText.innerHTML = SAYS[idx].html;
-              sayBox.classList.remove('is-hidden');
-            }, 180);
-          }
-        }
-        if (idx === -1) return;
-
+      // 말풍선을 지정한 지점 위에 앉힌다.
+      // 반드시 글자를 다 넣은 뒤에 부를 것 — 크기를 재서 자리를 잡기 때문이다.
+      function placeSay(idx, frogX, frogTopY) {
         // 언제나 김프로그 머리 위. 화면 밖으로 나가려 하면 안쪽으로 잡아주고,
         // 그때는 꼬리 위치로 누가 말하는지 알려준다.
         var below = false;
@@ -1093,6 +1188,9 @@
         }
         sayBox.classList.toggle('is-up', below);
         var wrapW = chartWrap.clientWidth, wrapH = chartWrap.clientHeight;
+        // 크기를 재기 전에 왼쪽 끝으로 되돌린다. 오른쪽에 붙어 있는 채로 재면
+        // 남은 자리만큼만 폭이 나와, 글자가 접힌 채로 조금씩 펴지게 된다.
+        sayBox.style.left = '0px';
         var bw = sayBox.offsetWidth, bh = sayBox.offsetHeight;
         var left = clamp(frogX - bw / 2, 6, Math.max(6, wrapW - bw - 6));
         var wantTop = below ? frogTopY + 14 : frogTopY - bh - SAY_GAP;
@@ -1100,6 +1198,31 @@
         sayBox.style.left = left.toFixed(0) + 'px';
         sayBox.style.top = top.toFixed(0) + 'px';
         sayBox.style.setProperty('--tail-x', clamp(frogX - left, 18, Math.max(18, bw - 18)).toFixed(0) + 'px');
+      }
+
+      function updateSay(p, frogX, frogTopY, frogScale) {
+        var idx = -1;
+        for (var i = 0; i < SAYS.length; i++) {
+          if (p >= SAYS[i].from && p < SAYS[i].to) { idx = i; break; }
+        }
+        foot.classList.toggle('is-off', !(idx !== -1 && SAYS[idx].foot));
+        if (idx !== lastSayIdx) {
+          lastSayIdx = idx;
+          sayBox.classList.add('is-hidden');
+          clearTimeout(swapTimer);   // 대사 없는 구간으로 빠질 때도 예약을 반드시 지운다
+          if (idx !== -1) {
+            swapTimer = setTimeout(function () {
+              sayText.innerHTML = SAYS[idx].html;
+              placeSay(idx, sayAnchor.x, sayAnchor.y);   // 글자를 넣은 뒤에 자리를 잡는다
+              sayBox.classList.remove('is-hidden');
+            }, 180);
+          }
+        }
+        if (idx === -1) return;
+        sayAnchor.x = frogX; sayAnchor.y = frogTopY;
+        // 글자 교체를 기다리는 동안엔 옛 글자 크기로 옮기지 않는다
+        if (sayBox.classList.contains('is-hidden')) return;
+        placeSay(idx, frogX, frogTopY);
       }
 
       // SVG 좌표 → chartWrap 안쪽 픽셀 좌표
@@ -1420,30 +1543,41 @@
         return { x: x * m.a + y * m.c + m.e - r.left, y: x * m.b + y * m.d + m.f - r.top };
       }
       var lastIdx = -1, swapTimer = null;
-      function updateSay(p, headX, headY) {
-        var idx = -1;
-        for (var i = 0; i < SAYS.length; i++) if (p >= SAYS[i].from && p < SAYS[i].to) { idx = i; break; }
-        if (idx !== lastIdx) {
-          lastIdx = idx;
-          if (idx === -1) sayBox.classList.add('is-hidden');
-          else {
-            sayBox.classList.add('is-hidden');
-            clearTimeout(swapTimer);
-            swapTimer = setTimeout(function () {
-              sayText.innerHTML = SAYS[idx].html;
-              sayBox.classList.remove('is-hidden');
-            }, 170);
-          }
-        }
-        if (idx === -1) return;
+      var sayAnchor = { x: 0, y: 0 };   // 마지막으로 알아낸 김프로그 머리 위치(SVG 좌표)
+
+      // 첫 장면과 같은 규칙 — 글자를 다 넣은 뒤에 부를 것
+      function placeSay(headX, headY) {
         var head = toWrapPx(headX, headY);
         var W = wrap.clientWidth, H = wrap.clientHeight;
+        // 크기를 재기 전에 왼쪽 끝으로 되돌린다(오른쪽에 붙은 채로 재면 폭이 덜 나온다)
+        sayBox.style.left = '0px';
         var bw = sayBox.offsetWidth, bh = sayBox.offsetHeight;
         var left = clamp(head.x - bw / 2, 6, Math.max(6, W - bw - 6));
         var top = clamp(head.y - bh - 30, 4, Math.max(4, H - bh - 4));
         sayBox.style.left = left.toFixed(0) + 'px';
         sayBox.style.top = top.toFixed(0) + 'px';
         sayBox.style.setProperty('--tail-x', clamp(head.x - left, 18, Math.max(18, bw - 18)).toFixed(0) + 'px');
+      }
+
+      function updateSay(p, headX, headY) {
+        var idx = -1;
+        for (var i = 0; i < SAYS.length; i++) if (p >= SAYS[i].from && p < SAYS[i].to) { idx = i; break; }
+        if (idx !== lastIdx) {
+          lastIdx = idx;
+          sayBox.classList.add('is-hidden');
+          clearTimeout(swapTimer);   // 대사 없는 구간으로 빠질 때도 예약을 반드시 지운다
+          if (idx !== -1) {
+            swapTimer = setTimeout(function () {
+              sayText.innerHTML = SAYS[idx].html;
+              placeSay(sayAnchor.x, sayAnchor.y);   // 글자를 넣은 뒤에 자리를 잡는다
+              sayBox.classList.remove('is-hidden');
+            }, 170);
+          }
+        }
+        if (idx === -1) return;
+        sayAnchor.x = headX; sayAnchor.y = headY;
+        if (sayBox.classList.contains('is-hidden')) return;
+        placeSay(headX, headY);
       }
 
       // ── 그리기 ──
@@ -1516,6 +1650,790 @@
       update();
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', update, { passive: true });
+
+      // 마지막 비교 장면이 이 그래프를 축소해 다시 그린다
+      window.KF = window.KF || {};
+      window.KF.coin = {
+        price: priceLine.getAttribute('d'),
+        kimp: linePath(kimpPts, SAMPLES),
+        fill: fillPath(SAMPLES),
+        start: { x: startPt.x, y: startPt.y },
+        end: { x: endPt.x, y: endPt.y },
+        frogW: FROG_W, frogH: FROG_H,
+        plate: { stand: plateOf(false), run: plateOf(true) },
+        kimchiAnchor: KIMCHI_ANCHOR, kimchiMax: KIMCHI_MAX,
+        spillW: SPILL_W, spillH: SPILL_H,
+        // t(0~1) 시점의 김프로그 자리와 그때까지 그려진 선
+        at: function (t) {
+          var pt = priceLine.getPointAtLength(priceLen * clamp(t, 0, 1));
+          var idx = Math.round(clamp(t, 0, 1) * SAMPLES);
+          return { x: pt.x, y: pt.y, s: kScaleAt(t),
+                   kimp: linePath(kimpPts, idx), fill: fillPath(idx) };
+        }
+      };
+    })();
+  </script>
+
+  <script>
+    // ══════════════════════════════════════════════════════════════
+    // 세 번째 장면 — 테더에 붙는 김프
+    //   · 테더는 늘 1달러라서 검은 선이 수평이다. 김프로그는 그 위를 걷는다.
+    //   · 빨간 선(김프가 붙은 테더 값)은 3단계에서 처음부터 끝까지 다 그려두고,
+    //     김프로그는 그 아래를 걸으며 '들고 있을 때만' 접시에 김치가 있다.
+    //   · 파는 순간 김치는 머리만 있는 김프로그 옆으로 날아가 쌓인다.
+    // ══════════════════════════════════════════════════════════════
+    (function () {
+      var SVGNS = 'http://www.w3.org/2000/svg';
+      function el(t, a) { var n = document.createElementNS(SVGNS, t); for (var k in a) n.setAttribute(k, a[k]); return n; }
+      function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function ease(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+
+      var scrolly = document.getElementById('scrolly3');
+      var stage = document.getElementById('stage3');
+      var wrap = document.getElementById('chartWrap3');
+      var svg = document.getElementById('chart3');
+      var logo = document.getElementById('t3Logo');
+      var dollar = document.getElementById('t3Dollar');
+      var priceLine = document.getElementById('t3Price');
+      var kimpLine = document.getElementById('t3Kimp');
+      var gapFill = document.getElementById('t3Fill');
+      var arrowsG = document.getElementById('t3Arrows');
+      var face = document.getElementById('t3Face');
+      var pileG = document.getElementById('t3Pile');
+      var frogG = document.getElementById('t3Frog');
+      var fStand = document.getElementById('t3Stand');
+      var fRun = document.getElementById('t3Run');
+      var kimchiG = document.getElementById('t3KimchiG');
+      var kimchiImg = document.getElementById('t3Kimchi');
+      var flyG = document.getElementById('t3Fly');
+      var tradeG = document.getElementById('t3Trade');
+      var marksG = document.getElementById('t3Marks');
+      var sayBox = document.getElementById('say3');
+      var sayText = document.getElementById('say3Text');
+
+      // ── 마스코트 좌표 (앞 장면들과 같은 값) ──
+      var PLATE = { stand: { x: 0.770, y: 0.370 }, run: { x: 0.804, y: 0.355 } };
+      var KIMCHI_ANCHOR = { x: 0.40, y: 0.74 }, KIMCHI_TOP = 0.172, KIMCHI_CX = 0.504;
+      var FROG_W = 150, FROG_H = FROG_W * (380 / 600);
+      var KIMCHI_MAX = 2.60;     // 김프 10%일 때의 김치 크기
+
+      // ── 무대 ──
+      var BASE_Y = 510;          // 1달러 고정선 = 김프로그가 밟는 땅
+      var X0 = 165, X1 = 890;    // 김프로그가 걷는 구간
+
+      // ── 김프(%) — 스케치의 봉우리 셋 / 골짜기 둘 ──
+      var KIMP = [
+        [165, 0.0], [207, 2.6], [245, 1.2], [297, 3.0], [353, 3.4], [414, 4.1],
+        [477, 5.0],                                    // 봉우리1 — 5%
+        [502, 2.6], [527, 0.4],                        // 골짜기1
+        [559, 2.2], [596, 5.6],
+        [629, 10.0],                                   // 봉우리2 — 10%
+        [651, 6.8], [666, 7.4], [681, 3.6], [696, 0.6],// 골짜기2
+        [722, 3.0],
+        [752, 6.2],                                    // 봉우리3
+        [775, 3.2], [801, 1.4], [828, 2.2], [856, 1.0], [890, 1.6]
+      ];
+      var KIMP_MAXPCT = 10;
+
+      // ── 매매 — 시작하자마자 사고, 봉우리마다 판다 ──
+      var TRADES = [
+        { x: 165, buy: true },
+        { x: 477, buy: false }, { x: 527, buy: true },
+        { x: 629, buy: false }, { x: 696, buy: true },
+        { x: 752, buy: false }
+      ];
+
+      // ── 구간 ──
+      var P_S1 = 0.00, P_S2 = 0.09, P_S3 = 0.19, P_S4 = 0.31,
+          P_S5 = 0.43, P_WALK = 0.53, P_DONE = 0.95;
+
+      var SAYS = [
+        { from: P_S1,   to: P_S2,   at: 'face',
+          html: '그러던 어느 날<br>국내 거래소에 <b>테더(USDT)</b>가 상장됐어' },
+        { from: P_S2,   to: P_S3,   at: 'face',
+          html: '테더는 시세가<br>항상 <b>1달러</b>에 고정되어 있지' },
+        { from: P_S3,   to: P_S4,   at: 'face',
+          html: '자세히 보니 국내에선<br>테더에도 <span class="kimp">김프</span>가 붙는다는 걸 알게 됐어' },
+        { from: P_S4,   to: P_S5,   at: 'face',
+          html: '많을 땐 <span class="kimp">5~10%</span> 정도 붙었지만,<br>0% 밑으로는 좀처럼 떨어지지 않았어, 개굴' },
+        { from: P_S5,   to: P_WALK, at: 'frog',
+          html: '그럼 <span class="kimp">김프</span>가 낮을 때 샀다가 높을 때 팔면,<br>그만큼 수익을 얻을 수 있지 않을까?' },
+        { from: P_DONE, to: 1.01,   at: 'face',
+          html: '<span class="big">맛있는 김치가 한가득!</span>' }
+      ];
+
+      // ── 준비 ──
+      [fStand, fRun].forEach(function (e) {
+        e.setAttribute('x', -FROG_W / 2); e.setAttribute('y', -FROG_H);
+        e.setAttribute('width', FROG_W); e.setAttribute('height', FROG_H);
+      });
+      kimchiImg.setAttribute('x', -KIMCHI_ANCHOR.x * FROG_W);
+      kimchiImg.setAttribute('y', -KIMCHI_ANCHOR.y * FROG_H);
+      kimchiImg.setAttribute('width', FROG_W);
+      kimchiImg.setAttribute('height', FROG_H);
+
+
+      // 김프(%) → 접시 위 김치 크기
+      function scaleOfPct(pct) { return KIMCHI_MAX * clamp(pct, 0, KIMP_MAXPCT) / KIMP_MAXPCT; }
+      function plateOf(run) {
+        var p = run ? PLATE.run : PLATE.stand;
+        return { x: (p.x - 0.5) * FROG_W, y: (p.y - 1) * FROG_H };
+      }
+      // 앞 장면들과 같은 규칙 — 빨간 선은 접시 위 김치의 꼭대기가 지나가는 자리다.
+      // 김프가 0에 가까우면 접시 높이만큼 뜨는 것을 눌러 검은 선에 붙인다.
+      // 접시는 개구리 오른쪽에 있으므로 선은 그만큼(PLATE_DX) 오른쪽에 그려진다.
+      // 이 값을 김치 크기에 따라 움직이게 하면 김치가 줄어드는 구간에서 x가 제자리걸음을
+      // 해 선이 수직으로 꺾이므로, 접시 위치만 쓰는 고정값으로 둔다.
+      var PLATE_DX = plateOf(false).x;
+      var LINE_END = X1 + PLATE_DX;
+      function kimchiTopY(pct) {
+        var o = plateOf(false), s = scaleOfPct(pct);
+        var w = ease(clamp(pct / 1.8, 0, 1));
+        return BASE_Y + (o.y - (KIMCHI_ANCHOR.y - KIMCHI_TOP) * FROG_H * s) * w;
+      }
+      // 김프로그가 x에 서 있을 때 김치 꼭대기가 찍히는 점 = 빨간 선 위의 한 점
+      function kimpPt(x) {
+        return { x: x + PLATE_DX, y: kimchiTopY(pctAt(x)) };
+      }
+      function pctAt(x) {
+        if (x <= KIMP[0][0]) return KIMP[0][1];
+        var n = KIMP.length;
+        if (x >= KIMP[n - 1][0]) return KIMP[n - 1][1];
+        for (var i = 1; i < n; i++) {
+          if (KIMP[i][0] >= x) {
+            var a = KIMP[i - 1], b = KIMP[i];
+            return lerp(a[1], b[1], ease((x - a[0]) / (b[0] - a[0] || 1)));
+          }
+        }
+        return KIMP[n - 1][1];
+      }
+
+      // ── 빨간 선 ──
+      // 김치는 접시(개구리 오른쪽)에 얹혀 있어 꼭대기가 개구리보다 오른쪽에 찍힌다.
+      // 그만큼 선이 오른쪽으로 밀리므로, 검은 선 끝을 넘어가는 꼬리는 잘라 낸다.
+      var SAMPLES = 260, kimpPts = [];
+      for (var i = 0; i <= SAMPLES; i++) {
+        var sx = lerp(X0, LINE_END, i / SAMPLES);
+        kimpPts.push([sx, kimchiTopY(pctAt(clamp(sx - PLATE_DX, X0, X1)))]);
+      }
+
+      function linePath(upTo) {
+        var last = clamp(upTo === undefined ? SAMPLES : upTo, 0, SAMPLES);
+        if (last < 1) return '';
+        var d = 'M' + kimpPts[0][0].toFixed(1) + ' ' + kimpPts[0][1].toFixed(1);
+        for (var i = 1; i <= last; i++) d += ' L' + kimpPts[i][0].toFixed(1) + ' ' + kimpPts[i][1].toFixed(1);
+        return d;
+      }
+      function fillPath(upTo) {
+        var last = clamp(upTo, 0, SAMPLES);
+        if (last < 1) return '';
+        return linePath(last) +
+               ' L' + kimpPts[last][0].toFixed(1) + ' ' + BASE_Y +
+               ' L' + kimpPts[0][0].toFixed(1) + ' ' + BASE_Y + ' Z';
+      }
+
+      // ── 5% · 10% 화살표 ──
+      (function buildArrows() {
+        [{ x: 477, label: '5%' }, { x: 629, label: '10%' }].forEach(function (a) {
+          var pt = kimpPt(a.x), top = pt.y, ax = pt.x;
+          var g = el('g', {});
+          g.appendChild(el('path', { class: 'kf-arrow',
+            d: 'M' + ax + ' ' + (top + 9) + ' L' + ax + ' ' + (BASE_Y - 9) }));
+          g.appendChild(el('path', { class: 'kf-arrow-head',
+            d: 'M' + ax + ' ' + top + ' l-7 13 l14 0 Z' }));
+          g.appendChild(el('path', { class: 'kf-arrow-head',
+            d: 'M' + ax + ' ' + BASE_Y + ' l-7 -13 l14 0 Z' }));
+          g.appendChild(el('text', { class: 'kf-arrow-label', x: ax + 14,
+            y: (top + BASE_Y) / 2 + 10 }));
+          g.lastChild.textContent = a.label;
+          arrowsG.appendChild(g);
+        });
+      })();
+
+      // ── 얼굴 오른쪽에 쌓이는 김치 ──
+      // 옮겨지면서 판 순간보다 더 커지고, 한 자리에 위로 개어 쌓인다.
+      // 큰 것이 맨 아래 — 새로 팔린 김치가 끼어들면 위의 것들이 밀려 올라간다.
+      var PILE_GROW = 0.63;          // 판 순간 김치 크기의 몇 배로 쌓이나
+      var PILE_CX = 850, PILE_BOTTOM = 200;
+      var PILE_OVERLAP = 0.5;        // 아래 김치를 얼마나 덮고 올라앉나
+      var KIMCHI_VIS_H = 0.63;       // 김치 그림이 실제로 차지하는 세로 비율
+      var SELLS = TRADES.filter(function (t) { return !t.buy; });
+      var pileScale = SELLS.map(function (t) { return scaleOfPct(pctAt(t.x)) * PILE_GROW; });
+
+      // n개가 쌓였을 때 각자 앉는 자리
+      function stackLayout(n) {
+        var order = [];
+        for (var i = 0; i < n; i++) order.push(i);
+        order.sort(function (a, b) { return pileScale[b] - pileScale[a]; });
+        var y = PILE_BOTTOM, out = [];
+        order.forEach(function (i, k) {
+          var s = pileScale[i];
+          out[i] = { x: PILE_CX - (KIMCHI_CX - KIMCHI_ANCHOR.x) * FROG_W * s + (k % 2 ? 13 : -9),
+                     y: y, s: s };
+          y -= PILE_OVERLAP * KIMCHI_VIS_H * FROG_H * s;
+        });
+        return out;
+      }
+      var LAYOUTS = [];
+      for (var n = 0; n <= SELLS.length; n++) LAYOUTS.push(stackLayout(n));
+
+      var pileImgs = SELLS.map(function () {
+        var im = el('image', { href: kimchiImg.getAttribute('href'),
+          x: -KIMCHI_ANCHOR.x * FROG_W, y: -KIMCHI_ANCHOR.y * FROG_H,
+          width: FROG_W, height: FROG_H });
+        var g = el('g', { opacity: 0 });
+        g.appendChild(im); pileG.appendChild(g);
+        return g;
+      });
+
+      // ── Sell! / Buy! ──
+      var tradeLabels = TRADES.map(function (t) {
+        var pt = kimpPt(t.x);
+        var n = el('text', { class: 'kf-trade ' + (t.buy ? 'buy' : 'sell'),
+          x: pt.x + (t.buy ? 0 : 18), y: t.buy ? BASE_Y + 56 : pt.y - 22, opacity: 0 });
+        n.textContent = t.buy ? 'Buy!' : 'Sell!';
+        tradeG.appendChild(n);
+        return n;
+      });
+
+      // 사고판 자리를 빨간 선 위에 형광펜으로 동그랗게 짚어 준다
+      var marks = TRADES.map(function (t) {
+        var pt = kimpPt(t.x);
+        var n = el('circle', { class: 'kf-mark ' + (t.buy ? 'buy' : 'sell'), opacity: 0,
+          cx: pt.x.toFixed(1), cy: pt.y.toFixed(1), r: t.buy ? 25 : 27 });
+        marksG.appendChild(n);
+        return n;
+      });
+
+      // 날아가는 김치 한 장 (파는 순간에만 보인다)
+      var flyImg = el('image', { href: kimchiImg.getAttribute('href'),
+        x: -KIMCHI_ANCHOR.x * FROG_W, y: -KIMCHI_ANCHOR.y * FROG_H,
+        width: FROG_W, height: FROG_H });
+      var flyWrap = el('g', { opacity: 0 });
+      flyWrap.appendChild(flyImg); flyG.appendChild(flyWrap);
+
+      // ── 들고 있나? ──
+      // 산 지점부터 파는 지점까지만 접시에 김치가 있다
+      function holdingAt(x) {
+        var hold = false;
+        for (var i = 0; i < TRADES.length; i++) {
+          if (x < TRADES[i].x) break;
+          hold = TRADES[i].buy;
+        }
+        return hold;
+      }
+
+      // ── 뛰는 그림 / 서 있는 그림 ──
+      var moving = false, moveTimer = null, curP = 0;
+      function running() { return moving && curP >= P_WALK && curP < P_DONE; }
+      function place(x, pct, hold) {
+        var run = running();
+        fStand.style.display = run ? 'none' : '';
+        fRun.style.display = run ? '' : 'none';
+        var o = plateOf(run);
+        frogG.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + BASE_Y + ')');
+        kimchiG.setAttribute('opacity', hold ? 1 : 0);
+        kimchiG.setAttribute('transform', 'translate(' + o.x.toFixed(1) + ' ' + o.y.toFixed(1) +
+          ') scale(' + scaleOfPct(pct).toFixed(3) + ')');
+      }
+
+      // ── 말풍선 ──
+      function toWrapPx(x, y) {
+        var m = svg.getScreenCTM();
+        if (!m) return { x: 0, y: 0 };
+        var r = wrap.getBoundingClientRect();
+        return { x: x * m.a + y * m.c + m.e - r.left, y: x * m.b + y * m.d + m.f - r.top };
+      }
+      var lastIdx = -1, swapTimer = null;
+      var sayAnchor = { x: 0, y: 0 };
+
+      function placeSay(headX, headY) {
+        var head = toWrapPx(headX, headY);
+        var W = wrap.clientWidth, H = wrap.clientHeight;
+        sayBox.style.left = '0px';                 // 재기 전에 왼쪽으로 — 폭이 덜 나오는 걸 막는다
+        var bw = sayBox.offsetWidth, bh = sayBox.offsetHeight;
+        var left = clamp(head.x - bw / 2, 6, Math.max(6, W - bw - 6));
+        var top = clamp(head.y - bh - 26, 4, Math.max(4, H - bh - 4));
+        sayBox.style.left = left.toFixed(0) + 'px';
+        sayBox.style.top = top.toFixed(0) + 'px';
+        sayBox.style.setProperty('--tail-x', clamp(head.x - left, 18, Math.max(18, bw - 18)).toFixed(0) + 'px');
+      }
+      function updateSay(p, headX, headY) {
+        var idx = -1;
+        for (var i = 0; i < SAYS.length; i++) if (p >= SAYS[i].from && p < SAYS[i].to) { idx = i; break; }
+        if (idx !== lastIdx) {
+          lastIdx = idx;
+          sayBox.classList.add('is-hidden');
+          clearTimeout(swapTimer);
+          if (idx !== -1) {
+            swapTimer = setTimeout(function () {
+              sayText.innerHTML = SAYS[idx].html;
+              placeSay(sayAnchor.x, sayAnchor.y);
+              sayBox.classList.remove('is-hidden');
+            }, 170);
+          }
+        }
+        if (idx === -1) return;
+        sayAnchor.x = headX; sayAnchor.y = headY;
+        if (sayBox.classList.contains('is-hidden')) return;
+        placeSay(headX, headY);
+      }
+
+      // ── 그리기 ──
+      var FLIGHT = 0.055;                          // 김치가 얼굴 옆으로 날아가는 데 쓰는 진행도
+      var FLIGHT_DIST = (X1 - X0) * FLIGHT;
+
+      function render(p) {
+        curP = p;
+
+        // ① 얼굴과 테더 로고
+        var on1 = p >= P_S1 ? 1 : 0;
+        face.setAttribute('opacity', on1);
+        logo.setAttribute('opacity', on1);
+
+        // ② 1달러 고정선 — 왼쪽에서 오른쪽으로 그어진다
+        var drawn = p < P_S2 ? 0 : (p >= P_S3 ? 1 : ease((p - P_S2) / (P_S3 - P_S2)));
+        dollar.setAttribute('opacity', p >= P_S2 ? 1 : 0);
+        priceLine.setAttribute('opacity', drawn > 0 ? 1 : 0);
+        priceLine.setAttribute('d',
+          'M' + X0 + ' ' + BASE_Y + ' L' + (X0 + (LINE_END - X0) * drawn).toFixed(1) + ' ' + BASE_Y);
+
+        // ③ 김프가 붙은 빨간 선 — 처음부터 끝까지 다 그려 둔다
+        var kd = p < P_S3 ? 0 : (p >= P_S4 ? 1 : ease((p - P_S3) / (P_S4 - P_S3)));
+        var upTo = Math.round(kd * SAMPLES);
+        kimpLine.setAttribute('d', linePath(upTo));
+        gapFill.setAttribute('opacity', kd > 0 ? 1 : 0);
+        gapFill.setAttribute('d', fillPath(upTo));
+
+        // ④ 5% · 10% 화살표 — 걷기 시작하면 사라진다
+        arrowsG.setAttribute('opacity', (p >= P_S4 && p < P_WALK) ? 1 : 0);
+
+        // ⑤⑥ 김프로그
+        var walkT = p < P_WALK ? 0 : clamp((p - P_WALK) / (P_DONE - P_WALK), 0, 1);
+        var fx = lerp(X0, X1, walkT);
+        var pct = pctAt(fx);
+        var hold = p < P_WALK ? false : holdingAt(fx);
+        frogG.setAttribute('opacity', p >= P_S5 ? 1 : 0);
+        place(fx, p < P_WALK ? 0 : pct, hold);
+
+        // Sell! / Buy! + 체크 — 한 번 지나가면 그대로 남는다
+        TRADES.forEach(function (t, i) {
+          var on = (p >= P_WALK && fx >= t.x) ? 1 : 0;
+          tradeLabels[i].setAttribute('opacity', on);
+          marks[i].setAttribute('opacity', on);
+        });
+
+        // 판 김치가 얼굴 오른쪽으로 날아가 쌓인다
+        var landed = 0, flying = -1, fprog = 0;
+        if (p >= P_WALK) {
+          SELLS.forEach(function (t, i) {
+            var d = fx - t.x;
+            if (d < 0) return;
+            if (d >= FLIGHT_DIST) landed = i + 1;
+            else { flying = i; fprog = d / FLIGHT_DIST; }
+          });
+        }
+        // 날아오는 김치가 끼어들면 이미 쌓인 것들이 그만큼 밀려 올라간다
+        var have = flying >= 0 ? flying : landed;
+        var from = LAYOUTS[have], to = LAYOUTS[flying >= 0 ? flying + 1 : landed];
+        var e = flying >= 0 ? ease(fprog) : 1;
+        pileImgs.forEach(function (g, i) {
+          if (i >= have) { g.setAttribute('opacity', 0); return; }
+          var a = from[i], b = to[i];
+          g.setAttribute('opacity', 1);
+          g.setAttribute('transform', 'translate(' + lerp(a.x, b.x, e).toFixed(1) + ' ' +
+            lerp(a.y, b.y, e).toFixed(1) + ') scale(' + a.s.toFixed(3) + ')');
+        });
+
+        if (flying >= 0) {
+          var slot = LAYOUTS[flying + 1][flying];
+          var o = plateOf(false), sSell = scaleOfPct(pctAt(SELLS[flying].x));
+          var cx = lerp(SELLS[flying].x + o.x, slot.x, e);
+          var cy = lerp(BASE_Y + o.y, slot.y, e) - Math.sin(Math.PI * fprog) * 70;  // 살짝 포물선
+          flyWrap.setAttribute('opacity', 1);
+          flyWrap.setAttribute('transform', 'translate(' + cx.toFixed(1) + ' ' + cy.toFixed(1) +
+            ') scale(' + lerp(sSell, slot.s, e).toFixed(3) + ')');
+        } else {
+          flyWrap.setAttribute('opacity', 0);
+        }
+        face.setAttribute('href', (flying >= 0 || p >= P_DONE) ? 'assets/face-happy.svg' : 'assets/face-smile.svg');
+
+        // 말풍선은 얼굴 위 또는 김프로그 머리 위
+        var anchor = SAYS.reduce(function (a, s) {
+          return (p >= s.from && p < s.to) ? s.at : a;
+        }, 'face');
+        var hx, hy;
+        if (anchor === 'frog') {
+          hx = fx; hy = BASE_Y - FROG_H - 8;
+        } else {
+          hx = +face.getAttribute('x') + (+face.getAttribute('width')) / 2;
+          hy = +face.getAttribute('y');
+        }
+        updateSay(p, hx, hy);
+      }
+
+      // ── 스크롤 ──
+      var ticking = false;
+      function update() {
+        var rect = scrolly.getBoundingClientRect();
+        var stickyTop = parseFloat(getComputedStyle(stage).top) || 0;
+        var travel = scrolly.offsetHeight - stage.offsetHeight;
+        render(travel > 0 ? clamp((stickyTop - rect.top) / travel, 0, 1) : 0);
+        ticking = false;
+      }
+      function onScroll() {
+        moving = true;
+        clearTimeout(moveTimer);
+        moveTimer = setTimeout(function () { moving = false; update(); }, 160);
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+      update();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
+
+      window.KF = window.KF || {};
+      window.KF.tether = {
+        price: 'M' + X0 + ' ' + BASE_Y + ' L' + LINE_END + ' ' + BASE_Y,
+        kimp: linePath(SAMPLES),
+        fill: fillPath(SAMPLES),
+        x0: X0, x1: X1, baseY: BASE_Y,
+        frogW: FROG_W, frogH: FROG_H,
+        plate: { stand: plateOf(false), run: plateOf(true) },
+        kimchiAnchor: KIMCHI_ANCHOR,
+        bigKimchi: scaleOfPct(KIMP_MAXPCT),
+        at: function (t) {
+          var x = lerp(X0, X1, clamp(t, 0, 1));
+          var idx = Math.round((x + PLATE_DX - X0) / (LINE_END - X0) * SAMPLES);
+          return { x: x, y: BASE_Y, s: scaleOfPct(pctAt(x)),
+                   kimp: linePath(idx), fill: fillPath(idx) };
+        }
+      };
+    })();
+  </script>
+
+  <script>
+    // ══════════════════════════════════════════════════════════════
+    // 네 번째 장면 — 코인엔 없는 바닥, 테더엔 있는 바닥
+    //   · 앞 두 장면의 그래프(window.KF)를 그대로 축소해 나란히 놓는다.
+    //   · 노란 형광펜이 김프로그가 밟고 다니는 '바닥'(검은 선)을 짚어 준다.
+    //   · 두 번째 대사가 뜨고 1초 뒤, 스크롤과 상관없이 두 김프로그가 함께 달린다.
+    //     달리는 동안엔 스크롤을 막고, 다 달리면 그 화면을 그대로 둔다.
+    // ══════════════════════════════════════════════════════════════
+    (function () {
+      var SVGNS = 'http://www.w3.org/2000/svg';
+      function el(t, a) { var n = document.createElementNS(SVGNS, t); for (var k in a) n.setAttribute(k, a[k]); return n; }
+      function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+      function ease(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+
+      var KF = window.KF || {};
+      if (!KF.coin || !KF.tether) return;      // 앞 장면이 없으면 조용히 넘어간다
+
+      var scrolly = document.getElementById('scrolly4');
+      var stage = document.getElementById('stage4');
+      var wrap = document.getElementById('chartWrap4');
+      var svg = document.getElementById('chart4');
+      var panels = document.getElementById('p4Panels');
+      var face = document.getElementById('p4Face');
+      var sayBox = document.getElementById('say4a'), sayText = document.getElementById('say4aText');
+
+      var SAY_A = '다른 코인 가격은 <b>바닥을 모르지만</b><br>테더는 <b>1달러</b>라는 바닥이 있어';
+      var SAY_B = '애써 배달한 김치를 바닥에 쏟을<br>걱정이 적다는 게 장점이지! 개굴';
+
+      // ── 구간 ──
+      var P_CHART = 0.02, P_SAY_A = 0.12, P_FLOOR0 = 0.18, P_FLOOR1 = 0.30, P_SAY_B = 0.46;
+      var RUN_DELAY = 1000, RUN_MS = 2800, HEAP_MS = 600;   // 대사 뒤 1초 → 달리기 → 김치 모으기
+
+      // ── 배치 ──
+      // 넓은 화면은 좌우로, 좁은 화면은 위아래로. 얼굴은 맨 위 왼쪽, 말풍선은 그 오른쪽.
+      var WIDE = {
+        vb: '0 0 1080 660',
+        face: { x: 28, y: 26, w: 148, h: 107 },
+        a: { x: 16, y: 186, w: 508, h: 462 },
+        b: { x: 556, y: 186, w: 508, h: 462 }
+      };
+      var TALL = {
+        vb: '0 0 620 1000',
+        face: { x: 18, y: 40, w: 116, h: 84 },
+        a: { x: 12, y: 176, w: 596, h: 396 },
+        b: { x: 12, y: 590, w: 596, h: 396 }
+      };
+      function conf() { return window.innerWidth <= 560 ? TALL : WIDE; }
+
+      // ── 미니 그래프 한 판 ──
+      // 원본 좌표 그대로 그린 뒤 <g transform>으로 통째로 줄인다.
+      // 선 굵기는 non-scaling-stroke로 지켜 준다.
+      function miniPanel(o) {
+        var g = el('g', {});
+        var axis = el('path', { class: 'kf-mini-axis' });
+        var logo = el('image', { href: o.logo, opacity: 0.95 });
+        g.appendChild(axis); g.appendChild(logo);
+
+        var inner = el('g', {});
+        var fillP = el('path', { class: 'kf-mini-fill', d: '' });
+        var floor = el('path', { class: 'kf-floor', d: o.src.price, 'vector-effect': 'non-scaling-stroke' });
+        var line = el('path', { class: 'kf-mini-line', d: o.src.price, 'vector-effect': 'non-scaling-stroke' });
+        var kimpP = el('path', { class: 'kf-mini-kimp', d: '', 'vector-effect': 'non-scaling-stroke' });
+        [fillP, floor, line, kimpP].forEach(function (n) { inner.appendChild(n); });
+
+        var S = o.src;
+        var frog = el('g', {});
+        var kimchiG = el('g', {});
+        kimchiG.appendChild(el('image', { href: 'assets/%EA%B9%80%EC%B9%98.svg',
+          x: -S.kimchiAnchor.x * S.frogW, y: -S.kimchiAnchor.y * S.frogH,
+          width: S.frogW, height: S.frogH }));
+        var stand = el('image', { href: 'assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg',
+          x: -S.frogW / 2, y: -S.frogH, width: S.frogW, height: S.frogH });
+        var run = el('image', { href: 'assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg',
+          x: -S.frogW / 2, y: -S.frogH, width: S.frogW, height: S.frogH, style: 'display:none' });
+        // 코인 쪽 김치는 작아서 앞에, 테더 쪽 김치는 커서 개구리 뒤에 둔다
+        if (o.kimchiBehind) { frog.appendChild(kimchiG); frog.appendChild(stand); frog.appendChild(run); }
+        else { frog.appendChild(stand); frog.appendChild(run); frog.appendChild(kimchiG); }
+        inner.appendChild(frog);
+
+        var spill = null;
+        if (o.spill) {
+          spill = el('image', { href: 'assets/%EC%A0%91%EC%8B%9C%EB%A5%BC%20%EC%97%8E%EC%9D%80%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.png',
+            x: S.end.x - S.spillW * 0.62, y: S.end.y - S.spillH * 0.92,
+            width: S.spillW, height: S.spillH, opacity: 0 });
+          inner.appendChild(spill);
+        }
+        g.appendChild(inner);
+
+        var label = null;
+        if (o.label) {                     // 축 왼쪽 — 그림에 가리지 않게 맨 위에 얹는다
+          label = el('text', { class: 'kf-dollar', 'text-anchor': 'end' });
+          label.textContent = o.label;
+          g.appendChild(label);
+        }
+        panels.appendChild(g);
+
+        var p = { g: g, inner: inner, axis: axis, logo: logo, label: label, floor: floor,
+                  fill: fillP, kimp: kimpP, frog: frog, kimchiG: kimchiG, stand: stand,
+                  run: run, spill: spill, src: S, logoAR: o.logoAR, floorLen: 0, box: null,
+                  heap: !!o.heap };
+
+        // 줄일 배율은 '다 그려진 마지막 모습' 기준으로 한 번만 잰다
+        setFrame(p, 1, true);
+        var bb1 = inner.getBBox();
+        setFrame(p, 0, false);
+        var bb0 = inner.getBBox();
+        var x0 = Math.min(bb0.x, bb1.x), y0 = Math.min(bb0.y, bb1.y);
+        p.box = { x: x0, y: y0,
+                  w: Math.max(bb0.x + bb0.width, bb1.x + bb1.width) - x0,
+                  h: Math.max(bb0.y + bb0.height, bb1.y + bb1.height) - y0 };
+        p.floorLen = floor.getTotalLength();
+        floor.setAttribute('stroke-dasharray', p.floorLen.toFixed(1));
+        setFrame(p, 0, false);
+        return p;
+      }
+
+      // t 시점의 모습으로 한 판을 맞춘다 (done=true면 도착한 뒤 모습)
+      function setFrame(p, t, done) {
+        var S = p.src, a = S.at(t);
+        var moving = t > 0 && !done;
+        p.kimp.setAttribute('d', t > 0 ? a.kimp : '');
+        p.fill.setAttribute('d', t > 0 ? a.fill : '');
+        p.stand.style.display = moving ? 'none' : '';
+        p.run.style.display = moving ? '' : 'none';
+        var plate = moving ? S.plate.run : S.plate.stand;
+        var s = a.s;
+        if (done && p.heap) s = S.bigKimchi;          // 테더 쪽은 도착해서 김치를 모은다
+        if (done && p.spill) {                        // 코인 쪽은 도착해서 접시를 엎는다
+          p.frog.setAttribute('opacity', 0);
+          p.spill.setAttribute('opacity', 1);
+        } else {
+          p.frog.setAttribute('opacity', 1);
+          if (p.spill) p.spill.setAttribute('opacity', 0);
+        }
+        p.frog.setAttribute('transform', 'translate(' + a.x.toFixed(1) + ' ' + a.y.toFixed(1) + ')');
+        p.kimchiG.setAttribute('transform', 'translate(' + plate.x.toFixed(1) + ' ' + plate.y.toFixed(1) +
+          ') scale(' + s.toFixed(3) + ')');
+      }
+
+      var panelA = miniPanel({
+        logo: 'assets/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8-%ED%88%AC%EB%AA%85.png', logoAR: 1,
+        src: KF.coin, spill: true, kimchiBehind: false
+      });
+      var panelB = miniPanel({
+        logo: 'assets/%ED%85%8C%EB%8D%94.png', logoAR: 528 / 192, label: '1$',
+        src: KF.tether, spill: false, kimchiBehind: true, heap: true
+      });
+
+      // ── 화면 폭에 맞춰 판을 앉힌다 ──
+      var laidOut = null;
+      function layout() {
+        var c = conf();
+        if (laidOut === c) return c;
+        laidOut = c;
+        svg.setAttribute('viewBox', c.vb);
+        face.setAttribute('x', c.face.x); face.setAttribute('y', c.face.y);
+        face.setAttribute('width', c.face.w); face.setAttribute('height', c.face.h);
+        [[panelA, c.a], [panelB, c.b]].forEach(function (pair) {
+          var p = pair[0], box = pair[1];
+          var lh = 46, lw = lh * p.logoAR;                    // 판 왼쪽 위 로고 (높이 기준)
+          p.logo.setAttribute('x', box.x + 34); p.logo.setAttribute('y', box.y + 4);
+          p.logo.setAttribute('width', lw); p.logo.setAttribute('height', lh);
+          var ax = box.x + 20, ay1 = box.y + box.h - 6;
+          p.axis.setAttribute('d', 'M' + ax + ' ' + (box.y + 2) + ' L' + ax + ' ' + ay1 +
+                                   ' L' + (box.x + box.w - 4) + ' ' + ay1);
+          var pad = { l: 34, r: 14, t: lh + 12, b: 28 };
+          var bb = p.box;
+          var tw = box.w - pad.l - pad.r, th = box.h - pad.t - pad.b;
+          var k = Math.min(tw / bb.w, th / bb.h);
+          var tx = box.x + pad.l + (tw - bb.w * k) / 2 - bb.x * k;
+          var ty = box.y + pad.t + (th - bb.h * k) / 2 - bb.y * k;
+          p.inner.setAttribute('transform', 'translate(' + tx.toFixed(1) + ' ' + ty.toFixed(1) +
+                                            ') scale(' + k.toFixed(4) + ')');
+          if (p.label) {
+            p.label.setAttribute('x', (ax - 6).toFixed(1));
+            p.label.setAttribute('y', (ty + p.src.baseY * k + 9).toFixed(1));
+          }
+        });
+        return c;
+      }
+
+      // ── 말풍선은 얼굴 오른쪽에. 자리가 좁으면 얼굴 위로 올린다 ──
+      function toWrapPx(x, y) {
+        var m = svg.getScreenCTM();
+        if (!m) return { x: 0, y: 0 };
+        var r = wrap.getBoundingClientRect();
+        return { x: x * m.a + y * m.c + m.e - r.left, y: x * m.b + y * m.d + m.f - r.top };
+      }
+      function placeSay() {
+        var c = conf();
+        var right = toWrapPx(c.face.x + c.face.w, c.face.y + c.face.h * 0.45);
+        var top = toWrapPx(c.face.x + c.face.w / 2, c.face.y);
+        var W = wrap.clientWidth, H = wrap.clientHeight;
+        var side = (W - (right.x + 14) - 6) >= 230;
+        sayBox.classList.toggle('is-side', side);
+        sayBox.style.left = '0px';                     // 재기 전에 왼쪽 끝으로
+        var bw = sayBox.offsetWidth, bh = sayBox.offsetHeight;
+        var left, t;
+        if (side) {
+          left = right.x + 14;
+          t = clamp(right.y - bh / 2, 4, Math.max(4, H - bh - 4));
+          sayBox.style.setProperty('--tail-y', clamp(right.y - t, 16, Math.max(16, bh - 16)).toFixed(0) + 'px');
+        } else {
+          left = clamp(top.x - bw / 2, 6, Math.max(6, W - bw - 6));
+          t = clamp(top.y - bh - 20, 4, Math.max(4, H - bh - 4));
+          sayBox.style.setProperty('--tail-x', clamp(top.x - left, 18, Math.max(18, bw - 18)).toFixed(0) + 'px');
+        }
+        sayBox.style.left = left.toFixed(0) + 'px';
+        sayBox.style.top = t.toFixed(0) + 'px';
+      }
+
+      // ── 달리기 ──
+      var runState = 0;            // 0 대기 · 1 달리는 중 · 2 끝
+      var runStart = 0, delayTimer = null, raf = null;
+      function frame() {
+        var e = (performance.now() - runStart);
+        var t = clamp(e / RUN_MS, 0, 1);
+        var done = e >= RUN_MS;
+        var heapT = done ? clamp((e - RUN_MS) / HEAP_MS, 0, 1) : 0;
+        setFrame(panelA, t, done);
+        setFrame(panelB, t, done);
+        if (done) {                                   // 테더 쪽 김치를 서서히 모은다
+          var a = panelB.src.at(1);
+          var s = a.s + (panelB.src.bigKimchi - a.s) * ease(heapT);
+          panelB.kimchiG.setAttribute('transform',
+            'translate(' + panelB.src.plate.stand.x.toFixed(1) + ' ' + panelB.src.plate.stand.y.toFixed(1) +
+            ') scale(' + s.toFixed(3) + ')');
+        }
+        if (e >= RUN_MS + HEAP_MS) { runState = 2; raf = null; return; }
+        raf = requestAnimationFrame(frame);
+      }
+      function startRun() {
+        if (runState !== 0) return;
+        runState = 1;
+        runStart = performance.now();
+        raf = requestAnimationFrame(frame);
+      }
+      function armRun() {
+        if (runState !== 0 || delayTimer) return;
+        delayTimer = setTimeout(function () { delayTimer = null; startRun(); }, RUN_DELAY);
+      }
+      function disarmRun() {
+        if (runState !== 0) return;
+        clearTimeout(delayTimer); delayTimer = null;
+      }
+
+      // 달리는 동안엔 아래로 스크롤을 막는다 (위로는 허용).
+      // 이미 이 장면을 지나쳤다면 잡아끌지 않는다 — 달리기는 그대로 끝까지 돈다.
+      var curP = 0;
+      function locking() { return runState === 1 && curP < 0.99; }
+      var lockY = null;
+      function applyLock() {
+        if (!locking()) { lockY = null; return; }
+        if (lockY === null) lockY = window.scrollY;
+        if (window.scrollY > lockY) window.scrollTo(0, lockY);
+      }
+      window.addEventListener('wheel', function (e) {
+        if (locking() && e.deltaY > 0) e.preventDefault();
+      }, { passive: false });
+      var touchY0 = 0;
+      window.addEventListener('touchstart', function (e) { touchY0 = e.touches[0].clientY; }, { passive: true });
+      window.addEventListener('touchmove', function (e) {
+        if (locking() && e.touches[0].clientY < touchY0) e.preventDefault();
+      }, { passive: false });
+
+      // ── 그리기 ──
+      var shown = -1, swapTimer = null;
+      function render(p) {
+        curP = p;
+        layout();
+        var on = p >= P_CHART ? 1 : 0;
+        panels.setAttribute('opacity', on);
+        face.setAttribute('opacity', on);
+
+        // 노란 형광펜 — 두 판에 동시에 그어지고, 다 그어지면 계속 깜빡인다
+        var f = p < P_FLOOR0 ? 0 : ease((p - P_FLOOR0) / (P_FLOOR1 - P_FLOOR0));
+        [panelA, panelB].forEach(function (pn) {
+          pn.floor.setAttribute('stroke-dashoffset', (pn.floorLen * (1 - f)).toFixed(1));
+          pn.floor.classList.toggle('is-blink', f >= 1);
+        });
+
+        // 말풍선은 한 번에 하나
+        var idx = p >= P_SAY_B ? 1 : (p >= P_SAY_A ? 0 : -1);
+        if (idx !== shown) {
+          shown = idx;
+          sayBox.classList.add('is-hidden');
+          clearTimeout(swapTimer);
+          if (idx !== -1) {
+            swapTimer = setTimeout(function () {
+              sayText.innerHTML = idx === 0 ? SAY_A : SAY_B;
+              placeSay();
+              sayBox.classList.remove('is-hidden');
+            }, 170);
+          }
+          if (idx === 1) armRun(); else disarmRun();
+        }
+        if (!sayBox.classList.contains('is-hidden')) placeSay();
+
+        // 아직 안 달렸으면 출발 전 모습으로 세워 둔다
+        if (runState === 0) { setFrame(panelA, 0, false); setFrame(panelB, 0, false); }
+      }
+
+      // ── 스크롤 ──
+      var ticking = false;
+      function update() {
+        var rect = scrolly.getBoundingClientRect();
+        var stickyTop = parseFloat(getComputedStyle(stage).top) || 0;
+        var travel = scrolly.offsetHeight - stage.offsetHeight;
+        render(travel > 0 ? clamp((stickyTop - rect.top) / travel, 0, 1) : 0);
+        ticking = false;
+      }
+      function onScroll() {
+        applyLock();
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+      update();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', function () { laidOut = null; update(); }, { passive: true });
     })();
   </script>
 </body>

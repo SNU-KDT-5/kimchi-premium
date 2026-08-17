@@ -8,12 +8,14 @@
 import asyncio
 import json
 import os
+import re
 from collections import defaultdict
 from datetime import date, timedelta
 from pathlib import Path
 
-import google.generativeai as genai
-from google.api_core.exceptions import GoogleAPICallError
+from google import genai
+from google.genai import types as genai_types
+from google.genai.errors import APIError
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +37,7 @@ IP_CHAT_LIMIT = 30
 GEMINI_TIMEOUT_SECONDS = 15
 # 주말/공휴일에 update-data 워크플로우가 안 돌 수 있어 여유를 둔다.
 MAX_DATA_AGE_DAYS = 3
+MAX_REPLY_LENGTH = 220
 
 BANNED_WORDS = [
     "매수",
@@ -58,10 +61,29 @@ BANNED_WORDS = [
     "sell",
     "invest now",
 ]
+# 금지 문구가 등장해도, 근처에 "그건 모른다/못 정해준다"는 취지의 거절·완곡 표현이
+# 있으면 실제 투자 지시가 아니라 완곡한 거절일 가능성이 높으므로 예외로 둔다.
+NEGATION_CUES = [
+    "예측할 수 없",
+    "예측하기 어려",
+    "알 수 없",
+    "판단할 수 없",
+    "판단해 드릴 수 없",
+    "정해드릴 수 없",
+    "정해 드릴 수 없",
+    "말씀드리기 어려",
+    "도와드리기 어려",
+    "권해드릴 수 없",
+    "제가 결정해 드릴 수 없",
+    "판단은 어려",
+]
+BANNED_WORD_CONTEXT_WINDOW = 20
 DISCLAIMER = "(본 내용은 투자 조언이 아니며 데이터 해석 참고용입니다.)"
+SIGNOFF = "개굴!"
+REPLY_SUFFIX = f"{DISCLAIMER}\n{SIGNOFF}"
 SAFE_FALLBACK_REPLY = (
-    "죄송합니다. 투자 행동을 유도하는 표현이 포함되어 있어 답변을 대체합니다. "
-    "데이터 수치의 의미에 대해 다시 질문해 주세요. " + DISCLAIMER
+    "죄송해요, 투자 행동을 유도하는 표현이 포함되어 있어서 답변을 대신 알려드릴게요. "
+    "데이터 수치의 의미에 대해 다시 질문해 주세요! " + REPLY_SUFFIX
 )
 
 if not GEMINI_API_KEY:
@@ -72,8 +94,9 @@ if not GEMINI_API_KEY:
         "   서버를 다시 시작하세요. (.env.example 참고)\n"
         "   키가 없어도 서버는 기동되지만 /api/chat 호출은 500 에러를 반환합니다.\n"
     )
+    genai_client = None
 else:
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai_client = genai.Client(api_key=GEMINI_API_KEY)
 
 app = FastAPI(title="Kimchi Premium Chatbot API")
 
@@ -176,15 +199,40 @@ def _build_system_prompt(data: MarketData) -> str:
 1. 위 데이터의 실제 수치를 근거로만 답변하세요. 데이터에 없는 내용은 추측해서 말하지 마세요.
 2. "매수", "매도", "지금 사세요", "지금 파세요"와 같은 투자 행동 지시나 수익률 예측은 절대 하지 마세요.
 3. 데이터가 무엇을 의미하는지는 설명하되, 최종 판단은 항상 사용자 본인이 하도록 유도하세요. AI가 대신 판단해주지 마세요.
-4. 반드시 존댓말을 사용하고, 답변 전체 길이는 200자 이내로 작성하세요.
-5. 답변의 맨 마지막에는 반드시 아래 문구를 그대로 추가하세요:
+4. "지금 살까요?", "팔까요?", "얼마에 사야 해요?", "언제가 저점이에요?"처럼 매수/매도/매매
+   타이밍/목표가를 직접 묻는 질문에는 "그건 답해줄 수 없어요"처럼 딱 잘라 거절하지 말고,
+   "그건 제가 판단해 드릴 수 없지만, 지금 수치가 이런 의미예요~"처럼 완곡한 거절 표현으로
+   시작한 뒤 자연스럽게 화제를 데이터 해석으로 돌려서 답하세요. 왜 답할 수 없는지 딱딱하게
+   설명하지 말고, 친절하게 다른 유용한 정보(현재 수치, 백분위, 최근 이벤트 등)로 안내하는
+   방식으로 에둘러 답하세요.
+5. "~해요", "~예요"처럼 친절하고 다정한 존댓말(해요체)을 사용하고, 딱딱한 설명 대신 사용자가
+   이해하기 쉽게 자세히 풀어서 설명하세요. 답변 전체 길이(아래 6번 문구 포함)는 {MAX_REPLY_LENGTH}자
+   이내로 작성하세요.
+6. 답변의 맨 마지막 두 줄에는 반드시 아래 내용을 그대로, 이 순서대로 추가하세요:
 "{DISCLAIMER}"
+"{SIGNOFF}"
 """
 
 
 def _violates_safety_policy(reply: str) -> bool:
     lowered = reply.lower()
-    return any(word.lower() in lowered for word in BANNED_WORDS)
+    for word in BANNED_WORDS:
+        needle = word.lower()
+        start = 0
+        while True:
+            idx = lowered.find(needle, start)
+            if idx == -1:
+                break
+            window = reply[
+                max(0, idx - BANNED_WORD_CONTEXT_WINDOW) : idx
+                + len(word)
+                + BANNED_WORD_CONTEXT_WINDOW
+            ]
+            # 근처에 거절/완곡 표현이 없을 때만 실제 위반으로 판단한다.
+            if not any(cue in window for cue in NEGATION_CUES):
+                return True
+            start = idx + len(needle)
+    return False
 
 
 class ChatRequest(BaseModel):
@@ -239,14 +287,17 @@ async def chat(
     system_prompt = _build_system_prompt(market_data)
 
     try:
-        model = genai.GenerativeModel(
-            MODEL_NAME,
-            system_instruction=system_prompt,
-        )
-        # generate_content는 동기(블로킹) 호출이라 이벤트 루프를 막지 않도록
-        # 별도 스레드에서 실행하고, 응답이 지연되면 타임아웃으로 끊는다.
+        # google-genai는 aio 네임스페이스로 진짜 비동기 호출을 제공하므로
+        # 별도 스레드로 감쌀 필요 없이 이벤트 루프를 막지 않는다.
+        # 응답이 지연되면 asyncio.wait_for로 타임아웃을 건다.
         response = await asyncio.wait_for(
-            asyncio.to_thread(model.generate_content, body.message),
+            genai_client.aio.models.generate_content(
+                model=MODEL_NAME,
+                contents=body.message,
+                config=genai_types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                ),
+            ),
             timeout=GEMINI_TIMEOUT_SECONDS,
         )
     except asyncio.TimeoutError as exc:
@@ -254,7 +305,7 @@ async def chat(
             status_code=504,
             detail="Gemini API 응답이 지연되어 요청을 중단했습니다. 다시 시도해 주세요.",
         ) from exc
-    except GoogleAPICallError as exc:
+    except APIError as exc:
         raise HTTPException(
             status_code=502,
             detail=f"Gemini API 호출에 실패했습니다: {exc.message}",
@@ -281,8 +332,8 @@ async def chat(
     # 않으면 안전한 대체 메시지로 교체한다.
     if (
         _violates_safety_policy(reply_text)
-        or len(reply_text) > 200
-        or not reply_text.endswith(DISCLAIMER)
+        or len(reply_text) > MAX_REPLY_LENGTH
+        or not reply_text.endswith(REPLY_SUFFIX)
     ):
         reply_text = SAFE_FALLBACK_REPLY
 

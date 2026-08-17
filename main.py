@@ -15,7 +15,7 @@ from pathlib import Path
 
 from google import genai
 from google.genai import types as genai_types
-from google.genai.errors import APIError
+from google.genai.errors import APIError, ServerError
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field, ValidationError
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = "gemini-flash-latest"
+MODEL_NAME = "gemini-3.5-flash-lite"
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "data" / "current.json"
@@ -34,7 +34,10 @@ DAILY_CHAT_LIMIT = 100
 # X-Session-ID는 클라이언트가 자유롭게 정하는 값이라 헤더를 바꾸면 세션당
 # 제한을 우회할 수 있다. 이를 막기 위한 독립적인 IP 기반 백스톱.
 IP_CHAT_LIMIT = 30
-GEMINI_TIMEOUT_SECONDS = 15
+GEMINI_TIMEOUT_SECONDS = 25
+# Gemini가 일시적으로 과부하(503)일 때 재시도할 횟수와 대기 시간(초).
+GEMINI_RETRY_ATTEMPTS = 3
+GEMINI_RETRY_DELAY_SECONDS = 2
 # 주말/공휴일에 update-data 워크플로우가 안 돌 수 있어 여유를 둔다.
 MAX_DATA_AGE_DAYS = 3
 MAX_REPLY_LENGTH = 220
@@ -63,28 +66,27 @@ BANNED_WORDS = [
 ]
 # 금지 문구가 등장해도, 근처에 "그건 모른다/못 정해준다"는 취지의 거절·완곡 표현이
 # 있으면 실제 투자 지시가 아니라 완곡한 거절일 가능성이 높으므로 예외로 둔다.
-NEGATION_CUES = [
-    "예측할 수 없",
-    "예측하기 어려",
-    "알 수 없",
-    "판단할 수 없",
-    "판단해 드릴 수 없",
-    "정해드릴 수 없",
-    "정해 드릴 수 없",
-    "말씀드리기 어려",
-    "도와드리기 어려",
-    "권해드릴 수 없",
-    "제가 결정해 드릴 수 없",
-    "판단은 어려",
+# "판단해 드릴 수는 없지만"처럼 조사(은/는/이/가 등)나 부가 표현이 끼어들어도
+# 매칭되도록, 정확한 문자열 대신 핵심 어간 사이에 최대 15글자까지 허용하는 정규식을 쓴다.
+NEGATION_CUE_PATTERNS = [
+    re.compile(pattern)
+    for pattern in [
+        r"예측.{0,15}없",
+        r"예측.{0,15}어려",
+        r"알.{0,15}수.{0,15}없",
+        r"판단.{0,15}없",
+        r"판단.{0,15}어려",
+        r"정해.{0,15}없",
+        r"말씀드리.{0,15}어려",
+        r"도와드리.{0,15}어려",
+        r"권해.{0,15}없",
+        r"결정.{0,15}없",
+    ]
 ]
-BANNED_WORD_CONTEXT_WINDOW = 20
+BANNED_WORD_CONTEXT_WINDOW = 30
 DISCLAIMER = "(본 내용은 투자 조언이 아니며 데이터 해석 참고용입니다.)"
 SIGNOFF = "개굴!"
 REPLY_SUFFIX = f"{DISCLAIMER}\n{SIGNOFF}"
-SAFE_FALLBACK_REPLY = (
-    "죄송해요, 투자 행동을 유도하는 표현이 포함되어 있어서 답변을 대신 알려드릴게요. "
-    "데이터 수치의 의미에 대해 다시 질문해 주세요! " + REPLY_SUFFIX
-)
 
 if not GEMINI_API_KEY:
     # 서버는 계속 기동되지만(문서 확인 등은 가능), /api/chat 호출 시 명확한 에러를 반환한다.
@@ -147,6 +149,17 @@ class MarketData(BaseModel):
     percentile: int
     recent_event: str
     as_of: date
+
+
+# 가드레일 설정
+def _build_safe_fallback_reply(data: MarketData) -> str:
+    # 정적인 문구 대신, 그 순간의 실제 데이터를 넣어서 그 자체로 답이 되게 한다.
+    return (
+        "매매 타이밍이나 목표가는 제가 정해드릴 수 없어요. 대신 현재 수치를 알려드릴게요: "
+        f"프리미엄 {data.premium_pct}%, 원/달러 환율 {data.fx_rate}원, "
+        f"USDT 상장 이후 백분위 {data.percentile}%예요. "
+        "이 수치를 참고해서 직접 판단해 보세요! " + REPLY_SUFFIX
+    )
 
 
 def _load_market_data() -> MarketData:
@@ -229,7 +242,7 @@ def _violates_safety_policy(reply: str) -> bool:
                 + BANNED_WORD_CONTEXT_WINDOW
             ]
             # 근처에 거절/완곡 표현이 없을 때만 실제 위반으로 판단한다.
-            if not any(cue in window for cue in NEGATION_CUES):
+            if not any(p.search(window) for p in NEGATION_CUE_PATTERNS):
                 return True
             start = idx + len(needle)
     return False
@@ -286,30 +299,45 @@ async def chat(
     market_data = _load_market_data()
     system_prompt = _build_system_prompt(market_data)
 
-    try:
-        # google-genai는 aio 네임스페이스로 진짜 비동기 호출을 제공하므로
-        # 별도 스레드로 감쌀 필요 없이 이벤트 루프를 막지 않는다.
-        # 응답이 지연되면 asyncio.wait_for로 타임아웃을 건다.
-        response = await asyncio.wait_for(
-            genai_client.aio.models.generate_content(
-                model=MODEL_NAME,
-                contents=body.message,
-                config=genai_types.GenerateContentConfig(
-                    system_instruction=system_prompt,
+    # google-genai는 aio 네임스페이스로 진짜 비동기 호출을 제공하므로
+    # 별도 스레드로 감쌀 필요 없이 이벤트 루프를 막지 않는다.
+    # 응답이 지연되면 asyncio.wait_for로 타임아웃을 건다.
+    last_error: Exception | None = None
+    response = None
+    for attempt in range(GEMINI_RETRY_ATTEMPTS):
+        try:
+            response = await asyncio.wait_for(
+                genai_client.aio.models.generate_content(
+                    model=MODEL_NAME,
+                    contents=body.message,
+                    config=genai_types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                    ),
                 ),
-            ),
-            timeout=GEMINI_TIMEOUT_SECONDS,
-        )
-    except asyncio.TimeoutError as exc:
-        raise HTTPException(
-            status_code=504,
-            detail="Gemini API 응답이 지연되어 요청을 중단했습니다. 다시 시도해 주세요.",
-        ) from exc
-    except APIError as exc:
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+            break
+        except asyncio.TimeoutError as exc:
+            raise HTTPException(
+                status_code=504,
+                detail="Gemini API 응답이 지연되어 요청을 중단했습니다. 다시 시도해 주세요.",
+            ) from exc
+        except ServerError as exc:
+            # 503 등 Gemini 쪽 일시적 과부하는 잠깐 대기 후 재시도한다.
+            last_error = exc
+            if attempt < GEMINI_RETRY_ATTEMPTS - 1:
+                await asyncio.sleep(GEMINI_RETRY_DELAY_SECONDS)
+        except APIError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Gemini API 호출에 실패했습니다: {exc.message}",
+            ) from exc
+
+    if response is None:
         raise HTTPException(
             status_code=502,
-            detail=f"Gemini API 호출에 실패했습니다: {exc.message}",
-        ) from exc
+            detail=f"Gemini API가 계속 과부하 상태입니다. 잠시 후 다시 시도해 주세요: {last_error}",
+        )
 
     # response.text는 candidate가 없거나 안전 필터에 걸려 차단된 경우 ValueError를
     # 던진다. 바로 읽지 않고 candidate/차단 여부를 먼저 확인해 안전한 대체 응답으로
@@ -324,7 +352,7 @@ async def chat(
     )
 
     if blocked or not has_valid_candidate:
-        reply_text = SAFE_FALLBACK_REPLY
+        reply_text = _build_safe_fallback_reply(market_data)
     else:
         reply_text = response.text
 
@@ -335,6 +363,6 @@ async def chat(
         or len(reply_text) > MAX_REPLY_LENGTH
         or not reply_text.endswith(REPLY_SUFFIX)
     ):
-        reply_text = SAFE_FALLBACK_REPLY
+        reply_text = _build_safe_fallback_reply(market_data)
 
     return ChatResponse(reply=reply_text, generated_at=date.today().isoformat())

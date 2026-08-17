@@ -1,0 +1,5 @@
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+python-dotenv==1.2.3
+google-genai==2.18.1
+requests==2.34.2

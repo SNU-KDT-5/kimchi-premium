@@ -1,0 +1,46 @@
+name: Update Kimchi Premium Data
+
+on:
+  schedule:
+    # 매일 UTC 00:00 = 한국시간(KST) 오전 9:00
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run update_data.py
+        run: python update_data.py
+
+      - name: Commit and push changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/current.json data/history.json
+          if git diff --cached --quiet; then
+            echo "변경 사항 없음 - 커밋을 건너뜁니다."
+          else
+            git commit -m "chore: update kimchi premium data ($(date -u +'%Y-%m-%d'))"
+            git push
+          fi

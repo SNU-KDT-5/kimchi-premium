@@ -5,20 +5,20 @@
 검색어 트렌드는 어차피 일 단위 데이터라 실시간이 의미 없으므로,
 하루 한 번 이 스크립트를 돌려 결과 파일을 레포에 커밋하는 방식을 쓴다.
 
-── 인증 (둘 중 하나만 설정하면 된다) ──────────────────────
-검색어 트렌드 API 는 NAVER API HUB(네이버 클라우드 플랫폼)로 이관되면서
-인증 방식이 달라졌을 수 있다. 콘솔의 API 가이드에 적힌 헤더에 맞춰 고르면 된다.
+── 인증 ───────────────────────────────────────────────────
+검색어 트렌드 API 는 NAVER API HUB(네이버 클라우드 플랫폼)로 이관됐다.
+인증 헤더는 '주소'를 보고 고르므로, 환경변수에 두 방식의 키가 함께 남아 있어도
+엉뚱한 헤더를 보내지 않는다.
 
-  A) 기존 방식 — developers.naver.com 에서 발급한 키
-     export NAVER_CLIENT_ID=...
-     export NAVER_CLIENT_SECRET=...
-
-  B) API HUB 방식 — 네이버 클라우드 인증키 관리에서 발급한 키
+  기본 — NAVER API HUB
      export NCP_API_KEY_ID=...
      export NCP_API_KEY=...
+     (콘솔 → NAVER API HUB → Application → API 관리 → 인증 정보)
 
-엔드포인트가 다르면 이것도 함께 지정한다.
-     export NAVER_TREND_URL=https://...
+  구 developers.naver.com 주소를 쓸 때만
+     export NAVER_TREND_URL=https://openapi.naver.com/v1/datalab/search
+     export NAVER_CLIENT_ID=...
+     export NAVER_CLIENT_SECRET=...
 
 ── 사용법 ────────────────────────────────────────────────
      python3 fetch_naver_trend.py
@@ -56,8 +56,28 @@ KEYWORD_GROUPS = [
 ]
 
 
-def build_auth_headers():
-    """설정된 환경변수에 따라 인증 헤더를 만든다."""
+def build_auth_headers(url):
+    """엔드포인트에 맞는 인증 헤더를 고른다.
+
+    두 방식의 키가 환경변수에 함께 남아 있어도, 주소에 맞는 쪽만 쓴다.
+    (예전에는 환경변수만 보고 골라서, API HUB 주소에 구 방식 헤더를 보내
+     'Authentication information are missing' 401 이 나는 일이 있었다)
+    """
+    if "ntruss.com" in url:
+        key_id = os.environ.get("NCP_API_KEY_ID")
+        key = os.environ.get("NCP_API_KEY")
+        if key_id and key:
+            return {
+                "X-NCP-APIGW-API-KEY-ID": key_id,
+                "X-NCP-APIGW-API-KEY": key,
+            }, "NAVER API HUB 방식"
+        sys.exit(
+            "NAVER API HUB 주소인데 인증 정보가 없습니다.\n\n"
+            "  export NCP_API_KEY_ID=...\n"
+            "  export NCP_API_KEY=...\n\n"
+            "(콘솔 → NAVER API HUB → Application → API 관리 → 인증 정보)"
+        )
+
     client_id = os.environ.get("NAVER_CLIENT_ID")
     client_secret = os.environ.get("NAVER_CLIENT_SECRET")
     if client_id and client_secret:
@@ -66,20 +86,11 @@ def build_auth_headers():
             "X-Naver-Client-Secret": client_secret,
         }, "developers.naver.com 방식"
 
-    key_id = os.environ.get("NCP_API_KEY_ID")
-    key = os.environ.get("NCP_API_KEY")
-    if key_id and key:
-        return {
-            "x-ncp-apigw-api-key-id": key_id,
-            "x-ncp-apigw-api-key": key,
-        }, "NAVER API HUB 방식"
-
     sys.exit(
-        "인증 정보가 없습니다. 아래 중 하나를 설정하세요.\n\n"
-        "  A) export NAVER_CLIENT_ID=...\n"
-        "     export NAVER_CLIENT_SECRET=...\n\n"
-        "  B) export NCP_API_KEY_ID=...\n"
-        "     export NCP_API_KEY=...\n"
+        f"이 주소({url})에 맞는 인증 정보가 없습니다.\n\n"
+        "  export NAVER_CLIENT_ID=...\n"
+        "  export NAVER_CLIENT_SECRET=...\n\n"
+        "NAVER API HUB 키를 쓰신다면 NAVER_TREND_URL 을 지우고 기본 주소를 사용하세요."
     )
 
 
@@ -104,7 +115,7 @@ def fetch_trend(url, headers):
 
 def main():
     url = os.environ.get("NAVER_TREND_URL", DEFAULT_URL)
-    headers, mode = build_auth_headers()
+    headers, mode = build_auth_headers(url)
 
     print(f"인증: {mode}")
     print(f"엔드포인트: {url}")

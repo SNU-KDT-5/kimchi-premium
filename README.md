@@ -10,4 +10,4 @@
 | `simulator` | `simulator.html` | 시뮬레이터 (과거 매수 시점 체험 + 리스크체크리스트/계산기/퀴즈) |
 | `shared` | `shared.js` | 공용 데이터 fetch |
 | `design-system` | `shared.css` | 공용 디자인 시스템 |
-| `backend` | `main.py` | FastAPI 뉴스 프록시 |
+| `backend` | `main.py` | FastAPI 김치프리미엄 챗봇 API (Gemini) |

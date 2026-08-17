@@ -8403,9 +8403,9 @@
   },
   {
     "date": "2026-08-17",
-    "btc_premium_pct": 0.14,
-    "btc_krw_price": 89699000.0,
-    "foreignUsd": 63468.25,
+    "btc_premium_pct": 0.1,
+    "btc_krw_price": 89784000.0,
+    "foreignUsd": 63556.09,
     "foreignSource": "Bitstamp"
   }
 ]

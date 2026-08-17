@@ -155,14 +155,20 @@ def fetch_full_usdt_price_history() -> dict:
 
 def fetch_full_btc_price_history() -> dict:
     """업비트에서 USDT_LISTING_DATE부터 오늘까지 전체 BTC/KRW 종가를
-    {"YYYY-MM-DD": price} 형태로 반환한다."""
+    {"YYYY-MM-DD": price} 형태로 반환한다.
+
+    날짜 키는 candle_date_time_kst가 아니라 candle_date_time_utc를 기준으로
+    만든다. 해외 BTC 시세(Bitstamp/Coinbase)와 Frankfurter 환율이 모두 UTC
+    00:00 경계로 날짜를 나누므로, 여기서도 UTC 기준을 맞춰야 세 데이터를
+    병합할 때 실제로는 9시간 차이 나는 값을 같은 날짜로 잘못 취급하지 않는다.
+    """
     candles = _fetch_upbit_daily_candles("KRW-BTC", USDT_LISTING_DATE)
     listing_date_str = USDT_LISTING_DATE.isoformat()
 
     prices = {}
     for candle in candles:
         try:
-            trade_date = candle["candle_date_time_kst"][:10]
+            trade_date = candle["candle_date_time_utc"][:10]
             prices[trade_date] = float(candle["trade_price"])
         except (KeyError, TypeError, ValueError) as exc:
             raise DataFetchError(f"업비트 BTC 캔들 데이터 파싱 실패: {candle!r}") from exc
@@ -371,13 +377,22 @@ def _forward_fill_fx_rates(fx_rates: dict, target_dates: list) -> dict:
     """target_dates 각각에 대해, fx_rates에 해당 날짜가 없으면 직전 거래일의
     환율 값으로 채운 {"YYYY-MM-DD": rate} 딕셔너리를 반환한다 (주말/공휴일
     forward-fill). fx_rates에 그 날짜 이전 값이 아직 하나도 없는 아주 초기
-    날짜는 결과에서 제외된다."""
+    날짜는 결과에서 제외된다.
+
+    last_known 갱신은 fx_rates와 target_dates의 합집합을 날짜순으로 훑으며
+    수행한다 — target_dates만 순회하면, target_dates에는 없지만 fx_rates에는
+    있는 날짜의 환율 발표를 건너뛰어 last_known이 실제보다 오래된 값에
+    머무를 수 있다. 결과 딕셔너리에는 target_dates에 해당하는 날짜만 담는다.
+    """
+    target_set = set(target_dates)
+    all_dates = sorted(set(fx_rates) | target_set)
+
     filled = {}
     last_known = None
-    for d in sorted(target_dates):
+    for d in all_dates:
         if d in fx_rates:
             last_known = fx_rates[d]
-        if last_known is not None:
+        if d in target_set and last_known is not None:
             filled[d] = last_known
     return filled
 

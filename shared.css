@@ -340,8 +340,8 @@ body {
 
 .chat-panel {
   position: fixed; right: var(--sp-8); bottom: calc(var(--sp-6) + 50px + var(--sp-3));
-  z-index: 200; width: 400px; max-width: calc(100vw - 56px);
-  height: min(640px, calc(100vh - 100px));
+  z-index: 200; width: 360px; max-width: calc(100vw - 56px);
+  height: min(500px, calc(100vh - 120px));
   background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-xl);
   box-shadow: var(--shadow-lg); overflow: hidden;
   display: flex; flex-direction: column;

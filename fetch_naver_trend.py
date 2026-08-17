@@ -33,7 +33,9 @@ import urllib.error
 import urllib.request
 from datetime import date
 
-DEFAULT_URL = "https://openapi.naver.com/v1/datalab/search"
+# NAVER API HUB 의 검색어 트렌드 엔드포인트.
+# (구 developers.naver.com 주소인 openapi.naver.com/v1/datalab/search 는 API HUB 키로는 통하지 않는다)
+DEFAULT_URL = "https://naverapihub.apigw.ntruss.com/search-trend/v1/search"
 OUT_PATH = "naver_trend.json"
 
 # 업비트 KRW-USDT 상장일. 대시보드의 다른 지표와 기간을 맞춘다.

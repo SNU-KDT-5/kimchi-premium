@@ -1,0 +1,3356 @@
+[
+  {
+    "date": "2024-06-07",
+    "usdt_price": 1412.0,
+    "fx_rate": 1367.2,
+    "premium_pct": 3.28
+  },
+  {
+    "date": "2024-06-10",
+    "usdt_price": 1399.0,
+    "fx_rate": 1375.35,
+    "premium_pct": 1.72
+  },
+  {
+    "date": "2024-06-11",
+    "usdt_price": 1416.0,
+    "fx_rate": 1378.59,
+    "premium_pct": 2.71
+  },
+  {
+    "date": "2024-06-12",
+    "usdt_price": 1405.0,
+    "fx_rate": 1376.08,
+    "premium_pct": 2.1
+  },
+  {
+    "date": "2024-06-13",
+    "usdt_price": 1416.0,
+    "fx_rate": 1374.55,
+    "premium_pct": 3.02
+  },
+  {
+    "date": "2024-06-14",
+    "usdt_price": 1423.0,
+    "fx_rate": 1385.74,
+    "premium_pct": 2.69
+  },
+  {
+    "date": "2024-06-17",
+    "usdt_price": 1408.0,
+    "fx_rate": 1382.23,
+    "premium_pct": 1.86
+  },
+  {
+    "date": "2024-06-18",
+    "usdt_price": 1408.0,
+    "fx_rate": 1385.04,
+    "premium_pct": 1.66
+  },
+  {
+    "date": "2024-06-19",
+    "usdt_price": 1411.0,
+    "fx_rate": 1380.83,
+    "premium_pct": 2.18
+  },
+  {
+    "date": "2024-06-20",
+    "usdt_price": 1416.0,
+    "fx_rate": 1388.2,
+    "premium_pct": 2.0
+  },
+  {
+    "date": "2024-06-21",
+    "usdt_price": 1409.0,
+    "fx_rate": 1389.02,
+    "premium_pct": 1.44
+  },
+  {
+    "date": "2024-06-24",
+    "usdt_price": 1415.0,
+    "fx_rate": 1388.23,
+    "premium_pct": 1.93
+  },
+  {
+    "date": "2024-06-25",
+    "usdt_price": 1414.0,
+    "fx_rate": 1391.67,
+    "premium_pct": 1.6
+  },
+  {
+    "date": "2024-06-26",
+    "usdt_price": 1414.0,
+    "fx_rate": 1392.14,
+    "premium_pct": 1.57
+  },
+  {
+    "date": "2024-06-27",
+    "usdt_price": 1408.0,
+    "fx_rate": 1386.23,
+    "premium_pct": 1.57
+  },
+  {
+    "date": "2024-06-28",
+    "usdt_price": 1409.0,
+    "fx_rate": 1377.73,
+    "premium_pct": 2.27
+  },
+  {
+    "date": "2024-07-01",
+    "usdt_price": 1405.0,
+    "fx_rate": 1382.42,
+    "premium_pct": 1.63
+  },
+  {
+    "date": "2024-07-02",
+    "usdt_price": 1406.0,
+    "fx_rate": 1387.14,
+    "premium_pct": 1.36
+  },
+  {
+    "date": "2024-07-03",
+    "usdt_price": 1418.0,
+    "fx_rate": 1389.91,
+    "premium_pct": 2.02
+  },
+  {
+    "date": "2024-07-04",
+    "usdt_price": 1432.0,
+    "fx_rate": 1380.61,
+    "premium_pct": 3.72
+  },
+  {
+    "date": "2024-07-05",
+    "usdt_price": 1432.0,
+    "fx_rate": 1380.97,
+    "premium_pct": 3.7
+  },
+  {
+    "date": "2024-07-08",
+    "usdt_price": 1421.0,
+    "fx_rate": 1383.53,
+    "premium_pct": 2.71
+  },
+  {
+    "date": "2024-07-09",
+    "usdt_price": 1414.0,
+    "fx_rate": 1383.4,
+    "premium_pct": 2.21
+  },
+  {
+    "date": "2024-07-10",
+    "usdt_price": 1417.0,
+    "fx_rate": 1384.26,
+    "premium_pct": 2.37
+  },
+  {
+    "date": "2024-07-11",
+    "usdt_price": 1414.0,
+    "fx_rate": 1380.05,
+    "premium_pct": 2.46
+  },
+  {
+    "date": "2024-07-12",
+    "usdt_price": 1409.0,
+    "fx_rate": 1375.47,
+    "premium_pct": 2.44
+  },
+  {
+    "date": "2024-07-15",
+    "usdt_price": 1406.0,
+    "fx_rate": 1382.85,
+    "premium_pct": 1.67
+  },
+  {
+    "date": "2024-07-16",
+    "usdt_price": 1398.0,
+    "fx_rate": 1382.8,
+    "premium_pct": 1.1
+  },
+  {
+    "date": "2024-07-17",
+    "usdt_price": 1397.0,
+    "fx_rate": 1379.26,
+    "premium_pct": 1.29
+  },
+  {
+    "date": "2024-07-18",
+    "usdt_price": 1406.0,
+    "fx_rate": 1382.78,
+    "premium_pct": 1.68
+  },
+  {
+    "date": "2024-07-19",
+    "usdt_price": 1397.0,
+    "fx_rate": 1387.85,
+    "premium_pct": 0.66
+  },
+  {
+    "date": "2024-07-22",
+    "usdt_price": 1398.0,
+    "fx_rate": 1388.02,
+    "premium_pct": 0.72
+  },
+  {
+    "date": "2024-07-23",
+    "usdt_price": 1401.0,
+    "fx_rate": 1386.36,
+    "premium_pct": 1.06
+  },
+  {
+    "date": "2024-07-24",
+    "usdt_price": 1398.0,
+    "fx_rate": 1382.75,
+    "premium_pct": 1.1
+  },
+  {
+    "date": "2024-07-25",
+    "usdt_price": 1405.0,
+    "fx_rate": 1379.9,
+    "premium_pct": 1.82
+  },
+  {
+    "date": "2024-07-26",
+    "usdt_price": 1396.0,
+    "fx_rate": 1385.96,
+    "premium_pct": 0.72
+  },
+  {
+    "date": "2024-07-29",
+    "usdt_price": 1399.0,
+    "fx_rate": 1383.39,
+    "premium_pct": 1.13
+  },
+  {
+    "date": "2024-07-30",
+    "usdt_price": 1403.0,
+    "fx_rate": 1384.51,
+    "premium_pct": 1.34
+  },
+  {
+    "date": "2024-07-31",
+    "usdt_price": 1398.0,
+    "fx_rate": 1372.33,
+    "premium_pct": 1.87
+  },
+  {
+    "date": "2024-08-01",
+    "usdt_price": 1405.0,
+    "fx_rate": 1366.33,
+    "premium_pct": 2.83
+  },
+  {
+    "date": "2024-08-02",
+    "usdt_price": 1410.0,
+    "fx_rate": 1365.73,
+    "premium_pct": 3.24
+  },
+  {
+    "date": "2024-08-05",
+    "usdt_price": 1442.0,
+    "fx_rate": 1364.19,
+    "premium_pct": 5.7
+  },
+  {
+    "date": "2024-08-06",
+    "usdt_price": 1431.0,
+    "fx_rate": 1378.0,
+    "premium_pct": 3.85
+  },
+  {
+    "date": "2024-08-07",
+    "usdt_price": 1422.0,
+    "fx_rate": 1375.15,
+    "premium_pct": 3.41
+  },
+  {
+    "date": "2024-08-08",
+    "usdt_price": 1402.0,
+    "fx_rate": 1375.9,
+    "premium_pct": 1.9
+  },
+  {
+    "date": "2024-08-09",
+    "usdt_price": 1408.0,
+    "fx_rate": 1365.82,
+    "premium_pct": 3.09
+  },
+  {
+    "date": "2024-08-12",
+    "usdt_price": 1402.0,
+    "fx_rate": 1370.78,
+    "premium_pct": 2.28
+  },
+  {
+    "date": "2024-08-13",
+    "usdt_price": 1396.0,
+    "fx_rate": 1371.27,
+    "premium_pct": 1.8
+  },
+  {
+    "date": "2024-08-14",
+    "usdt_price": 1403.0,
+    "fx_rate": 1355.6,
+    "premium_pct": 3.5
+  },
+  {
+    "date": "2024-08-15",
+    "usdt_price": 1407.0,
+    "fx_rate": 1357.99,
+    "premium_pct": 3.61
+  },
+  {
+    "date": "2024-08-16",
+    "usdt_price": 1397.0,
+    "fx_rate": 1355.81,
+    "premium_pct": 3.04
+  },
+  {
+    "date": "2024-08-19",
+    "usdt_price": 1373.0,
+    "fx_rate": 1336.9,
+    "premium_pct": 2.7
+  },
+  {
+    "date": "2024-08-20",
+    "usdt_price": 1368.0,
+    "fx_rate": 1333.76,
+    "premium_pct": 2.57
+  },
+  {
+    "date": "2024-08-21",
+    "usdt_price": 1356.0,
+    "fx_rate": 1336.41,
+    "premium_pct": 1.47
+  },
+  {
+    "date": "2024-08-22",
+    "usdt_price": 1357.0,
+    "fx_rate": 1338.79,
+    "premium_pct": 1.36
+  },
+  {
+    "date": "2024-08-23",
+    "usdt_price": 1337.0,
+    "fx_rate": 1336.98,
+    "premium_pct": 0.0
+  },
+  {
+    "date": "2024-08-26",
+    "usdt_price": 1344.0,
+    "fx_rate": 1326.85,
+    "premium_pct": 1.29
+  },
+  {
+    "date": "2024-08-27",
+    "usdt_price": 1360.0,
+    "fx_rate": 1331.18,
+    "premium_pct": 2.16
+  },
+  {
+    "date": "2024-08-28",
+    "usdt_price": 1365.0,
+    "fx_rate": 1335.84,
+    "premium_pct": 2.18
+  },
+  {
+    "date": "2024-08-29",
+    "usdt_price": 1360.0,
+    "fx_rate": 1329.67,
+    "premium_pct": 2.28
+  },
+  {
+    "date": "2024-08-30",
+    "usdt_price": 1361.0,
+    "fx_rate": 1333.63,
+    "premium_pct": 2.05
+  },
+  {
+    "date": "2024-09-02",
+    "usdt_price": 1357.0,
+    "fx_rate": 1339.23,
+    "premium_pct": 1.33
+  },
+  {
+    "date": "2024-09-03",
+    "usdt_price": 1361.0,
+    "fx_rate": 1342.3,
+    "premium_pct": 1.39
+  },
+  {
+    "date": "2024-09-04",
+    "usdt_price": 1357.0,
+    "fx_rate": 1340.72,
+    "premium_pct": 1.21
+  },
+  {
+    "date": "2024-09-05",
+    "usdt_price": 1359.0,
+    "fx_rate": 1335.08,
+    "premium_pct": 1.79
+  },
+  {
+    "date": "2024-09-06",
+    "usdt_price": 1365.0,
+    "fx_rate": 1330.54,
+    "premium_pct": 2.59
+  },
+  {
+    "date": "2024-09-09",
+    "usdt_price": 1355.0,
+    "fx_rate": 1345.18,
+    "premium_pct": 0.73
+  },
+  {
+    "date": "2024-09-10",
+    "usdt_price": 1355.0,
+    "fx_rate": 1342.21,
+    "premium_pct": 0.95
+  },
+  {
+    "date": "2024-09-11",
+    "usdt_price": 1350.0,
+    "fx_rate": 1338.86,
+    "premium_pct": 0.83
+  },
+  {
+    "date": "2024-09-12",
+    "usdt_price": 1347.0,
+    "fx_rate": 1341.05,
+    "premium_pct": 0.44
+  },
+  {
+    "date": "2024-09-13",
+    "usdt_price": 1339.0,
+    "fx_rate": 1330.39,
+    "premium_pct": 0.65
+  },
+  {
+    "date": "2024-09-16",
+    "usdt_price": 1347.0,
+    "fx_rate": 1318.91,
+    "premium_pct": 2.13
+  },
+  {
+    "date": "2024-09-17",
+    "usdt_price": 1345.0,
+    "fx_rate": 1317.59,
+    "premium_pct": 2.08
+  },
+  {
+    "date": "2024-09-18",
+    "usdt_price": 1340.0,
+    "fx_rate": 1324.75,
+    "premium_pct": 1.15
+  },
+  {
+    "date": "2024-09-19",
+    "usdt_price": 1333.0,
+    "fx_rate": 1328.05,
+    "premium_pct": 0.37
+  },
+  {
+    "date": "2024-09-20",
+    "usdt_price": 1337.0,
+    "fx_rate": 1335.76,
+    "premium_pct": 0.09
+  },
+  {
+    "date": "2024-09-23",
+    "usdt_price": 1337.0,
+    "fx_rate": 1337.01,
+    "premium_pct": -0.0
+  },
+  {
+    "date": "2024-09-24",
+    "usdt_price": 1327.0,
+    "fx_rate": 1334.65,
+    "premium_pct": -0.57
+  },
+  {
+    "date": "2024-09-25",
+    "usdt_price": 1337.0,
+    "fx_rate": 1330.59,
+    "premium_pct": 0.48
+  },
+  {
+    "date": "2024-09-26",
+    "usdt_price": 1321.0,
+    "fx_rate": 1325.52,
+    "premium_pct": -0.34
+  },
+  {
+    "date": "2024-09-27",
+    "usdt_price": 1321.0,
+    "fx_rate": 1310.95,
+    "premium_pct": 0.77
+  },
+  {
+    "date": "2024-09-30",
+    "usdt_price": 1322.0,
+    "fx_rate": 1312.17,
+    "premium_pct": 0.75
+  },
+  {
+    "date": "2024-10-01",
+    "usdt_price": 1340.0,
+    "fx_rate": 1320.58,
+    "premium_pct": 1.47
+  },
+  {
+    "date": "2024-10-02",
+    "usdt_price": 1347.0,
+    "fx_rate": 1321.05,
+    "premium_pct": 1.96
+  },
+  {
+    "date": "2024-10-03",
+    "usdt_price": 1357.0,
+    "fx_rate": 1334.26,
+    "premium_pct": 1.7
+  },
+  {
+    "date": "2024-10-04",
+    "usdt_price": 1352.0,
+    "fx_rate": 1340.32,
+    "premium_pct": 0.87
+  },
+  {
+    "date": "2024-10-07",
+    "usdt_price": 1349.0,
+    "fx_rate": 1344.13,
+    "premium_pct": 0.36
+  },
+  {
+    "date": "2024-10-08",
+    "usdt_price": 1353.0,
+    "fx_rate": 1346.04,
+    "premium_pct": 0.52
+  },
+  {
+    "date": "2024-10-09",
+    "usdt_price": 1359.0,
+    "fx_rate": 1344.37,
+    "premium_pct": 1.09
+  },
+  {
+    "date": "2024-10-10",
+    "usdt_price": 1362.0,
+    "fx_rate": 1351.55,
+    "premium_pct": 0.77
+  },
+  {
+    "date": "2024-10-11",
+    "usdt_price": 1351.0,
+    "fx_rate": 1350.92,
+    "premium_pct": 0.01
+  },
+  {
+    "date": "2024-10-14",
+    "usdt_price": 1342.0,
+    "fx_rate": 1359.62,
+    "premium_pct": -1.3
+  },
+  {
+    "date": "2024-10-15",
+    "usdt_price": 1353.0,
+    "fx_rate": 1359.93,
+    "premium_pct": -0.51
+  },
+  {
+    "date": "2024-10-16",
+    "usdt_price": 1356.0,
+    "fx_rate": 1361.02,
+    "premium_pct": -0.37
+  },
+  {
+    "date": "2024-10-17",
+    "usdt_price": 1361.0,
+    "fx_rate": 1370.17,
+    "premium_pct": -0.67
+  },
+  {
+    "date": "2024-10-18",
+    "usdt_price": 1364.0,
+    "fx_rate": 1371.85,
+    "premium_pct": -0.57
+  },
+  {
+    "date": "2024-10-21",
+    "usdt_price": 1370.0,
+    "fx_rate": 1378.17,
+    "premium_pct": -0.59
+  },
+  {
+    "date": "2024-10-22",
+    "usdt_price": 1378.0,
+    "fx_rate": 1378.49,
+    "premium_pct": -0.04
+  },
+  {
+    "date": "2024-10-23",
+    "usdt_price": 1385.0,
+    "fx_rate": 1385.29,
+    "premium_pct": -0.02
+  },
+  {
+    "date": "2024-10-24",
+    "usdt_price": 1381.0,
+    "fx_rate": 1379.34,
+    "premium_pct": 0.12
+  },
+  {
+    "date": "2024-10-25",
+    "usdt_price": 1406.0,
+    "fx_rate": 1389.46,
+    "premium_pct": 1.19
+  },
+  {
+    "date": "2024-10-28",
+    "usdt_price": 1393.0,
+    "fx_rate": 1383.3,
+    "premium_pct": 0.7
+  },
+  {
+    "date": "2024-10-29",
+    "usdt_price": 1393.0,
+    "fx_rate": 1388.9,
+    "premium_pct": 0.3
+  },
+  {
+    "date": "2024-10-30",
+    "usdt_price": 1391.0,
+    "fx_rate": 1380.51,
+    "premium_pct": 0.76
+  },
+  {
+    "date": "2024-10-31",
+    "usdt_price": 1396.0,
+    "fx_rate": 1378.47,
+    "premium_pct": 1.27
+  },
+  {
+    "date": "2024-11-01",
+    "usdt_price": 1400.0,
+    "fx_rate": 1376.4,
+    "premium_pct": 1.71
+  },
+  {
+    "date": "2024-11-04",
+    "usdt_price": 1390.0,
+    "fx_rate": 1373.78,
+    "premium_pct": 1.18
+  },
+  {
+    "date": "2024-11-05",
+    "usdt_price": 1388.0,
+    "fx_rate": 1379.93,
+    "premium_pct": 0.58
+  },
+  {
+    "date": "2024-11-06",
+    "usdt_price": 1379.0,
+    "fx_rate": 1403.37,
+    "premium_pct": -1.74
+  },
+  {
+    "date": "2024-11-07",
+    "usdt_price": 1375.0,
+    "fx_rate": 1386.91,
+    "premium_pct": -0.86
+  },
+  {
+    "date": "2024-11-08",
+    "usdt_price": 1397.0,
+    "fx_rate": 1388.24,
+    "premium_pct": 0.63
+  },
+  {
+    "date": "2024-11-11",
+    "usdt_price": 1403.0,
+    "fx_rate": 1398.9,
+    "premium_pct": 0.29
+  },
+  {
+    "date": "2024-11-12",
+    "usdt_price": 1422.0,
+    "fx_rate": 1405.43,
+    "premium_pct": 1.18
+  },
+  {
+    "date": "2024-11-13",
+    "usdt_price": 1418.0,
+    "fx_rate": 1399.38,
+    "premium_pct": 1.33
+  },
+  {
+    "date": "2024-11-14",
+    "usdt_price": 1418.0,
+    "fx_rate": 1403.95,
+    "premium_pct": 1.0
+  },
+  {
+    "date": "2024-11-15",
+    "usdt_price": 1409.0,
+    "fx_rate": 1394.91,
+    "premium_pct": 1.01
+  },
+  {
+    "date": "2024-11-18",
+    "usdt_price": 1405.0,
+    "fx_rate": 1397.36,
+    "premium_pct": 0.55
+  },
+  {
+    "date": "2024-11-19",
+    "usdt_price": 1407.0,
+    "fx_rate": 1392.36,
+    "premium_pct": 1.05
+  },
+  {
+    "date": "2024-11-20",
+    "usdt_price": 1414.0,
+    "fx_rate": 1395.95,
+    "premium_pct": 1.29
+  },
+  {
+    "date": "2024-11-21",
+    "usdt_price": 1398.0,
+    "fx_rate": 1398.06,
+    "premium_pct": -0.0
+  },
+  {
+    "date": "2024-11-22",
+    "usdt_price": 1387.0,
+    "fx_rate": 1406.48,
+    "premium_pct": -1.39
+  },
+  {
+    "date": "2024-11-25",
+    "usdt_price": 1395.0,
+    "fx_rate": 1400.54,
+    "premium_pct": -0.4
+  },
+  {
+    "date": "2024-11-26",
+    "usdt_price": 1400.0,
+    "fx_rate": 1395.45,
+    "premium_pct": 0.33
+  },
+  {
+    "date": "2024-11-27",
+    "usdt_price": 1389.0,
+    "fx_rate": 1392.39,
+    "premium_pct": -0.24
+  },
+  {
+    "date": "2024-11-28",
+    "usdt_price": 1393.0,
+    "fx_rate": 1396.59,
+    "premium_pct": -0.26
+  },
+  {
+    "date": "2024-11-29",
+    "usdt_price": 1383.0,
+    "fx_rate": 1397.57,
+    "premium_pct": -1.04
+  },
+  {
+    "date": "2024-12-02",
+    "usdt_price": 1397.0,
+    "fx_rate": 1404.33,
+    "premium_pct": -0.52
+  },
+  {
+    "date": "2024-12-03",
+    "usdt_price": 1400.0,
+    "fx_rate": 1403.06,
+    "premium_pct": -0.22
+  },
+  {
+    "date": "2024-12-04",
+    "usdt_price": 1409.0,
+    "fx_rate": 1417.54,
+    "premium_pct": -0.6
+  },
+  {
+    "date": "2024-12-05",
+    "usdt_price": 1417.0,
+    "fx_rate": 1418.04,
+    "premium_pct": -0.07
+  },
+  {
+    "date": "2024-12-06",
+    "usdt_price": 1398.0,
+    "fx_rate": 1419.74,
+    "premium_pct": -1.53
+  },
+  {
+    "date": "2024-12-09",
+    "usdt_price": 1427.0,
+    "fx_rate": 1432.14,
+    "premium_pct": -0.36
+  },
+  {
+    "date": "2024-12-10",
+    "usdt_price": 1433.0,
+    "fx_rate": 1431.85,
+    "premium_pct": 0.08
+  },
+  {
+    "date": "2024-12-11",
+    "usdt_price": 1417.0,
+    "fx_rate": 1430.36,
+    "premium_pct": -0.93
+  },
+  {
+    "date": "2024-12-12",
+    "usdt_price": 1428.0,
+    "fx_rate": 1430.72,
+    "premium_pct": -0.19
+  },
+  {
+    "date": "2024-12-13",
+    "usdt_price": 1425.0,
+    "fx_rate": 1433.33,
+    "premium_pct": -0.58
+  },
+  {
+    "date": "2024-12-16",
+    "usdt_price": 1447.0,
+    "fx_rate": 1437.56,
+    "premium_pct": 0.66
+  },
+  {
+    "date": "2024-12-17",
+    "usdt_price": 1463.0,
+    "fx_rate": 1436.72,
+    "premium_pct": 1.83
+  },
+  {
+    "date": "2024-12-18",
+    "usdt_price": 1477.0,
+    "fx_rate": 1438.15,
+    "premium_pct": 2.7
+  },
+  {
+    "date": "2024-12-19",
+    "usdt_price": 1513.0,
+    "fx_rate": 1448.1,
+    "premium_pct": 4.48
+  },
+  {
+    "date": "2024-12-20",
+    "usdt_price": 1514.0,
+    "fx_rate": 1446.29,
+    "premium_pct": 4.68
+  },
+  {
+    "date": "2024-12-23",
+    "usdt_price": 1506.0,
+    "fx_rate": 1453.44,
+    "premium_pct": 3.62
+  },
+  {
+    "date": "2024-12-24",
+    "usdt_price": 1488.0,
+    "fx_rate": 1458.37,
+    "premium_pct": 2.03
+  },
+  {
+    "date": "2024-12-27",
+    "usdt_price": 1507.0,
+    "fx_rate": 1473.55,
+    "premium_pct": 2.27
+  },
+  {
+    "date": "2024-12-30",
+    "usdt_price": 1486.0,
+    "fx_rate": 1473.7,
+    "premium_pct": 0.83
+  },
+  {
+    "date": "2024-12-31",
+    "usdt_price": 1491.0,
+    "fx_rate": 1474.78,
+    "premium_pct": 1.1
+  },
+  {
+    "date": "2025-01-02",
+    "usdt_price": 1484.0,
+    "fx_rate": 1467.95,
+    "premium_pct": 1.09
+  },
+  {
+    "date": "2025-01-03",
+    "usdt_price": 1473.0,
+    "fx_rate": 1468.78,
+    "premium_pct": 0.29
+  },
+  {
+    "date": "2025-01-06",
+    "usdt_price": 1469.0,
+    "fx_rate": 1456.21,
+    "premium_pct": 0.88
+  },
+  {
+    "date": "2025-01-07",
+    "usdt_price": 1494.0,
+    "fx_rate": 1450.35,
+    "premium_pct": 3.01
+  },
+  {
+    "date": "2025-01-08",
+    "usdt_price": 1498.0,
+    "fx_rate": 1461.7,
+    "premium_pct": 2.48
+  },
+  {
+    "date": "2025-01-09",
+    "usdt_price": 1511.0,
+    "fx_rate": 1459.71,
+    "premium_pct": 3.51
+  },
+  {
+    "date": "2025-01-10",
+    "usdt_price": 1506.0,
+    "fx_rate": 1466.73,
+    "premium_pct": 2.68
+  },
+  {
+    "date": "2025-01-13",
+    "usdt_price": 1505.0,
+    "fx_rate": 1468.44,
+    "premium_pct": 2.49
+  },
+  {
+    "date": "2025-01-14",
+    "usdt_price": 1486.0,
+    "fx_rate": 1460.61,
+    "premium_pct": 1.74
+  },
+  {
+    "date": "2025-01-15",
+    "usdt_price": 1466.0,
+    "fx_rate": 1459.37,
+    "premium_pct": 0.45
+  },
+  {
+    "date": "2025-01-16",
+    "usdt_price": 1468.0,
+    "fx_rate": 1459.35,
+    "premium_pct": 0.59
+  },
+  {
+    "date": "2025-01-17",
+    "usdt_price": 1467.0,
+    "fx_rate": 1458.58,
+    "premium_pct": 0.58
+  },
+  {
+    "date": "2025-01-20",
+    "usdt_price": 1500.0,
+    "fx_rate": 1451.34,
+    "premium_pct": 3.35
+  },
+  {
+    "date": "2025-01-21",
+    "usdt_price": 1486.0,
+    "fx_rate": 1441.93,
+    "premium_pct": 3.06
+  },
+  {
+    "date": "2025-01-22",
+    "usdt_price": 1494.0,
+    "fx_rate": 1432.55,
+    "premium_pct": 4.29
+  },
+  {
+    "date": "2025-01-23",
+    "usdt_price": 1493.0,
+    "fx_rate": 1436.85,
+    "premium_pct": 3.91
+  },
+  {
+    "date": "2025-01-24",
+    "usdt_price": 1500.0,
+    "fx_rate": 1433.92,
+    "premium_pct": 4.61
+  },
+  {
+    "date": "2025-01-27",
+    "usdt_price": 1519.0,
+    "fx_rate": 1432.07,
+    "premium_pct": 6.07
+  },
+  {
+    "date": "2025-01-28",
+    "usdt_price": 1539.0,
+    "fx_rate": 1445.94,
+    "premium_pct": 6.44
+  },
+  {
+    "date": "2025-01-29",
+    "usdt_price": 1534.0,
+    "fx_rate": 1446.73,
+    "premium_pct": 6.03
+  },
+  {
+    "date": "2025-01-30",
+    "usdt_price": 1508.0,
+    "fx_rate": 1441.91,
+    "premium_pct": 4.58
+  },
+  {
+    "date": "2025-01-31",
+    "usdt_price": 1527.0,
+    "fx_rate": 1449.65,
+    "premium_pct": 5.34
+  },
+  {
+    "date": "2025-02-03",
+    "usdt_price": 1563.0,
+    "fx_rate": 1463.9,
+    "premium_pct": 6.77
+  },
+  {
+    "date": "2025-02-04",
+    "usdt_price": 1576.0,
+    "fx_rate": 1455.45,
+    "premium_pct": 8.28
+  },
+  {
+    "date": "2025-02-05",
+    "usdt_price": 1567.0,
+    "fx_rate": 1446.55,
+    "premium_pct": 8.33
+  },
+  {
+    "date": "2025-02-06",
+    "usdt_price": 1566.0,
+    "fx_rate": 1450.75,
+    "premium_pct": 7.94
+  },
+  {
+    "date": "2025-02-07",
+    "usdt_price": 1550.0,
+    "fx_rate": 1447.09,
+    "premium_pct": 7.11
+  },
+  {
+    "date": "2025-02-10",
+    "usdt_price": 1516.0,
+    "fx_rate": 1450.4,
+    "premium_pct": 4.52
+  },
+  {
+    "date": "2025-02-11",
+    "usdt_price": 1526.0,
+    "fx_rate": 1453.6,
+    "premium_pct": 4.98
+  },
+  {
+    "date": "2025-02-12",
+    "usdt_price": 1511.0,
+    "fx_rate": 1452.24,
+    "premium_pct": 4.05
+  },
+  {
+    "date": "2025-02-13",
+    "usdt_price": 1509.0,
+    "fx_rate": 1450.93,
+    "premium_pct": 4.0
+  },
+  {
+    "date": "2025-02-14",
+    "usdt_price": 1505.0,
+    "fx_rate": 1440.64,
+    "premium_pct": 4.47
+  },
+  {
+    "date": "2025-02-17",
+    "usdt_price": 1508.0,
+    "fx_rate": 1443.57,
+    "premium_pct": 4.46
+  },
+  {
+    "date": "2025-02-18",
+    "usdt_price": 1504.0,
+    "fx_rate": 1441.87,
+    "premium_pct": 4.31
+  },
+  {
+    "date": "2025-02-19",
+    "usdt_price": 1493.0,
+    "fx_rate": 1442.13,
+    "premium_pct": 3.53
+  },
+  {
+    "date": "2025-02-20",
+    "usdt_price": 1482.0,
+    "fx_rate": 1436.96,
+    "premium_pct": 3.13
+  },
+  {
+    "date": "2025-02-21",
+    "usdt_price": 1485.0,
+    "fx_rate": 1433.5,
+    "premium_pct": 3.59
+  },
+  {
+    "date": "2025-02-24",
+    "usdt_price": 1446.0,
+    "fx_rate": 1427.98,
+    "premium_pct": 1.26
+  },
+  {
+    "date": "2025-02-25",
+    "usdt_price": 1460.0,
+    "fx_rate": 1433.85,
+    "premium_pct": 1.82
+  },
+  {
+    "date": "2025-02-26",
+    "usdt_price": 1458.0,
+    "fx_rate": 1434.49,
+    "premium_pct": 1.64
+  },
+  {
+    "date": "2025-02-27",
+    "usdt_price": 1467.0,
+    "fx_rate": 1443.04,
+    "premium_pct": 1.66
+  },
+  {
+    "date": "2025-02-28",
+    "usdt_price": 1475.0,
+    "fx_rate": 1459.92,
+    "premium_pct": 1.03
+  },
+  {
+    "date": "2025-03-03",
+    "usdt_price": 1509.0,
+    "fx_rate": 1458.6,
+    "premium_pct": 3.46
+  },
+  {
+    "date": "2025-03-04",
+    "usdt_price": 1496.0,
+    "fx_rate": 1456.03,
+    "premium_pct": 2.75
+  },
+  {
+    "date": "2025-03-05",
+    "usdt_price": 1490.0,
+    "fx_rate": 1450.95,
+    "premium_pct": 2.69
+  },
+  {
+    "date": "2025-03-06",
+    "usdt_price": 1488.0,
+    "fx_rate": 1448.25,
+    "premium_pct": 2.74
+  },
+  {
+    "date": "2025-03-07",
+    "usdt_price": 1492.0,
+    "fx_rate": 1446.5,
+    "premium_pct": 3.15
+  },
+  {
+    "date": "2025-03-10",
+    "usdt_price": 1491.0,
+    "fx_rate": 1455.89,
+    "premium_pct": 2.41
+  },
+  {
+    "date": "2025-03-11",
+    "usdt_price": 1483.0,
+    "fx_rate": 1453.96,
+    "premium_pct": 2.0
+  },
+  {
+    "date": "2025-03-12",
+    "usdt_price": 1481.0,
+    "fx_rate": 1452.0,
+    "premium_pct": 2.0
+  },
+  {
+    "date": "2025-03-13",
+    "usdt_price": 1481.0,
+    "fx_rate": 1456.72,
+    "premium_pct": 1.67
+  },
+  {
+    "date": "2025-03-14",
+    "usdt_price": 1475.0,
+    "fx_rate": 1453.64,
+    "premium_pct": 1.47
+  },
+  {
+    "date": "2025-03-17",
+    "usdt_price": 1463.0,
+    "fx_rate": 1448.29,
+    "premium_pct": 1.02
+  },
+  {
+    "date": "2025-03-18",
+    "usdt_price": 1467.0,
+    "fx_rate": 1453.26,
+    "premium_pct": 0.95
+  },
+  {
+    "date": "2025-03-19",
+    "usdt_price": 1467.0,
+    "fx_rate": 1458.85,
+    "premium_pct": 0.56
+  },
+  {
+    "date": "2025-03-20",
+    "usdt_price": 1475.5,
+    "fx_rate": 1469.55,
+    "premium_pct": 0.4
+  },
+  {
+    "date": "2025-03-21",
+    "usdt_price": 1480.5,
+    "fx_rate": 1464.4,
+    "premium_pct": 1.1
+  },
+  {
+    "date": "2025-03-24",
+    "usdt_price": 1472.0,
+    "fx_rate": 1467.29,
+    "premium_pct": 0.32
+  },
+  {
+    "date": "2025-03-25",
+    "usdt_price": 1473.5,
+    "fx_rate": 1466.2,
+    "premium_pct": 0.5
+  },
+  {
+    "date": "2025-03-26",
+    "usdt_price": 1479.5,
+    "fx_rate": 1465.39,
+    "premium_pct": 0.96
+  },
+  {
+    "date": "2025-03-27",
+    "usdt_price": 1476.0,
+    "fx_rate": 1465.15,
+    "premium_pct": 0.74
+  },
+  {
+    "date": "2025-03-28",
+    "usdt_price": 1491.0,
+    "fx_rate": 1468.6,
+    "premium_pct": 1.53
+  },
+  {
+    "date": "2025-03-31",
+    "usdt_price": 1491.5,
+    "fx_rate": 1474.54,
+    "premium_pct": 1.15
+  },
+  {
+    "date": "2025-04-01",
+    "usdt_price": 1485.5,
+    "fx_rate": 1472.4,
+    "premium_pct": 0.89
+  },
+  {
+    "date": "2025-04-02",
+    "usdt_price": 1488.0,
+    "fx_rate": 1461.88,
+    "premium_pct": 1.79
+  },
+  {
+    "date": "2025-04-03",
+    "usdt_price": 1482.0,
+    "fx_rate": 1455.45,
+    "premium_pct": 1.82
+  },
+  {
+    "date": "2025-04-04",
+    "usdt_price": 1471.5,
+    "fx_rate": 1448.05,
+    "premium_pct": 1.62
+  },
+  {
+    "date": "2025-04-07",
+    "usdt_price": 1491.0,
+    "fx_rate": 1464.86,
+    "premium_pct": 1.78
+  },
+  {
+    "date": "2025-04-08",
+    "usdt_price": 1499.5,
+    "fx_rate": 1478.35,
+    "premium_pct": 1.43
+  },
+  {
+    "date": "2025-04-09",
+    "usdt_price": 1470.5,
+    "fx_rate": 1476.73,
+    "premium_pct": -0.42
+  },
+  {
+    "date": "2025-04-10",
+    "usdt_price": 1481.0,
+    "fx_rate": 1455.45,
+    "premium_pct": 1.76
+  },
+  {
+    "date": "2025-04-11",
+    "usdt_price": 1457.5,
+    "fx_rate": 1431.68,
+    "premium_pct": 1.8
+  },
+  {
+    "date": "2025-04-14",
+    "usdt_price": 1452.0,
+    "fx_rate": 1421.54,
+    "premium_pct": 2.14
+  },
+  {
+    "date": "2025-04-15",
+    "usdt_price": 1460.0,
+    "fx_rate": 1426.85,
+    "premium_pct": 2.32
+  },
+  {
+    "date": "2025-04-16",
+    "usdt_price": 1451.5,
+    "fx_rate": 1418.06,
+    "premium_pct": 2.36
+  },
+  {
+    "date": "2025-04-17",
+    "usdt_price": 1445.5,
+    "fx_rate": 1416.48,
+    "premium_pct": 2.05
+  },
+  {
+    "date": "2025-04-22",
+    "usdt_price": 1434.0,
+    "fx_rate": 1425.18,
+    "premium_pct": 0.62
+  },
+  {
+    "date": "2025-04-23",
+    "usdt_price": 1434.0,
+    "fx_rate": 1422.13,
+    "premium_pct": 0.83
+  },
+  {
+    "date": "2025-04-24",
+    "usdt_price": 1434.5,
+    "fx_rate": 1435.29,
+    "premium_pct": -0.06
+  },
+  {
+    "date": "2025-04-25",
+    "usdt_price": 1444.5,
+    "fx_rate": 1439.49,
+    "premium_pct": 0.35
+  },
+  {
+    "date": "2025-04-28",
+    "usdt_price": 1441.5,
+    "fx_rate": 1444.38,
+    "premium_pct": -0.2
+  },
+  {
+    "date": "2025-04-29",
+    "usdt_price": 1445.5,
+    "fx_rate": 1435.67,
+    "premium_pct": 0.68
+  },
+  {
+    "date": "2025-04-30",
+    "usdt_price": 1444.0,
+    "fx_rate": 1423.01,
+    "premium_pct": 1.48
+  },
+  {
+    "date": "2025-05-02",
+    "usdt_price": 1430.5,
+    "fx_rate": 1397.73,
+    "premium_pct": 2.34
+  },
+  {
+    "date": "2025-05-05",
+    "usdt_price": 1425.0,
+    "fx_rate": 1371.32,
+    "premium_pct": 3.91
+  },
+  {
+    "date": "2025-05-06",
+    "usdt_price": 1419.5,
+    "fx_rate": 1381.08,
+    "premium_pct": 2.78
+  },
+  {
+    "date": "2025-05-07",
+    "usdt_price": 1419.5,
+    "fx_rate": 1391.15,
+    "premium_pct": 2.04
+  },
+  {
+    "date": "2025-05-08",
+    "usdt_price": 1404.5,
+    "fx_rate": 1398.72,
+    "premium_pct": 0.41
+  },
+  {
+    "date": "2025-05-09",
+    "usdt_price": 1397.5,
+    "fx_rate": 1400.39,
+    "premium_pct": -0.21
+  },
+  {
+    "date": "2025-05-12",
+    "usdt_price": 1410.5,
+    "fx_rate": 1419.08,
+    "premium_pct": -0.6
+  },
+  {
+    "date": "2025-05-13",
+    "usdt_price": 1402.0,
+    "fx_rate": 1424.45,
+    "premium_pct": -1.58
+  },
+  {
+    "date": "2025-05-14",
+    "usdt_price": 1408.5,
+    "fx_rate": 1397.56,
+    "premium_pct": 0.78
+  },
+  {
+    "date": "2025-05-15",
+    "usdt_price": 1408.5,
+    "fx_rate": 1398.08,
+    "premium_pct": 0.75
+  },
+  {
+    "date": "2025-05-16",
+    "usdt_price": 1416.5,
+    "fx_rate": 1396.44,
+    "premium_pct": 1.44
+  },
+  {
+    "date": "2025-05-19",
+    "usdt_price": 1408.0,
+    "fx_rate": 1388.78,
+    "premium_pct": 1.38
+  },
+  {
+    "date": "2025-05-20",
+    "usdt_price": 1409.0,
+    "fx_rate": 1394.62,
+    "premium_pct": 1.03
+  },
+  {
+    "date": "2025-05-21",
+    "usdt_price": 1391.0,
+    "fx_rate": 1375.31,
+    "premium_pct": 1.14
+  },
+  {
+    "date": "2025-05-22",
+    "usdt_price": 1387.5,
+    "fx_rate": 1381.79,
+    "premium_pct": 0.41
+  },
+  {
+    "date": "2025-05-23",
+    "usdt_price": 1398.0,
+    "fx_rate": 1376.67,
+    "premium_pct": 1.55
+  },
+  {
+    "date": "2025-05-26",
+    "usdt_price": 1390.0,
+    "fx_rate": 1369.48,
+    "premium_pct": 1.5
+  },
+  {
+    "date": "2025-05-27",
+    "usdt_price": 1388.0,
+    "fx_rate": 1374.25,
+    "premium_pct": 1.0
+  },
+  {
+    "date": "2025-05-28",
+    "usdt_price": 1394.5,
+    "fx_rate": 1373.36,
+    "premium_pct": 1.54
+  },
+  {
+    "date": "2025-05-29",
+    "usdt_price": 1396.5,
+    "fx_rate": 1374.85,
+    "premium_pct": 1.57
+  },
+  {
+    "date": "2025-05-30",
+    "usdt_price": 1415.0,
+    "fx_rate": 1378.51,
+    "premium_pct": 2.65
+  },
+  {
+    "date": "2025-06-02",
+    "usdt_price": 1400.0,
+    "fx_rate": 1376.83,
+    "premium_pct": 1.68
+  },
+  {
+    "date": "2025-06-03",
+    "usdt_price": 1397.0,
+    "fx_rate": 1376.78,
+    "premium_pct": 1.47
+  },
+  {
+    "date": "2025-06-04",
+    "usdt_price": 1388.0,
+    "fx_rate": 1366.32,
+    "premium_pct": 1.59
+  },
+  {
+    "date": "2025-06-05",
+    "usdt_price": 1396.0,
+    "fx_rate": 1357.39,
+    "premium_pct": 2.84
+  },
+  {
+    "date": "2025-06-06",
+    "usdt_price": 1391.0,
+    "fx_rate": 1359.29,
+    "premium_pct": 2.33
+  },
+  {
+    "date": "2025-06-09",
+    "usdt_price": 1365.0,
+    "fx_rate": 1356.44,
+    "premium_pct": 0.63
+  },
+  {
+    "date": "2025-06-10",
+    "usdt_price": 1367.5,
+    "fx_rate": 1366.55,
+    "premium_pct": 0.07
+  },
+  {
+    "date": "2025-06-11",
+    "usdt_price": 1379.5,
+    "fx_rate": 1375.58,
+    "premium_pct": 0.28
+  },
+  {
+    "date": "2025-06-12",
+    "usdt_price": 1378.0,
+    "fx_rate": 1353.78,
+    "premium_pct": 1.79
+  },
+  {
+    "date": "2025-06-13",
+    "usdt_price": 1389.5,
+    "fx_rate": 1370.24,
+    "premium_pct": 1.41
+  },
+  {
+    "date": "2025-06-16",
+    "usdt_price": 1374.5,
+    "fx_rate": 1359.48,
+    "premium_pct": 1.1
+  },
+  {
+    "date": "2025-06-17",
+    "usdt_price": 1390.5,
+    "fx_rate": 1365.34,
+    "premium_pct": 1.84
+  },
+  {
+    "date": "2025-06-18",
+    "usdt_price": 1386.0,
+    "fx_rate": 1375.65,
+    "premium_pct": 0.75
+  },
+  {
+    "date": "2025-06-19",
+    "usdt_price": 1386.0,
+    "fx_rate": 1380.12,
+    "premium_pct": 0.43
+  },
+  {
+    "date": "2025-06-20",
+    "usdt_price": 1393.5,
+    "fx_rate": 1366.74,
+    "premium_pct": 1.96
+  },
+  {
+    "date": "2025-06-23",
+    "usdt_price": 1387.0,
+    "fx_rate": 1388.15,
+    "premium_pct": -0.08
+  },
+  {
+    "date": "2025-06-24",
+    "usdt_price": 1374.0,
+    "fx_rate": 1360.17,
+    "premium_pct": 1.02
+  },
+  {
+    "date": "2025-06-25",
+    "usdt_price": 1373.5,
+    "fx_rate": 1363.55,
+    "premium_pct": 0.73
+  },
+  {
+    "date": "2025-06-26",
+    "usdt_price": 1372.5,
+    "fx_rate": 1357.1,
+    "premium_pct": 1.13
+  },
+  {
+    "date": "2025-06-27",
+    "usdt_price": 1373.5,
+    "fx_rate": 1360.82,
+    "premium_pct": 0.93
+  },
+  {
+    "date": "2025-06-30",
+    "usdt_price": 1359.5,
+    "fx_rate": 1355.13,
+    "premium_pct": 0.32
+  },
+  {
+    "date": "2025-07-01",
+    "usdt_price": 1372.5,
+    "fx_rate": 1353.24,
+    "premium_pct": 1.42
+  },
+  {
+    "date": "2025-07-02",
+    "usdt_price": 1355.0,
+    "fx_rate": 1359.91,
+    "premium_pct": -0.36
+  },
+  {
+    "date": "2025-07-03",
+    "usdt_price": 1358.0,
+    "fx_rate": 1362.08,
+    "premium_pct": -0.3
+  },
+  {
+    "date": "2025-07-04",
+    "usdt_price": 1368.0,
+    "fx_rate": 1363.39,
+    "premium_pct": 0.34
+  },
+  {
+    "date": "2025-07-07",
+    "usdt_price": 1368.0,
+    "fx_rate": 1367.29,
+    "premium_pct": 0.05
+  },
+  {
+    "date": "2025-07-08",
+    "usdt_price": 1362.0,
+    "fx_rate": 1370.46,
+    "premium_pct": -0.62
+  },
+  {
+    "date": "2025-07-09",
+    "usdt_price": 1357.0,
+    "fx_rate": 1376.8,
+    "premium_pct": -1.44
+  },
+  {
+    "date": "2025-07-10",
+    "usdt_price": 1349.5,
+    "fx_rate": 1373.25,
+    "premium_pct": -1.73
+  },
+  {
+    "date": "2025-07-11",
+    "usdt_price": 1346.5,
+    "fx_rate": 1375.0,
+    "premium_pct": -2.07
+  },
+  {
+    "date": "2025-07-14",
+    "usdt_price": 1367.5,
+    "fx_rate": 1380.65,
+    "premium_pct": -0.95
+  },
+  {
+    "date": "2025-07-15",
+    "usdt_price": 1366.5,
+    "fx_rate": 1381.06,
+    "premium_pct": -1.05
+  },
+  {
+    "date": "2025-07-16",
+    "usdt_price": 1359.5,
+    "fx_rate": 1391.18,
+    "premium_pct": -2.28
+  },
+  {
+    "date": "2025-07-17",
+    "usdt_price": 1361.0,
+    "fx_rate": 1394.47,
+    "premium_pct": -2.4
+  },
+  {
+    "date": "2025-07-18",
+    "usdt_price": 1367.0,
+    "fx_rate": 1390.15,
+    "premium_pct": -1.67
+  },
+  {
+    "date": "2025-07-21",
+    "usdt_price": 1364.5,
+    "fx_rate": 1383.94,
+    "premium_pct": -1.4
+  },
+  {
+    "date": "2025-07-22",
+    "usdt_price": 1355.5,
+    "fx_rate": 1386.1,
+    "premium_pct": -2.21
+  },
+  {
+    "date": "2025-07-23",
+    "usdt_price": 1365.0,
+    "fx_rate": 1374.94,
+    "premium_pct": -0.72
+  },
+  {
+    "date": "2025-07-24",
+    "usdt_price": 1361.0,
+    "fx_rate": 1369.58,
+    "premium_pct": -0.63
+  },
+  {
+    "date": "2025-07-25",
+    "usdt_price": 1364.0,
+    "fx_rate": 1381.27,
+    "premium_pct": -1.25
+  },
+  {
+    "date": "2025-07-28",
+    "usdt_price": 1377.0,
+    "fx_rate": 1385.45,
+    "premium_pct": -0.61
+  },
+  {
+    "date": "2025-07-29",
+    "usdt_price": 1385.0,
+    "fx_rate": 1394.09,
+    "premium_pct": -0.65
+  },
+  {
+    "date": "2025-07-30",
+    "usdt_price": 1385.0,
+    "fx_rate": 1384.23,
+    "premium_pct": 0.06
+  },
+  {
+    "date": "2025-07-31",
+    "usdt_price": 1395.0,
+    "fx_rate": 1394.63,
+    "premium_pct": 0.03
+  },
+  {
+    "date": "2025-08-01",
+    "usdt_price": 1394.0,
+    "fx_rate": 1404.62,
+    "premium_pct": -0.76
+  },
+  {
+    "date": "2025-08-04",
+    "usdt_price": 1394.0,
+    "fx_rate": 1383.72,
+    "premium_pct": 0.74
+  },
+  {
+    "date": "2025-08-05",
+    "usdt_price": 1401.0,
+    "fx_rate": 1391.12,
+    "premium_pct": 0.71
+  },
+  {
+    "date": "2025-08-06",
+    "usdt_price": 1392.0,
+    "fx_rate": 1388.32,
+    "premium_pct": 0.27
+  },
+  {
+    "date": "2025-08-07",
+    "usdt_price": 1378.0,
+    "fx_rate": 1383.63,
+    "premium_pct": -0.41
+  },
+  {
+    "date": "2025-08-08",
+    "usdt_price": 1372.0,
+    "fx_rate": 1390.74,
+    "premium_pct": -1.35
+  },
+  {
+    "date": "2025-08-11",
+    "usdt_price": 1383.0,
+    "fx_rate": 1391.85,
+    "premium_pct": -0.64
+  },
+  {
+    "date": "2025-08-12",
+    "usdt_price": 1368.0,
+    "fx_rate": 1390.17,
+    "premium_pct": -1.59
+  },
+  {
+    "date": "2025-08-13",
+    "usdt_price": 1364.0,
+    "fx_rate": 1378.36,
+    "premium_pct": -1.04
+  },
+  {
+    "date": "2025-08-14",
+    "usdt_price": 1392.0,
+    "fx_rate": 1386.07,
+    "premium_pct": 0.43
+  },
+  {
+    "date": "2025-08-15",
+    "usdt_price": 1397.0,
+    "fx_rate": 1388.96,
+    "premium_pct": 0.58
+  },
+  {
+    "date": "2025-08-18",
+    "usdt_price": 1391.0,
+    "fx_rate": 1386.25,
+    "premium_pct": 0.34
+  },
+  {
+    "date": "2025-08-19",
+    "usdt_price": 1394.0,
+    "fx_rate": 1388.8,
+    "premium_pct": 0.37
+  },
+  {
+    "date": "2025-08-20",
+    "usdt_price": 1394.0,
+    "fx_rate": 1398.78,
+    "premium_pct": -0.34
+  },
+  {
+    "date": "2025-08-21",
+    "usdt_price": 1403.0,
+    "fx_rate": 1398.69,
+    "premium_pct": 0.31
+  },
+  {
+    "date": "2025-08-22",
+    "usdt_price": 1379.0,
+    "fx_rate": 1390.47,
+    "premium_pct": -0.82
+  },
+  {
+    "date": "2025-08-25",
+    "usdt_price": 1415.0,
+    "fx_rate": 1387.28,
+    "premium_pct": 2.0
+  },
+  {
+    "date": "2025-08-26",
+    "usdt_price": 1401.0,
+    "fx_rate": 1394.36,
+    "premium_pct": 0.48
+  },
+  {
+    "date": "2025-08-27",
+    "usdt_price": 1399.0,
+    "fx_rate": 1397.82,
+    "premium_pct": 0.08
+  },
+  {
+    "date": "2025-08-28",
+    "usdt_price": 1394.0,
+    "fx_rate": 1385.8,
+    "premium_pct": 0.59
+  },
+  {
+    "date": "2025-08-29",
+    "usdt_price": 1405.0,
+    "fx_rate": 1391.54,
+    "premium_pct": 0.97
+  },
+  {
+    "date": "2025-09-01",
+    "usdt_price": 1396.0,
+    "fx_rate": 1393.36,
+    "premium_pct": 0.19
+  },
+  {
+    "date": "2025-09-02",
+    "usdt_price": 1393.0,
+    "fx_rate": 1395.34,
+    "premium_pct": -0.17
+  },
+  {
+    "date": "2025-09-03",
+    "usdt_price": 1387.0,
+    "fx_rate": 1389.43,
+    "premium_pct": -0.17
+  },
+  {
+    "date": "2025-09-04",
+    "usdt_price": 1405.0,
+    "fx_rate": 1393.31,
+    "premium_pct": 0.84
+  },
+  {
+    "date": "2025-09-05",
+    "usdt_price": 1401.0,
+    "fx_rate": 1390.78,
+    "premium_pct": 0.73
+  },
+  {
+    "date": "2025-09-08",
+    "usdt_price": 1393.0,
+    "fx_rate": 1387.88,
+    "premium_pct": 0.37
+  },
+  {
+    "date": "2025-09-09",
+    "usdt_price": 1394.0,
+    "fx_rate": 1386.71,
+    "premium_pct": 0.53
+  },
+  {
+    "date": "2025-09-10",
+    "usdt_price": 1393.0,
+    "fx_rate": 1388.85,
+    "premium_pct": 0.3
+  },
+  {
+    "date": "2025-09-11",
+    "usdt_price": 1390.0,
+    "fx_rate": 1392.96,
+    "premium_pct": -0.21
+  },
+  {
+    "date": "2025-09-12",
+    "usdt_price": 1389.0,
+    "fx_rate": 1391.86,
+    "premium_pct": -0.21
+  },
+  {
+    "date": "2025-09-15",
+    "usdt_price": 1394.0,
+    "fx_rate": 1387.98,
+    "premium_pct": 0.43
+  },
+  {
+    "date": "2025-09-16",
+    "usdt_price": 1390.0,
+    "fx_rate": 1381.93,
+    "premium_pct": 0.58
+  },
+  {
+    "date": "2025-09-17",
+    "usdt_price": 1386.0,
+    "fx_rate": 1378.56,
+    "premium_pct": 0.54
+  },
+  {
+    "date": "2025-09-18",
+    "usdt_price": 1389.0,
+    "fx_rate": 1386.5,
+    "premium_pct": 0.18
+  },
+  {
+    "date": "2025-09-19",
+    "usdt_price": 1402.0,
+    "fx_rate": 1398.16,
+    "premium_pct": 0.27
+  },
+  {
+    "date": "2025-09-22",
+    "usdt_price": 1426.0,
+    "fx_rate": 1391.29,
+    "premium_pct": 2.49
+  },
+  {
+    "date": "2025-09-23",
+    "usdt_price": 1426.0,
+    "fx_rate": 1394.55,
+    "premium_pct": 2.26
+  },
+  {
+    "date": "2025-09-24",
+    "usdt_price": 1418.0,
+    "fx_rate": 1399.28,
+    "premium_pct": 1.34
+  },
+  {
+    "date": "2025-09-25",
+    "usdt_price": 1451.0,
+    "fx_rate": 1403.93,
+    "premium_pct": 3.35
+  },
+  {
+    "date": "2025-09-26",
+    "usdt_price": 1442.0,
+    "fx_rate": 1409.82,
+    "premium_pct": 2.28
+  },
+  {
+    "date": "2025-09-29",
+    "usdt_price": 1427.0,
+    "fx_rate": 1401.78,
+    "premium_pct": 1.8
+  },
+  {
+    "date": "2025-09-30",
+    "usdt_price": 1427.0,
+    "fx_rate": 1403.67,
+    "premium_pct": 1.66
+  },
+  {
+    "date": "2025-10-01",
+    "usdt_price": 1420.0,
+    "fx_rate": 1405.25,
+    "premium_pct": 1.05
+  },
+  {
+    "date": "2025-10-02",
+    "usdt_price": 1417.0,
+    "fx_rate": 1401.4,
+    "premium_pct": 1.11
+  },
+  {
+    "date": "2025-10-03",
+    "usdt_price": 1419.0,
+    "fx_rate": 1405.57,
+    "premium_pct": 0.96
+  },
+  {
+    "date": "2025-10-06",
+    "usdt_price": 1425.0,
+    "fx_rate": 1412.23,
+    "premium_pct": 0.9
+  },
+  {
+    "date": "2025-10-07",
+    "usdt_price": 1448.0,
+    "fx_rate": 1413.2,
+    "premium_pct": 2.46
+  },
+  {
+    "date": "2025-10-08",
+    "usdt_price": 1443.0,
+    "fx_rate": 1424.33,
+    "premium_pct": 1.31
+  },
+  {
+    "date": "2025-10-09",
+    "usdt_price": 1460.0,
+    "fx_rate": 1419.17,
+    "premium_pct": 2.88
+  },
+  {
+    "date": "2025-10-10",
+    "usdt_price": 1535.0,
+    "fx_rate": 1421.03,
+    "premium_pct": 8.02
+  },
+  {
+    "date": "2025-10-13",
+    "usdt_price": 1490.0,
+    "fx_rate": 1427.6,
+    "premium_pct": 4.37
+  },
+  {
+    "date": "2025-10-14",
+    "usdt_price": 1504.0,
+    "fx_rate": 1434.71,
+    "premium_pct": 4.83
+  },
+  {
+    "date": "2025-10-15",
+    "usdt_price": 1521.0,
+    "fx_rate": 1423.59,
+    "premium_pct": 6.84
+  },
+  {
+    "date": "2025-10-16",
+    "usdt_price": 1528.0,
+    "fx_rate": 1417.88,
+    "premium_pct": 7.77
+  },
+  {
+    "date": "2025-10-17",
+    "usdt_price": 1537.0,
+    "fx_rate": 1420.58,
+    "premium_pct": 8.2
+  },
+  {
+    "date": "2025-10-20",
+    "usdt_price": 1500.0,
+    "fx_rate": 1423.54,
+    "premium_pct": 5.37
+  },
+  {
+    "date": "2025-10-21",
+    "usdt_price": 1506.0,
+    "fx_rate": 1430.5,
+    "premium_pct": 5.28
+  },
+  {
+    "date": "2025-10-22",
+    "usdt_price": 1515.0,
+    "fx_rate": 1432.66,
+    "premium_pct": 5.75
+  },
+  {
+    "date": "2025-10-23",
+    "usdt_price": 1504.0,
+    "fx_rate": 1440.43,
+    "premium_pct": 4.41
+  },
+  {
+    "date": "2025-10-24",
+    "usdt_price": 1493.0,
+    "fx_rate": 1439.45,
+    "premium_pct": 3.72
+  },
+  {
+    "date": "2025-10-27",
+    "usdt_price": 1480.0,
+    "fx_rate": 1432.32,
+    "premium_pct": 3.33
+  },
+  {
+    "date": "2025-10-28",
+    "usdt_price": 1491.0,
+    "fx_rate": 1436.38,
+    "premium_pct": 3.8
+  },
+  {
+    "date": "2025-10-29",
+    "usdt_price": 1494.0,
+    "fx_rate": 1422.95,
+    "premium_pct": 4.99
+  },
+  {
+    "date": "2025-10-30",
+    "usdt_price": 1517.0,
+    "fx_rate": 1434.99,
+    "premium_pct": 5.72
+  },
+  {
+    "date": "2025-10-31",
+    "usdt_price": 1497.0,
+    "fx_rate": 1428.14,
+    "premium_pct": 4.82
+  },
+  {
+    "date": "2025-11-03",
+    "usdt_price": 1489.0,
+    "fx_rate": 1430.02,
+    "premium_pct": 4.12
+  },
+  {
+    "date": "2025-11-04",
+    "usdt_price": 1506.0,
+    "fx_rate": 1439.2,
+    "premium_pct": 4.64
+  },
+  {
+    "date": "2025-11-05",
+    "usdt_price": 1499.0,
+    "fx_rate": 1444.0,
+    "premium_pct": 3.81
+  },
+  {
+    "date": "2025-11-06",
+    "usdt_price": 1494.0,
+    "fx_rate": 1445.76,
+    "premium_pct": 3.34
+  },
+  {
+    "date": "2025-11-07",
+    "usdt_price": 1489.0,
+    "fx_rate": 1459.64,
+    "premium_pct": 2.01
+  },
+  {
+    "date": "2025-11-10",
+    "usdt_price": 1480.0,
+    "fx_rate": 1454.13,
+    "premium_pct": 1.78
+  },
+  {
+    "date": "2025-11-11",
+    "usdt_price": 1498.0,
+    "fx_rate": 1465.1,
+    "premium_pct": 2.25
+  },
+  {
+    "date": "2025-11-12",
+    "usdt_price": 1508.0,
+    "fx_rate": 1465.88,
+    "premium_pct": 2.87
+  },
+  {
+    "date": "2025-11-13",
+    "usdt_price": 1518.0,
+    "fx_rate": 1463.48,
+    "premium_pct": 3.73
+  },
+  {
+    "date": "2025-11-14",
+    "usdt_price": 1519.0,
+    "fx_rate": 1451.5,
+    "premium_pct": 4.65
+  },
+  {
+    "date": "2025-11-17",
+    "usdt_price": 1493.0,
+    "fx_rate": 1461.46,
+    "premium_pct": 2.16
+  },
+  {
+    "date": "2025-11-18",
+    "usdt_price": 1481.0,
+    "fx_rate": 1462.99,
+    "premium_pct": 1.23
+  },
+  {
+    "date": "2025-11-19",
+    "usdt_price": 1491.0,
+    "fx_rate": 1466.01,
+    "premium_pct": 1.7
+  },
+  {
+    "date": "2025-11-20",
+    "usdt_price": 1499.0,
+    "fx_rate": 1469.35,
+    "premium_pct": 2.02
+  },
+  {
+    "date": "2025-11-21",
+    "usdt_price": 1504.0,
+    "fx_rate": 1474.29,
+    "premium_pct": 2.02
+  },
+  {
+    "date": "2025-11-24",
+    "usdt_price": 1501.0,
+    "fx_rate": 1473.27,
+    "premium_pct": 1.88
+  },
+  {
+    "date": "2025-11-25",
+    "usdt_price": 1496.0,
+    "fx_rate": 1464.88,
+    "premium_pct": 2.12
+  },
+  {
+    "date": "2025-11-26",
+    "usdt_price": 1494.0,
+    "fx_rate": 1474.3,
+    "premium_pct": 1.34
+  },
+  {
+    "date": "2025-11-27",
+    "usdt_price": 1492.0,
+    "fx_rate": 1462.24,
+    "premium_pct": 2.04
+  },
+  {
+    "date": "2025-11-28",
+    "usdt_price": 1499.0,
+    "fx_rate": 1469.66,
+    "premium_pct": 2.0
+  },
+  {
+    "date": "2025-12-01",
+    "usdt_price": 1497.0,
+    "fx_rate": 1465.15,
+    "premium_pct": 2.17
+  },
+  {
+    "date": "2025-12-02",
+    "usdt_price": 1488.0,
+    "fx_rate": 1467.9,
+    "premium_pct": 1.37
+  },
+  {
+    "date": "2025-12-03",
+    "usdt_price": 1487.0,
+    "fx_rate": 1464.5,
+    "premium_pct": 1.54
+  },
+  {
+    "date": "2025-12-04",
+    "usdt_price": 1493.0,
+    "fx_rate": 1471.53,
+    "premium_pct": 1.46
+  },
+  {
+    "date": "2025-12-05",
+    "usdt_price": 1497.0,
+    "fx_rate": 1472.58,
+    "premium_pct": 1.66
+  },
+  {
+    "date": "2025-12-08",
+    "usdt_price": 1490.0,
+    "fx_rate": 1466.19,
+    "premium_pct": 1.62
+  },
+  {
+    "date": "2025-12-09",
+    "usdt_price": 1481.0,
+    "fx_rate": 1468.51,
+    "premium_pct": 0.85
+  },
+  {
+    "date": "2025-12-10",
+    "usdt_price": 1486.0,
+    "fx_rate": 1469.97,
+    "premium_pct": 1.09
+  },
+  {
+    "date": "2025-12-11",
+    "usdt_price": 1487.0,
+    "fx_rate": 1471.14,
+    "premium_pct": 1.08
+  },
+  {
+    "date": "2025-12-12",
+    "usdt_price": 1494.0,
+    "fx_rate": 1477.12,
+    "premium_pct": 1.14
+  },
+  {
+    "date": "2025-12-15",
+    "usdt_price": 1494.0,
+    "fx_rate": 1465.15,
+    "premium_pct": 1.97
+  },
+  {
+    "date": "2025-12-16",
+    "usdt_price": 1488.0,
+    "fx_rate": 1473.24,
+    "premium_pct": 1.0
+  },
+  {
+    "date": "2025-12-17",
+    "usdt_price": 1492.0,
+    "fx_rate": 1479.38,
+    "premium_pct": 0.85
+  },
+  {
+    "date": "2025-12-18",
+    "usdt_price": 1489.0,
+    "fx_rate": 1477.24,
+    "premium_pct": 0.8
+  },
+  {
+    "date": "2025-12-19",
+    "usdt_price": 1489.0,
+    "fx_rate": 1478.72,
+    "premium_pct": 0.7
+  },
+  {
+    "date": "2025-12-22",
+    "usdt_price": 1490.0,
+    "fx_rate": 1480.39,
+    "premium_pct": 0.65
+  },
+  {
+    "date": "2025-12-23",
+    "usdt_price": 1491.0,
+    "fx_rate": 1480.88,
+    "premium_pct": 0.68
+  },
+  {
+    "date": "2025-12-24",
+    "usdt_price": 1474.0,
+    "fx_rate": 1448.24,
+    "premium_pct": 1.78
+  },
+  {
+    "date": "2025-12-29",
+    "usdt_price": 1457.0,
+    "fx_rate": 1437.15,
+    "premium_pct": 1.38
+  },
+  {
+    "date": "2025-12-30",
+    "usdt_price": 1453.0,
+    "fx_rate": 1443.95,
+    "premium_pct": 0.63
+  },
+  {
+    "date": "2025-12-31",
+    "usdt_price": 1460.0,
+    "fx_rate": 1444.2,
+    "premium_pct": 1.09
+  },
+  {
+    "date": "2026-01-02",
+    "usdt_price": 1446.0,
+    "fx_rate": 1444.87,
+    "premium_pct": 0.08
+  },
+  {
+    "date": "2026-01-05",
+    "usdt_price": 1450.0,
+    "fx_rate": 1449.28,
+    "premium_pct": 0.05
+  },
+  {
+    "date": "2026-01-06",
+    "usdt_price": 1452.0,
+    "fx_rate": 1448.65,
+    "premium_pct": 0.23
+  },
+  {
+    "date": "2026-01-07",
+    "usdt_price": 1456.0,
+    "fx_rate": 1447.68,
+    "premium_pct": 0.57
+  },
+  {
+    "date": "2026-01-08",
+    "usdt_price": 1463.0,
+    "fx_rate": 1452.31,
+    "premium_pct": 0.74
+  },
+  {
+    "date": "2026-01-09",
+    "usdt_price": 1473.0,
+    "fx_rate": 1459.84,
+    "premium_pct": 0.9
+  },
+  {
+    "date": "2026-01-12",
+    "usdt_price": 1475.0,
+    "fx_rate": 1466.91,
+    "premium_pct": 0.55
+  },
+  {
+    "date": "2026-01-13",
+    "usdt_price": 1467.0,
+    "fx_rate": 1474.08,
+    "premium_pct": -0.48
+  },
+  {
+    "date": "2026-01-14",
+    "usdt_price": 1465.0,
+    "fx_rate": 1475.41,
+    "premium_pct": -0.71
+  },
+  {
+    "date": "2026-01-15",
+    "usdt_price": 1473.0,
+    "fx_rate": 1468.32,
+    "premium_pct": 0.32
+  },
+  {
+    "date": "2026-01-16",
+    "usdt_price": 1477.0,
+    "fx_rate": 1472.93,
+    "premium_pct": 0.28
+  },
+  {
+    "date": "2026-01-19",
+    "usdt_price": 1481.0,
+    "fx_rate": 1473.2,
+    "premium_pct": 0.53
+  },
+  {
+    "date": "2026-01-20",
+    "usdt_price": 1491.0,
+    "fx_rate": 1476.8,
+    "premium_pct": 0.96
+  },
+  {
+    "date": "2026-01-21",
+    "usdt_price": 1481.0,
+    "fx_rate": 1464.62,
+    "premium_pct": 1.12
+  },
+  {
+    "date": "2026-01-22",
+    "usdt_price": 1484.0,
+    "fx_rate": 1467.72,
+    "premium_pct": 1.11
+  },
+  {
+    "date": "2026-01-23",
+    "usdt_price": 1472.0,
+    "fx_rate": 1467.55,
+    "premium_pct": 0.3
+  },
+  {
+    "date": "2026-01-26",
+    "usdt_price": 1467.0,
+    "fx_rate": 1447.77,
+    "premium_pct": 1.33
+  },
+  {
+    "date": "2026-01-27",
+    "usdt_price": 1453.0,
+    "fx_rate": 1441.2,
+    "premium_pct": 0.82
+  },
+  {
+    "date": "2026-01-28",
+    "usdt_price": 1447.0,
+    "fx_rate": 1428.83,
+    "premium_pct": 1.27
+  },
+  {
+    "date": "2026-01-29",
+    "usdt_price": 1466.0,
+    "fx_rate": 1430.83,
+    "premium_pct": 2.46
+  },
+  {
+    "date": "2026-01-30",
+    "usdt_price": 1486.0,
+    "fx_rate": 1442.63,
+    "premium_pct": 3.01
+  },
+  {
+    "date": "2026-02-02",
+    "usdt_price": 1483.0,
+    "fx_rate": 1452.48,
+    "premium_pct": 2.1
+  },
+  {
+    "date": "2026-02-03",
+    "usdt_price": 1478.0,
+    "fx_rate": 1448.56,
+    "premium_pct": 2.03
+  },
+  {
+    "date": "2026-02-04",
+    "usdt_price": 1476.0,
+    "fx_rate": 1455.75,
+    "premium_pct": 1.39
+  },
+  {
+    "date": "2026-02-05",
+    "usdt_price": 1478.0,
+    "fx_rate": 1465.15,
+    "premium_pct": 0.88
+  },
+  {
+    "date": "2026-02-06",
+    "usdt_price": 1488.0,
+    "fx_rate": 1467.42,
+    "premium_pct": 1.4
+  },
+  {
+    "date": "2026-02-09",
+    "usdt_price": 1476.0,
+    "fx_rate": 1462.05,
+    "premium_pct": 0.95
+  },
+  {
+    "date": "2026-02-10",
+    "usdt_price": 1483.0,
+    "fx_rate": 1461.64,
+    "premium_pct": 1.46
+  },
+  {
+    "date": "2026-02-11",
+    "usdt_price": 1478.0,
+    "fx_rate": 1451.97,
+    "premium_pct": 1.79
+  },
+  {
+    "date": "2026-02-12",
+    "usdt_price": 1468.0,
+    "fx_rate": 1438.29,
+    "premium_pct": 2.07
+  },
+  {
+    "date": "2026-02-13",
+    "usdt_price": 1464.0,
+    "fx_rate": 1446.45,
+    "premium_pct": 1.21
+  },
+  {
+    "date": "2026-02-16",
+    "usdt_price": 1481.0,
+    "fx_rate": 1441.42,
+    "premium_pct": 2.75
+  },
+  {
+    "date": "2026-02-17",
+    "usdt_price": 1480.0,
+    "fx_rate": 1445.82,
+    "premium_pct": 2.36
+  },
+  {
+    "date": "2026-02-18",
+    "usdt_price": 1484.0,
+    "fx_rate": 1445.89,
+    "premium_pct": 2.64
+  },
+  {
+    "date": "2026-02-19",
+    "usdt_price": 1475.0,
+    "fx_rate": 1449.68,
+    "premium_pct": 1.75
+  },
+  {
+    "date": "2026-02-20",
+    "usdt_price": 1472.0,
+    "fx_rate": 1449.66,
+    "premium_pct": 1.54
+  },
+  {
+    "date": "2026-02-23",
+    "usdt_price": 1474.0,
+    "fx_rate": 1443.55,
+    "premium_pct": 2.11
+  },
+  {
+    "date": "2026-02-24",
+    "usdt_price": 1465.0,
+    "fx_rate": 1443.3,
+    "premium_pct": 1.5
+  },
+  {
+    "date": "2026-02-25",
+    "usdt_price": 1441.0,
+    "fx_rate": 1427.9,
+    "premium_pct": 0.92
+  },
+  {
+    "date": "2026-02-26",
+    "usdt_price": 1445.0,
+    "fx_rate": 1425.64,
+    "premium_pct": 1.36
+  },
+  {
+    "date": "2026-02-27",
+    "usdt_price": 1460.0,
+    "fx_rate": 1441.97,
+    "premium_pct": 1.25
+  },
+  {
+    "date": "2026-03-02",
+    "usdt_price": 1462.0,
+    "fx_rate": 1462.11,
+    "premium_pct": -0.01
+  },
+  {
+    "date": "2026-03-03",
+    "usdt_price": 1469.0,
+    "fx_rate": 1478.5,
+    "premium_pct": -0.64
+  },
+  {
+    "date": "2026-03-04",
+    "usdt_price": 1448.0,
+    "fx_rate": 1464.8,
+    "premium_pct": -1.15
+  },
+  {
+    "date": "2026-03-05",
+    "usdt_price": 1466.0,
+    "fx_rate": 1475.79,
+    "premium_pct": -0.66
+  },
+  {
+    "date": "2026-03-06",
+    "usdt_price": 1479.0,
+    "fx_rate": 1485.18,
+    "premium_pct": -0.42
+  },
+  {
+    "date": "2026-03-09",
+    "usdt_price": 1467.0,
+    "fx_rate": 1485.12,
+    "premium_pct": -1.22
+  },
+  {
+    "date": "2026-03-10",
+    "usdt_price": 1463.0,
+    "fx_rate": 1470.12,
+    "premium_pct": -0.48
+  },
+  {
+    "date": "2026-03-11",
+    "usdt_price": 1464.0,
+    "fx_rate": 1477.11,
+    "premium_pct": -0.89
+  },
+  {
+    "date": "2026-03-12",
+    "usdt_price": 1465.0,
+    "fx_rate": 1480.84,
+    "premium_pct": -1.07
+  },
+  {
+    "date": "2026-03-13",
+    "usdt_price": 1472.0,
+    "fx_rate": 1491.7,
+    "premium_pct": -1.32
+  },
+  {
+    "date": "2026-03-16",
+    "usdt_price": 1469.0,
+    "fx_rate": 1490.75,
+    "premium_pct": -1.46
+  },
+  {
+    "date": "2026-03-17",
+    "usdt_price": 1474.0,
+    "fx_rate": 1487.18,
+    "premium_pct": -0.89
+  },
+  {
+    "date": "2026-03-18",
+    "usdt_price": 1485.0,
+    "fx_rate": 1503.55,
+    "premium_pct": -1.23
+  },
+  {
+    "date": "2026-03-19",
+    "usdt_price": 1487.0,
+    "fx_rate": 1501.61,
+    "premium_pct": -0.97
+  },
+  {
+    "date": "2026-03-20",
+    "usdt_price": 1495.0,
+    "fx_rate": 1500.8,
+    "premium_pct": -0.39
+  },
+  {
+    "date": "2026-03-23",
+    "usdt_price": 1486.0,
+    "fx_rate": 1487.52,
+    "premium_pct": -0.1
+  },
+  {
+    "date": "2026-03-24",
+    "usdt_price": 1490.0,
+    "fx_rate": 1498.86,
+    "premium_pct": -0.59
+  },
+  {
+    "date": "2026-03-25",
+    "usdt_price": 1494.0,
+    "fx_rate": 1497.53,
+    "premium_pct": -0.24
+  },
+  {
+    "date": "2026-03-26",
+    "usdt_price": 1509.0,
+    "fx_rate": 1506.32,
+    "premium_pct": 0.18
+  },
+  {
+    "date": "2026-03-27",
+    "usdt_price": 1521.0,
+    "fx_rate": 1511.5,
+    "premium_pct": 0.63
+  },
+  {
+    "date": "2026-03-30",
+    "usdt_price": 1519.0,
+    "fx_rate": 1517.7,
+    "premium_pct": 0.09
+  },
+  {
+    "date": "2026-03-31",
+    "usdt_price": 1512.0,
+    "fx_rate": 1524.8,
+    "premium_pct": -0.84
+  },
+  {
+    "date": "2026-04-01",
+    "usdt_price": 1514.0,
+    "fx_rate": 1504.81,
+    "premium_pct": 0.61
+  },
+  {
+    "date": "2026-04-02",
+    "usdt_price": 1521.0,
+    "fx_rate": 1516.65,
+    "premium_pct": 0.29
+  },
+  {
+    "date": "2026-04-07",
+    "usdt_price": 1491.0,
+    "fx_rate": 1497.41,
+    "premium_pct": -0.43
+  },
+  {
+    "date": "2026-04-08",
+    "usdt_price": 1489.0,
+    "fx_rate": 1474.23,
+    "premium_pct": 1.0
+  },
+  {
+    "date": "2026-04-09",
+    "usdt_price": 1486.0,
+    "fx_rate": 1479.49,
+    "premium_pct": 0.44
+  },
+  {
+    "date": "2026-04-10",
+    "usdt_price": 1486.0,
+    "fx_rate": 1483.27,
+    "premium_pct": 0.18
+  },
+  {
+    "date": "2026-04-13",
+    "usdt_price": 1475.0,
+    "fx_rate": 1489.95,
+    "premium_pct": -1.0
+  },
+  {
+    "date": "2026-04-14",
+    "usdt_price": 1480.0,
+    "fx_rate": 1470.52,
+    "premium_pct": 0.64
+  },
+  {
+    "date": "2026-04-15",
+    "usdt_price": 1477.0,
+    "fx_rate": 1477.1,
+    "premium_pct": -0.01
+  },
+  {
+    "date": "2026-04-16",
+    "usdt_price": 1476.0,
+    "fx_rate": 1476.51,
+    "premium_pct": -0.03
+  },
+  {
+    "date": "2026-04-17",
+    "usdt_price": 1475.0,
+    "fx_rate": 1478.99,
+    "premium_pct": -0.27
+  },
+  {
+    "date": "2026-04-20",
+    "usdt_price": 1481.0,
+    "fx_rate": 1470.25,
+    "premium_pct": 0.73
+  },
+  {
+    "date": "2026-04-21",
+    "usdt_price": 1484.0,
+    "fx_rate": 1469.85,
+    "premium_pct": 0.96
+  },
+  {
+    "date": "2026-04-22",
+    "usdt_price": 1483.0,
+    "fx_rate": 1478.05,
+    "premium_pct": 0.33
+  },
+  {
+    "date": "2026-04-23",
+    "usdt_price": 1487.0,
+    "fx_rate": 1479.36,
+    "premium_pct": 0.52
+  },
+  {
+    "date": "2026-04-24",
+    "usdt_price": 1490.0,
+    "fx_rate": 1477.04,
+    "premium_pct": 0.88
+  },
+  {
+    "date": "2026-04-27",
+    "usdt_price": 1491.0,
+    "fx_rate": 1471.22,
+    "premium_pct": 1.34
+  },
+  {
+    "date": "2026-04-28",
+    "usdt_price": 1485.0,
+    "fx_rate": 1476.89,
+    "premium_pct": 0.55
+  },
+  {
+    "date": "2026-04-29",
+    "usdt_price": 1496.0,
+    "fx_rate": 1478.38,
+    "premium_pct": 1.19
+  },
+  {
+    "date": "2026-04-30",
+    "usdt_price": 1489.0,
+    "fx_rate": 1477.0,
+    "premium_pct": 0.81
+  },
+  {
+    "date": "2026-05-04",
+    "usdt_price": 1484.0,
+    "fx_rate": 1472.03,
+    "premium_pct": 0.81
+  },
+  {
+    "date": "2026-05-05",
+    "usdt_price": 1478.0,
+    "fx_rate": 1472.95,
+    "premium_pct": 0.34
+  },
+  {
+    "date": "2026-05-06",
+    "usdt_price": 1466.0,
+    "fx_rate": 1448.1,
+    "premium_pct": 1.24
+  },
+  {
+    "date": "2026-05-07",
+    "usdt_price": 1472.0,
+    "fx_rate": 1450.64,
+    "premium_pct": 1.47
+  },
+  {
+    "date": "2026-05-08",
+    "usdt_price": 1473.0,
+    "fx_rate": 1466.78,
+    "premium_pct": 0.42
+  },
+  {
+    "date": "2026-05-11",
+    "usdt_price": 1470.0,
+    "fx_rate": 1472.9,
+    "premium_pct": -0.2
+  },
+  {
+    "date": "2026-05-12",
+    "usdt_price": 1482.0,
+    "fx_rate": 1488.87,
+    "premium_pct": -0.46
+  },
+  {
+    "date": "2026-05-13",
+    "usdt_price": 1486.0,
+    "fx_rate": 1488.58,
+    "premium_pct": -0.17
+  },
+  {
+    "date": "2026-05-14",
+    "usdt_price": 1478.0,
+    "fx_rate": 1491.73,
+    "premium_pct": -0.92
+  },
+  {
+    "date": "2026-05-15",
+    "usdt_price": 1489.0,
+    "fx_rate": 1499.62,
+    "premium_pct": -0.71
+  },
+  {
+    "date": "2026-05-18",
+    "usdt_price": 1485.0,
+    "fx_rate": 1497.8,
+    "premium_pct": -0.85
+  },
+  {
+    "date": "2026-05-19",
+    "usdt_price": 1490.0,
+    "fx_rate": 1508.75,
+    "premium_pct": -1.24
+  },
+  {
+    "date": "2026-05-20",
+    "usdt_price": 1483.0,
+    "fx_rate": 1505.44,
+    "premium_pct": -1.49
+  },
+  {
+    "date": "2026-05-21",
+    "usdt_price": 1484.0,
+    "fx_rate": 1508.74,
+    "premium_pct": -1.64
+  },
+  {
+    "date": "2026-05-22",
+    "usdt_price": 1500.0,
+    "fx_rate": 1517.55,
+    "premium_pct": -1.16
+  },
+  {
+    "date": "2026-05-25",
+    "usdt_price": 1487.0,
+    "fx_rate": 1513.75,
+    "premium_pct": -1.77
+  },
+  {
+    "date": "2026-05-26",
+    "usdt_price": 1482.0,
+    "fx_rate": 1505.3,
+    "premium_pct": -1.55
+  },
+  {
+    "date": "2026-05-27",
+    "usdt_price": 1473.0,
+    "fx_rate": 1499.7,
+    "premium_pct": -1.78
+  },
+  {
+    "date": "2026-05-28",
+    "usdt_price": 1475.0,
+    "fx_rate": 1502.83,
+    "premium_pct": -1.85
+  },
+  {
+    "date": "2026-05-29",
+    "usdt_price": 1482.0,
+    "fx_rate": 1506.27,
+    "premium_pct": -1.61
+  },
+  {
+    "date": "2026-06-01",
+    "usdt_price": 1460.0,
+    "fx_rate": 1508.64,
+    "premium_pct": -3.22
+  },
+  {
+    "date": "2026-06-02",
+    "usdt_price": 1479.0,
+    "fx_rate": 1517.15,
+    "premium_pct": -2.51
+  },
+  {
+    "date": "2026-06-03",
+    "usdt_price": 1482.0,
+    "fx_rate": 1530.99,
+    "premium_pct": -3.2
+  },
+  {
+    "date": "2026-06-04",
+    "usdt_price": 1494.0,
+    "fx_rate": 1532.52,
+    "premium_pct": -2.51
+  },
+  {
+    "date": "2026-06-05",
+    "usdt_price": 1524.0,
+    "fx_rate": 1540.93,
+    "premium_pct": -1.1
+  },
+  {
+    "date": "2026-06-08",
+    "usdt_price": 1501.0,
+    "fx_rate": 1527.95,
+    "premium_pct": -1.76
+  },
+  {
+    "date": "2026-06-09",
+    "usdt_price": 1500.0,
+    "fx_rate": 1525.48,
+    "premium_pct": -1.67
+  },
+  {
+    "date": "2026-06-10",
+    "usdt_price": 1506.0,
+    "fx_rate": 1524.5,
+    "premium_pct": -1.21
+  },
+  {
+    "date": "2026-06-11",
+    "usdt_price": 1503.0,
+    "fx_rate": 1529.53,
+    "premium_pct": -1.73
+  },
+  {
+    "date": "2026-06-12",
+    "usdt_price": 1508.0,
+    "fx_rate": 1520.21,
+    "premium_pct": -0.8
+  },
+  {
+    "date": "2026-06-15",
+    "usdt_price": 1500.0,
+    "fx_rate": 1514.3,
+    "premium_pct": -0.94
+  },
+  {
+    "date": "2026-06-16",
+    "usdt_price": 1502.0,
+    "fx_rate": 1508.85,
+    "premium_pct": -0.45
+  },
+  {
+    "date": "2026-06-17",
+    "usdt_price": 1508.0,
+    "fx_rate": 1517.08,
+    "premium_pct": -0.6
+  },
+  {
+    "date": "2026-06-18",
+    "usdt_price": 1509.0,
+    "fx_rate": 1538.89,
+    "premium_pct": -1.94
+  },
+  {
+    "date": "2026-06-19",
+    "usdt_price": 1512.0,
+    "fx_rate": 1532.31,
+    "premium_pct": -1.33
+  },
+  {
+    "date": "2026-06-22",
+    "usdt_price": 1511.0,
+    "fx_rate": 1537.08,
+    "premium_pct": -1.7
+  },
+  {
+    "date": "2026-06-23",
+    "usdt_price": 1507.0,
+    "fx_rate": 1536.15,
+    "premium_pct": -1.9
+  },
+  {
+    "date": "2026-06-24",
+    "usdt_price": 1516.0,
+    "fx_rate": 1546.43,
+    "premium_pct": -1.97
+  },
+  {
+    "date": "2026-06-25",
+    "usdt_price": 1520.0,
+    "fx_rate": 1542.92,
+    "premium_pct": -1.49
+  },
+  {
+    "date": "2026-06-26",
+    "usdt_price": 1517.0,
+    "fx_rate": 1536.47,
+    "premium_pct": -1.27
+  },
+  {
+    "date": "2026-06-29",
+    "usdt_price": 1513.0,
+    "fx_rate": 1543.75,
+    "premium_pct": -1.99
+  },
+  {
+    "date": "2026-06-30",
+    "usdt_price": 1523.0,
+    "fx_rate": 1550.89,
+    "premium_pct": -1.8
+  },
+  {
+    "date": "2026-07-01",
+    "usdt_price": 1519.0,
+    "fx_rate": 1558.09,
+    "premium_pct": -2.51
+  },
+  {
+    "date": "2026-07-02",
+    "usdt_price": 1509.0,
+    "fx_rate": 1548.85,
+    "premium_pct": -2.57
+  },
+  {
+    "date": "2026-07-03",
+    "usdt_price": 1508.0,
+    "fx_rate": 1531.23,
+    "premium_pct": -1.52
+  },
+  {
+    "date": "2026-07-06",
+    "usdt_price": 1502.0,
+    "fx_rate": 1531.07,
+    "premium_pct": -1.9
+  },
+  {
+    "date": "2026-07-07",
+    "usdt_price": 1500.0,
+    "fx_rate": 1514.45,
+    "premium_pct": -0.95
+  },
+  {
+    "date": "2026-07-08",
+    "usdt_price": 1493.0,
+    "fx_rate": 1509.08,
+    "premium_pct": -1.07
+  },
+  {
+    "date": "2026-07-09",
+    "usdt_price": 1493.0,
+    "fx_rate": 1512.45,
+    "premium_pct": -1.29
+  },
+  {
+    "date": "2026-07-10",
+    "usdt_price": 1490.0,
+    "fx_rate": 1504.92,
+    "premium_pct": -0.99
+  },
+  {
+    "date": "2026-07-13",
+    "usdt_price": 1482.0,
+    "fx_rate": 1494.09,
+    "premium_pct": -0.81
+  },
+  {
+    "date": "2026-07-14",
+    "usdt_price": 1469.0,
+    "fx_rate": 1495.49,
+    "premium_pct": -1.77
+  },
+  {
+    "date": "2026-07-15",
+    "usdt_price": 1470.0,
+    "fx_rate": 1492.17,
+    "premium_pct": -1.49
+  },
+  {
+    "date": "2026-07-16",
+    "usdt_price": 1473.0,
+    "fx_rate": 1479.45,
+    "premium_pct": -0.44
+  },
+  {
+    "date": "2026-07-17",
+    "usdt_price": 1475.0,
+    "fx_rate": 1485.32,
+    "premium_pct": -0.69
+  },
+  {
+    "date": "2026-07-20",
+    "usdt_price": 1461.0,
+    "fx_rate": 1481.18,
+    "premium_pct": -1.36
+  },
+  {
+    "date": "2026-07-21",
+    "usdt_price": 1461.0,
+    "fx_rate": 1478.4,
+    "premium_pct": -1.18
+  },
+  {
+    "date": "2026-07-22",
+    "usdt_price": 1462.0,
+    "fx_rate": 1480.35,
+    "premium_pct": -1.24
+  },
+  {
+    "date": "2026-07-23",
+    "usdt_price": 1466.0,
+    "fx_rate": 1472.72,
+    "premium_pct": -0.46
+  },
+  {
+    "date": "2026-07-24",
+    "usdt_price": 1463.0,
+    "fx_rate": 1461.0,
+    "premium_pct": 0.14
+  },
+  {
+    "date": "2026-07-27",
+    "usdt_price": 1460.0,
+    "fx_rate": 1470.11,
+    "premium_pct": -0.69
+  },
+  {
+    "date": "2026-07-28",
+    "usdt_price": 1450.0,
+    "fx_rate": 1459.45,
+    "premium_pct": -0.65
+  },
+  {
+    "date": "2026-07-29",
+    "usdt_price": 1430.0,
+    "fx_rate": 1452.35,
+    "premium_pct": -1.54
+  },
+  {
+    "date": "2026-07-30",
+    "usdt_price": 1415.0,
+    "fx_rate": 1433.7,
+    "premium_pct": -1.3
+  },
+  {
+    "date": "2026-07-31",
+    "usdt_price": 1437.0,
+    "fx_rate": 1443.61,
+    "premium_pct": -0.46
+  },
+  {
+    "date": "2026-08-03",
+    "usdt_price": 1424.0,
+    "fx_rate": 1427.05,
+    "premium_pct": -0.21
+  },
+  {
+    "date": "2026-08-04",
+    "usdt_price": 1423.0,
+    "fx_rate": 1427.11,
+    "premium_pct": -0.29
+  },
+  {
+    "date": "2026-08-05",
+    "usdt_price": 1418.0,
+    "fx_rate": 1423.72,
+    "premium_pct": -0.4
+  },
+  {
+    "date": "2026-08-06",
+    "usdt_price": 1419.0,
+    "fx_rate": 1423.57,
+    "premium_pct": -0.32
+  },
+  {
+    "date": "2026-08-07",
+    "usdt_price": 1407.0,
+    "fx_rate": 1415.95,
+    "premium_pct": -0.63
+  },
+  {
+    "date": "2026-08-10",
+    "usdt_price": 1413.0,
+    "fx_rate": 1416.62,
+    "premium_pct": -0.26
+  },
+  {
+    "date": "2026-08-11",
+    "usdt_price": 1409.0,
+    "fx_rate": 1412.17,
+    "premium_pct": -0.22
+  },
+  {
+    "date": "2026-08-12",
+    "usdt_price": 1411.0,
+    "fx_rate": 1417.13,
+    "premium_pct": -0.43
+  },
+  {
+    "date": "2026-08-13",
+    "usdt_price": 1411.0,
+    "fx_rate": 1420.29,
+    "premium_pct": -0.65
+  },
+  {
+    "date": "2026-08-14",
+    "usdt_price": 1414.0,
+    "fx_rate": 1411.27,
+    "premium_pct": 0.19
+  }
+]

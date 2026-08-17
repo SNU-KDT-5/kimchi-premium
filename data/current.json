@@ -1,7 +1,6 @@
 {
-  "nominal_premium": 3.5,
-  "real_premium": -1.2,
-  "fx_rate": 1385,
-  "percentile": 22,
-  "recent_event": "2024-12-03 비상계엄 관련 변동성 확대"
+  "premium_pct": 0.19,
+  "fx_rate": 1411.27,
+  "percentile": 32,
+  "recent_event": "특이 이벤트 없음"
 }

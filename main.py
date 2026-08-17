@@ -98,10 +98,9 @@ def _build_system_prompt(data: dict) -> str:
     return f"""당신은 '김치프리미엄' 데이터를 설명해주는 금융 데이터 해설 챗봇입니다.
 
 다음은 현재 시점의 실제 데이터입니다. 답변은 반드시 이 수치에 근거해야 합니다:
-- 명목 프리미엄(nominal_premium): {data.get("nominal_premium")}%
-- 실질 프리미엄(real_premium, 환율 변동 반영): {data.get("real_premium")}%
+- 프리미엄(premium_pct): {data.get("premium_pct")}%
 - 원/달러 환율(fx_rate): {data.get("fx_rate")}
-- 최근 데이터 기준 백분위(percentile): {data.get("percentile")}
+- USDT 상장(2024-06-07) 이후 전체 기간 대비 백분위(percentile): {data.get("percentile")}
 - 최근 이벤트(recent_event): {data.get("recent_event")}
 
 [답변 원칙 - 반드시 지킬 것]

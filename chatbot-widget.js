@@ -1,19 +1,16 @@
 /* ============================================================
    전역 챗봇 플로팅 위젯 — index/dashboard/pattern/simulator 공용
-   ============================================================
-   사용법: nav.js 스크립트 태그 바로 아래에 한 줄만 추가
-
-     <script src="chatbot-widget.js"></script>
-
-   root div가 따로 필요 없다 — 스크립트가 알아서 body에 자기 마크업을
-   붙인다. 스타일은 shared.css의 .chat-fab / .chat-panel 계열 클래스.
    ============================================================ */
-(function () {
-  // 로컬 개발 중엔 로컬 백엔드로, 배포되면 이 줄만 실제 배포 주소로 바꾸면 된다.
+
+   (function () {
+  // 로컬 개발 중엔 로컬 백엔드로, 배포되면 이 줄만 실제 배포 주소로 변경
   const API_BASE_URL =
     location.hostname === 'localhost' || location.hostname === '127.0.0.1'
       ? 'http://127.0.0.1:8010'
       : 'https://REPLACE_WITH_DEPLOYED_BACKEND_URL';
+  // 백엔드가 아직 배포되지 않아 API_BASE_URL이 위 플레이스홀더 그대로인 동안은
+  // 이상한 네트워크 에러 대신 "아직 준비 중"이라는 명확한 안내만 보여준다.
+  const BACKEND_NOT_READY = API_BASE_URL.indexOf('REPLACE_WITH') !== -1;
 
   const SESSION_KEY = 'kimplog_chat_session_id';
 
@@ -92,6 +89,12 @@
 
     addMessage(message, 'user');
     inputEl.value = '';
+
+    if (BACKEND_NOT_READY) {
+      addMessage('죄송해요, 챗봇 서버가 아직 배포 준비 중이에요. 조금만 기다려 주세요!', 'error');
+      return;
+    }
+
     inputEl.disabled = true;
     sendBtn.disabled = true;
     const pending = addMessage('생각하는 중...', 'pending');

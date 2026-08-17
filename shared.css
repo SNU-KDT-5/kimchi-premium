@@ -341,7 +341,7 @@ body {
 .chat-panel {
   position: fixed; right: var(--sp-8); bottom: calc(var(--sp-6) + 50px + var(--sp-3));
   z-index: 200; width: 400px; max-width: calc(100vw - 56px);
-  max-height: min(640px, calc(100vh - 100px));
+  height: min(640px, calc(100vh - 100px));
   background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-xl);
   box-shadow: var(--shadow-lg); overflow: hidden;
   display: flex; flex-direction: column;
@@ -356,7 +356,7 @@ body {
 }
 .chat-panel-close {
   position: absolute; top: var(--sp-3); right: var(--sp-3);
-  width: 26px; height: 26px; border-radius: var(--r-pill); border: none;
+  width: 26px; height: 26px; border-radius: var(--r-pill);
   background: var(--panel); border: 1px solid var(--border); color: var(--mut); font-size: 0.85rem; line-height: 1;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
@@ -370,7 +370,7 @@ body {
 .chat-panel-sub { font-size: 0.78rem; margin-top: var(--sp-1); color: var(--mut); }
 
 .chat-messages {
-  flex: 1; min-height: 280px; overflow-y: auto; padding: var(--sp-4);
+  flex: 1; min-height: 0; overflow-y: auto; padding: var(--sp-4);
   display: flex; flex-direction: column; gap: var(--sp-2); background: var(--panel2);
 }
 .chat-msg { max-width: 84%; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); font-size: 0.84rem; line-height: 1.6; white-space: pre-wrap; }

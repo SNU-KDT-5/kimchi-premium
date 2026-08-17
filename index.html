@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USDT 김치프리미엄 관측소</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .idx-cta-wrap { text-align: center; padding: var(--sp-12) var(--sp-4) var(--sp-12); }
+    .idx-cta {
+      display: inline-flex; align-items: center; gap: var(--sp-1);
+      color: var(--frog); font-size: 0.92rem; font-weight: 700;
+      text-decoration: none; padding: var(--sp-2) var(--sp-4);
+      border-radius: var(--r-pill); background: transparent;
+    }
+    .idx-cta .arrow { transition: transform 0.15s ease; }
+    .idx-cta:hover { background: var(--frog-bg); text-decoration: underline; }
+    .idx-cta:hover .arrow { transform: translateX(3px); }
+
+    /* 인트로 전용: 맨 위에서는 nav를 배경에 녹여 존재감을 줄이고,
+       스크롤을 내리면 다시 배경/구분선이 떠오르게 함 */
+    .topnav { background: transparent; border-bottom-color: transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
+    .topnav.scrolled { background: var(--panel); border-bottom-color: var(--border); box-shadow: var(--shadow-sm); }
+  </style>
+</head>
+<body>
+  <div id="topnav-root"></div>
+  <script src="nav.js"></script>
+
+  <!-- 온보딩 스크롤 스토리 본문은 여기, 이 CTA 버튼 위쪽에 작업해주세요. -->
+
+  <div class="idx-cta-wrap">
+    <a href="pattern.html" class="idx-cta">시작해봐요! 개굴 <span class="arrow">→</span></a>
+  </div>
+
+  <script>
+    (function () {
+      var nav = document.querySelector('.topnav');
+      var THRESHOLD = 40;
+      function onScroll() {
+        nav.classList.toggle('scrolled', window.scrollY > THRESHOLD);
+      }
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+  </script>
+</body>
+</html>

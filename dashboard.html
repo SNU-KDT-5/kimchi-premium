@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>현황 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+<style>
+  body { padding-bottom: calc(var(--sp-8) + var(--sp-12)); }
+  .header { padding: var(--sp-10) 0 var(--sp-2); }
+  .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
+
+  /* ── 대주제 구획 ──
+     구획마다 배경색이 달라서, 안쪽 요소(히트맵 등) 높이가 변해도
+     그 영향이 이 박스 안에서만 일어난다는 게 눈으로 보인다. */
+  .group { border-radius: var(--r-xl); padding: var(--sp-6); margin-top: var(--sp-8); }
+  .group-now { background: var(--frog-bg); }
+  .group-fx { background: var(--accent-bg); }
+  .group-head {
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: var(--sp-5);
+    display: flex; align-items: center; gap: var(--sp-2);
+  }
+  .group-now .group-head { color: var(--frog); }
+  .group-fx .group-head { color: var(--accent); }
+  .group-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-5); max-width: 620px; }
+  .group-intro b.frog-text { color: var(--frog); }
+  .group-intro b.accent-text { color: var(--accent); }
+
+  .sub-label { font-size: 0.78rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2); display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+  .sub-block + .sub-block { margin-top: var(--sp-5); }
+  .pane { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
+
+  /* ── 오늘의 숫자 ── */
+  .kpi-meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--sp-3); margin-bottom: var(--sp-3); flex-wrap: wrap;
+  }
+  .kpi-meta-row .btn { padding: var(--sp-1) var(--sp-3); font-size: 0.78rem; }
+  .kpi-meta-row .btn:disabled { opacity: 0.5; cursor: default; }
+  .kpi-meta-sep { color: var(--dim); margin: 0 var(--sp-2); }
+  .stat-card { background: var(--panel); }
+  .stat-card.is-focus { border-color: var(--accent-line); }
+  .stat-card .hint.accent-text { color: var(--accent); font-weight: 600; }
+
+  .more-info-toggle {
+    display: block; width: 100%; text-align: center; margin-top: var(--sp-3); padding: var(--sp-2);
+    background: transparent; border: 1px dashed var(--border2); border-radius: var(--r-sm);
+    font-size: 0.78rem; color: var(--mut); cursor: pointer; font-family: var(--font-body);
+  }
+  .more-info-toggle:hover { background: var(--panel); }
+  /* 접혀 있다가 열리는 곳이라 배경을 한 단계 밝게 해서 '별도의 공간'임을 알린다 */
+  .more-info-detail { display: none; margin-top: var(--sp-3); }
+  .more-info-detail.show {
+    display: block; background: var(--panel2); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: var(--sp-5);
+  }
+  .more-info-detail .sub-label:first-child { margin-top: 0 !important; }
+  .stat-card .hint .arrow { font-size: 0.72rem; }
+
+  /* 활발도 카드: 내용 높이가 달라도 세로 가운데로 맞춘다 */
+  .act-row .stat-card { display: flex; flex-direction: column; justify-content: center; }
+  .act-row .stat-card .hint + .hint { margin-top: 2px; }
+  .fng-gauge { width: 100%; max-width: 150px; display: block; margin: var(--sp-2) auto 0; }
+  #fngNeedle { transition: transform 1.1s cubic-bezier(0.34, 1.3, 0.5, 1); }
+  @media (prefers-reduced-motion: reduce) { #fngNeedle { transition: none; } }
+
+  /* 카드 제목 옆 도움말 자리 */
+  .stat-card .label { display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .help-q {
+    width: 17px; height: 17px; flex: none; padding: 0; border-radius: 50%;
+    border: 1.2px solid var(--border2); background: transparent; color: var(--mut);
+    font-family: var(--font-body); font-size: 11px; font-weight: 700; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .help-q:hover { color: var(--text); border-color: var(--frog); }
+  .help-q:focus-visible { outline: 2px solid var(--frog); outline-offset: 2px; }
+  .help-q[aria-expanded="true"] { color: var(--frog); border-color: var(--frog); }
+  /* 카드 안에서는 말풍선이 화면 밖으로 나가지 않도록 반대쪽에 붙인다 */
+  .stat-card .frog-bubble { left: auto; right: -10px; }
+  .stat-card .frog-bubble::before { left: auto; right: 16px; }
+
+  /* ── 프리미엄 추이 ── */
+  .period-tabs { display: flex; gap: var(--sp-1); background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-1); margin-bottom: var(--sp-3); }
+  .period-tab { flex: 1; text-align: center; padding: var(--sp-2); border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 600; color: var(--mut); cursor: pointer; }
+  .period-tab.active { background: var(--text); color: #fff; }
+  .chart-svg { width: 100%; height: 180px; display: block; }
+  .legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+  .legend-line { display: inline-block; width: 14px; height: 2px; margin-right: 5px; vertical-align: middle; }
+  .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+
+  /* ── 게이지 + 히트맵 ── */
+  .split-row { display: grid; grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr); gap: var(--sp-3); align-items: start; }
+  @media (max-width: 720px) { .split-row { grid-template-columns: minmax(0, 1fr); } }
+
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+  .gauge-label { font-size: 1rem; font-weight: 800; padding: 5px 18px; margin-top: calc(-1 * var(--sp-4)); }
+  .gauge-score { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; margin-top: var(--sp-2); }
+  .gauge-sub { font-size: 0.72rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; line-height: 1.6; }
+
+  /* 히트맵: 세로 7칸(요일) 고정 → 기간을 바꿔도 높이가 변하지 않는다 */
+  .hm-presets, .fx-presets { display: flex; gap: var(--sp-1); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+  .hm-preset, .fx-preset {
+    font-size: 0.74rem; padding: 4px 11px; border-radius: var(--r-sm);
+    border: 1px solid transparent; background: transparent; color: var(--mut);
+    cursor: pointer; font-family: var(--font-body); font-weight: 600;
+  }
+  .hm-preset:hover, .fx-preset:hover { background: var(--panel2); }
+  .hm-preset.active, .fx-preset.active { background: var(--text); color: #fff; }
+
+  /* 보유 기간 선택 */
+  .fx-window { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-5); flex-wrap: wrap; }
+  .fx-window > .label { font-size: 0.78rem; font-weight: 700; color: var(--mut); }
+  .fx-window .fx-presets { margin-bottom: 0; }
+  .hm-range { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+  .hm-date {
+    border: 1px solid var(--border2); border-radius: var(--r-sm); padding: 3px var(--sp-2);
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--text); background: var(--panel);
+  }
+  /* 칸 크기는 기간에 따라 달라지지만 이 상자의 높이는 고정이라,
+     기간을 바꿔도 아래 요소가 위아래로 밀리지 않는다 */
+  .hm-body { display: flex; gap: var(--sp-2); min-height: 132px; align-items: center; }
+  .hm-dows { display: grid; font-size: 9px; color: var(--dim); font-weight: 600; }
+  .hm-dows span { display: flex; align-items: center; }
+  .hm-grid { display: grid; grid-auto-flow: column; flex: 1; min-width: 0; }
+  .hm-cell { border-radius: 2px; position: relative; }
+  .hm-cell.empty { background: transparent; }
+  .hm-cell.gap { background: var(--panel2); }
+  .hm-cell:hover { outline: 1.5px solid var(--text); outline-offset: 1px; z-index: 3; }
+  .hm-cell .hm-tip {
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border-radius: var(--r-sm); padding: var(--sp-2) var(--sp-3);
+    font-size: 11px; white-space: nowrap; z-index: 10; pointer-events: none; line-height: 1.5;
+  }
+  .hm-cell:hover .hm-tip { display: block; }
+  .hm-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-top: var(--sp-3); flex-wrap: wrap; }
+  .hm-legend { display: flex; align-items: center; gap: var(--sp-2); font-size: 11px; color: var(--dim); }
+  .hm-legend .bar { width: 90px; height: 6px; border-radius: var(--r-pill);
+    background: linear-gradient(90deg, var(--border2), var(--amber), var(--accent)); }
+
+  /* ── 환율 리스크 ── */
+  .decomp-svg { width: 100%; height: 200px; display: block; cursor: crosshair; }
+  .pick-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-2); flex-wrap: wrap; }
+  .pick-label { font-size: 0.78rem; font-weight: 700; color: var(--mut); }
+  .pick-label b { color: var(--accent); font-family: var(--font-mono); }
+  .pick-reset {
+    font-size: 0.74rem; padding: 3px var(--sp-3); border-radius: var(--r-sm);
+    border: 1px solid var(--border2); background: var(--panel); color: var(--mut);
+    cursor: pointer; font-family: var(--font-body);
+  }
+  .pick-reset:hover { color: var(--text); border-color: var(--frog); }
+  .pick-reset:disabled { opacity: 0.4; cursor: default; }
+  .bridge-svg { width: 100%; height: 160px; display: block; }
+  .bridge-note {
+    font-size: 0.78rem; color: var(--mut); text-align: center;
+    border-top: 1px solid var(--border); padding-top: var(--sp-3); margin-top: var(--sp-2);
+  }
+  .bridge-note b { font-family: var(--font-mono); color: var(--text); }
+  .caption { font-size: 0.74rem; color: var(--dim); margin-top: var(--sp-2); text-align: center; }
+
+  /* ── 개구리 도움말 ──
+     설명을 항상 띄워두는 대신, 필요한 지점마다 개구리를 두고
+     누르면 입을 벌리며 말풍선으로 설명한다. */
+  .frog-slot { position: relative; display: inline-flex; vertical-align: middle; }
+  .frog-help {
+    width: 24px; height: 24px; padding: 0; border: none; background: none;
+    color: var(--frog); cursor: pointer; flex: none; display: block;
+    animation: frog-bob 3.2s ease-in-out infinite;
+  }
+  .frog-help svg { width: 100%; height: 100%; display: block; }
+  .frog-help:hover { color: var(--frog-light); }
+  .frog-help:focus-visible { outline: 2px solid var(--frog); outline-offset: 2px; border-radius: var(--r-sm); }
+  .frog-help[aria-expanded="true"] { animation: none; color: var(--frog); }
+
+  @keyframes frog-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3.5px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frog-help { animation: none; }
+  }
+
+  /* 말풍선은 아래 내용 위로 겹쳐서 뜬다 (레이아웃이 밀리지 않도록) */
+  .frog-bubble {
+    position: absolute; top: calc(100% + 10px); left: -10px; z-index: 60;
+    width: 300px; max-width: min(300px, 76vw);
+    background: var(--panel); border: 1px solid var(--border2); border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg); padding: var(--sp-4) var(--sp-5);
+    font-size: 0.82rem; font-weight: 400; color: var(--mut); line-height: 1.75; text-align: left;
+    text-transform: none; letter-spacing: 0;
+  }
+  .frog-bubble::before {
+    content: ''; position: absolute; top: -7px; left: 16px; width: 12px; height: 12px;
+    background: var(--panel); border-left: 1px solid var(--border2); border-top: 1px solid var(--border2);
+    transform: rotate(45deg);
+  }
+  .frog-bubble h5 { font-size: 0.86rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
+  .frog-bubble b { color: var(--text); }
+  .frog-bubble b.frog-text { color: var(--frog); }
+  .frog-bubble b.accent-text { color: var(--accent); }
+  .frog-bubble a {
+    color: var(--frog); text-decoration: underline; text-underline-offset: 2px;
+    word-break: break-all;
+  }
+  .frog-bubble a:hover { color: var(--text); }
+  .frog-bubble .frog-bubble-close {
+    display: block; margin-top: var(--sp-3); padding: 0; border: none; background: none;
+    font-family: var(--font-body); font-size: 0.76rem; color: var(--dim); cursor: pointer;
+  }
+  .frog-bubble .frog-bubble-close:hover { color: var(--text); }
+  @media (max-width: 560px) { .frog-bubble { left: auto; right: -10px; } .frog-bubble::before { left: auto; right: 16px; } }
+
+  /* ── 개구리가 가리키는 곳 ──
+     테두리를 그리는 대신 주변을 흐리게 해서 시선을 모은다.
+     장식을 더하지 않고 빼기만 하므로 화면이 지저분해지지 않는다.
+     SPOT 에 대상이 지정된 개구리에만 적용된다. */
+  .spot-fade { transition: opacity 0.3s ease; }
+  .spot-away { opacity: 0.2; }
+
+  /* ── 등장 움직임 ── */
+  /* 선이 왼쪽에서 오른쪽으로 그려진다 */
+  .draw-in { animation: draw-in 1.3s ease-out forwards; }
+  @keyframes draw-in { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+
+  /* 현재값 점의 맥박 — "지금 이 순간의 데이터" 라는 신호 */
+  .pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
+  @keyframes pulse-ring {
+    0%        { r: 4; opacity: 0.5; }
+    70%, 100% { r: 14; opacity: 0; }
+  }
+
+  /* 히트맵이 물결처럼 채워진다 */
+  .hm-cell.pop { opacity: 0; animation: hm-pop 0.34s ease-out forwards; }
+  @keyframes hm-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+
+  /* 게이지 바늘은 항상 왼쪽 끝(-90°)에서 출발해 목표 각도까지 한 방향으로만 돈다 */
+  #gaugeNeedle { transition: transform 1.1s cubic-bezier(0.34, 1.3, 0.5, 1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .draw-in, .pulse-ring, .hm-cell.pop { animation: none; }
+    .draw-in { stroke-dashoffset: 0; }
+    .hm-cell.pop { opacity: 1; }
+    #gaugeNeedle { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="topnav-root"></div>
+<script src="nav.js"></script>
+
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow mono">현황 대시보드</div>
+    <h1>지금 이 순간의 숫자들</h1>
+    <p>김프가 지금 얼마나 벌어져 있는지, 그리고 그중 얼마가 실제로 손에 남는지를 함께 봅니다.</p>
+  </div>
+
+  <!-- ══════ 구획 1: 현재 지표 ══════ -->
+  <section class="group group-now">
+    <div class="group-head">현재 지표</div>
+
+    <!-- 오늘의 숫자 -->
+    <div class="sub-block">
+      <div class="sub-label">오늘의 숫자<span class="frog-slot" data-help="kpi"></span></div>
+      <div class="status-box" id="kpiLoading"><div class="spinner"></div><span class="js-loading-msg">현재 지표를 불러오는 중…</span></div>
+      <div class="error-box" id="kpiError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div id="kpiContent" style="display:none;">
+        <div class="kpi-meta-row">
+          <span class="mut-text mono" id="kpiAsOf"></span>
+          <button class="btn btn-outline" id="refreshBtn" type="button">갱신</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card"><div class="label">USDT 가격</div><div class="value" id="stUsdt">–</div></div>
+          <div class="stat-card"><div class="label">원/달러 환율</div><div class="value" id="stFx">–</div></div>
+          <div class="stat-card is-focus" id="premCard"><div class="label">프리미엄</div><div class="value accent" id="stPrem">–</div><div class="hint accent-text" id="stPremHint">&nbsp;</div></div>
+        </div>
+      </div>
+
+      <button class="more-info-toggle" id="moreInfoToggle">더 알아보기 — 지금 시장 상황 ▾</button>
+      <div class="more-info-detail" id="moreInfoDetail">
+        <div class="sub-label" style="margin-top:var(--sp-3);">시장 활발도<span class="frog-slot" data-help="activity"></span></div>
+
+        <div class="status-box" id="actLoading"><div class="spinner"></div><span>활발도 지표를 불러오는 중…</span></div>
+        <div class="error-box" id="actError" style="display:none;"><h4>불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+
+        <div id="actContent" style="display:none;">
+          <div class="stat-row act-row">
+            <div class="stat-card">
+              <div class="label">거래대금 · 거래량</div>
+              <div class="value" id="stTrade">–</div>
+              <div class="hint" id="stValDelta">&nbsp;</div>
+              <div class="hint" id="stVolDelta">&nbsp;</div>
+            </div>
+            <div class="stat-card" id="fngCard">
+              <div class="label">공포탐욕지수<span class="frog-slot" data-help="fng" data-icon="q"></span></div>
+              <svg class="fng-gauge" id="fngGauge" viewBox="0 0 160 96"></svg>
+              <div class="value" id="stFng">–</div>
+              <div class="hint" id="stFngHint">&nbsp;</div>
+            </div>
+            <div class="stat-card" id="searchCard">
+              <div class="label">검색 관심도</div>
+              <div class="value" id="stSearch" style="color:var(--amber);">–</div>
+              <div class="hint" id="stSearchDelta">&nbsp;</div>
+            </div>
+          </div>
+          <div class="caption" id="actSource">출처: 업비트 · 네이버 데이터랩 · Alternative.me</div>
+
+          <div class="caption" id="searchPending" style="display:none; text-align:left; margin-top:var(--sp-3);">
+            검색 관심도는 <span class="mono">naver_trend.json</span> 이 폴더에 놓이면 자동으로 표시됩니다.
+          </div>
+
+          <div id="interestBlock" style="display:none; margin-top:var(--sp-5);">
+            <div class="sub-label">김프가 벌어질 때 사람들도 검색했을까</div>
+            <div class="pane">
+              <div class="legend-row">
+                <span><span class="legend-line" style="background:var(--accent);"></span>김프 순위</span>
+                <span><span class="legend-line" style="background:var(--amber);"></span>검색 관심도 순위</span>
+              </div>
+              <svg class="chart-svg" id="interestChart" viewBox="0 0 760 180"></svg>
+              <div class="caption">둘 다 0~100 순위라 같은 축에서 볼 수 있습니다 · 위로 갈수록 그 시기 기준 높은 편</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 프리미엄 추이 -->
+    <div class="sub-block">
+      <div class="sub-label">프리미엄 추이<span class="frog-slot" data-help="prem"></span></div>
+      <div class="pane">
+        <div class="status-box" id="premLoading"><div class="spinner"></div><span class="js-loading-msg">프리미엄 추이를 불러오는 중…</span></div>
+        <div class="error-box" id="premError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+        <div id="premContent" style="display:none;">
+          <div class="period-tabs" id="periodTabs"></div>
+          <div class="legend-row">
+            <span><span class="legend-line" style="background:var(--accent);"></span>프리미엄</span>
+            <span><span class="legend-swatch" style="background:var(--accent-bg);"></span>0% 아래 (역프)</span>
+            <span id="legendRecent" style="display:none;"><span class="legend-swatch" style="background:var(--panel2); border:1px solid var(--border2);"></span>최근 90일</span>
+          </div>
+          <svg class="chart-svg" id="premChart" viewBox="0 0 760 180" preserveAspectRatio="none"></svg>
+          <div class="caption" id="premRangeNote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 지금 김프 위치 -->
+    <div class="sub-block">
+      <div class="sub-label">지금 김프 위치<span class="frog-slot" data-help="gauge"></span></div>
+      <div class="status-box" id="gaugeLoading"><div class="spinner"></div><span class="js-loading-msg">분포 데이터를 불러오는 중…</span></div>
+      <div class="error-box" id="gaugeError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+      <div class="split-row" id="gaugeContent" style="display:none;">
+        <div class="pane">
+          <div class="gauge-wrap">
+            <svg id="gaugeSvg" viewBox="0 0 320 180" style="width:100%;max-width:260px;display:block;margin:0 auto"></svg>
+            <div class="gauge-label badge" id="gaugeLabel">–</div>
+            <div class="gauge-score" id="gaugeScore">–</div>
+            <div class="gauge-sub" id="gaugeSub"></div>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="hm-presets" id="hmPresets">
+            <button class="hm-preset" type="button" data-d="90">3개월</button>
+            <button class="hm-preset active" type="button" data-d="182">6개월</button>
+            <button class="hm-preset" type="button" data-d="365">1년</button>
+          </div>
+          <div class="hm-range">
+            <input class="hm-date" type="date" id="hmFrom" aria-label="시작일">
+            <span class="caption" style="margin:0;">~</span>
+            <input class="hm-date" type="date" id="hmTo" aria-label="종료일">
+          </div>
+          <div class="hm-body">
+            <div class="hm-dows" id="hmDows"></div>
+            <div class="hm-grid" id="hmGrid"></div>
+          </div>
+          <div class="hm-foot">
+            <span class="caption" id="hmNote" style="margin:0;"></span>
+            <span class="hm-legend"><span>낮음</span><span class="bar"></span><span>높음</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 구획 2: 환율 리스크 ══════ -->
+  <section class="group group-fx">
+    <div class="group-head">환율 리스크<span class="frog-slot" data-help="fxrisk"></span></div>
+    <p class="group-intro">벌어진 김프가 그대로 손에 남지는 않습니다. <b id="fxWindowLabel">최근 60일</b> 동안 샀다가 오늘 판다면 어떻게 되는지 봅니다.</p>
+
+    <div class="fx-window">
+      <span class="label">얼마나 들고 있었나</span>
+      <div class="fx-presets" id="fxPresets" role="group" aria-label="보유 기간 선택"></div>
+    </div>
+
+    <div class="status-box" id="fxLoading"><div class="spinner"></div><span class="js-loading-msg">환율 분해 데이터를 불러오는 중…</span></div>
+    <div class="error-box" id="fxError" style="display:none;"><h4>데이터를 불러오지 못했습니다</h4><span class="js-error-msg"></span></div>
+
+    <div id="fxContent" style="display:none;">
+      <!-- 위: 그래프(입력) -->
+      <div class="sub-block">
+        <div class="sub-label">언제부터 벌어졌나<span class="frog-slot" data-help="decomp"></span><span style="font-weight:400;color:var(--dim);">— 선 위를 클릭하면 그날 기준으로 아래가 바뀝니다</span></div>
+        <div class="pane">
+          <div class="legend-row">
+            <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
+            <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
+          </div>
+          <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200"></svg>
+        </div>
+      </div>
+
+      <!-- 아래: 수치선(출력) -->
+      <div class="sub-block">
+        <div class="pick-row">
+          <span style="display:flex;align-items:center;gap:var(--sp-2);">
+            <span class="pick-label" id="pickLabel">–</span>
+            <span class="frog-slot" data-help="bridge"></span>
+          </span>
+          <button class="pick-reset" id="pickReset" type="button" disabled>오늘로</button>
+        </div>
+        <div class="pane">
+          <svg class="bridge-svg" id="bridgeChart" viewBox="0 0 760 160"></svg>
+          <div class="bridge-note" id="bridgeNote"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="caption" style="margin-top:var(--sp-8);">데이터 출처: 업비트 종가(KRW-USDT, 2024-06-07 상장), 환율은 ECB 기준 (주말·공휴일은 직전 거래일 환율 적용)</div>
+</div>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const DAY_MS = 86400000;
+let fxWindow = 60;          // 환율 리스크 구획의 보유 기간 (사용자가 고른다)
+
+let REAL = null;      // { dates, usdtPrice, fxRate, premiumPct, fetchedAt }
+let DECOMP = null;    // [{ premium, real }] — 선택한 보유 기간(fxWindow)만큼
+let DECOMP_DATES = [];
+let pinnedIdx = null; // 클릭으로 고정한 날짜 (null이면 오늘)
+let pctOf = () => 0;
+
+const fmtWon = n => n.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '원';
+const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtMoney = n => Math.round(n).toLocaleString('ko-KR') + '원';
+const isoOf = d => d.toISOString().slice(0, 10);
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+// ══════ 등장 움직임 도우미 ══════
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// 선 길이를 재서 왼쪽부터 그려지게 한다
+function animateStroke(pathEl) {
+  if (REDUCED_MOTION) return;
+  const len = pathEl.getTotalLength();
+  if (!Number.isFinite(len) || len === 0) return;
+  pathEl.style.setProperty('--len', len);
+  pathEl.style.strokeDasharray = len;
+  pathEl.classList.add('draw-in');
+}
+
+// 숫자가 0에서 실제 값까지 굴러 올라간다
+function countUp(el, to, format, dur = 900) {
+  if (REDUCED_MOTION || !Number.isFinite(to)) { el.textContent = format(to); return; }
+  const t0 = performance.now();
+  (function step(now) {
+    const p = Math.min(1, (now - t0) / dur);
+    el.textContent = format(to * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+function svgText(x, y, content, opts = {}) {
+  const t = svgEl('text', {
+    x, y,
+    'font-size': opts.size || 10,
+    'text-anchor': opts.anchor || 'middle',
+    style: `fill:${opts.fill || 'var(--dim)'}`
+  });
+  if (opts.weight) t.setAttribute('font-weight', opts.weight);
+  if (opts.mono) t.setAttribute('font-family', 'JetBrains Mono, monospace');
+  t.textContent = content;
+  return t;
+}
+
+// ══════ 개구리 도움말 ══════
+// 설명이 필요한 지점마다 개구리를 띄우고, 누르면 입을 벌리며 말풍선을 연다.
+const FROG_HEAD = 'M24 16C23 10 20 6 15 6C10 6 7 10 7 16C7 19 2 21 2 27C2 34 11 40 24 40C37 40 46 34 46 27C46 21 41 19 41 16C41 10 38 6 33 6C28 6 25 10 24 16Z';
+const FROG_EYES = '<circle cx="15" cy="12" r="2.1" fill="currentColor"/><circle cx="33" cy="12" r="2.1" fill="currentColor"/>';
+
+const FROG_CLOSED =
+  `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="${FROG_HEAD}"/><path d="M14 29C18 34.5 30 34.5 34 29"/></g>${FROG_EYES}` +
+  `<circle cx="21" cy="21" r="1" fill="currentColor"/><circle cx="27" cy="21" r="1" fill="currentColor"/></svg>`;
+
+const FROG_OPEN =
+  `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="${FROG_HEAD}"/><path d="M13 29Q18.5 23 24 23Q29.5 23 35 29Q29.5 36 24 36Q18.5 36 13 29Z"/></g>${FROG_EYES}` +
+  `<circle cx="21" cy="19" r="1" fill="currentColor"/><circle cx="27" cy="19" r="1" fill="currentColor"/></svg>`;
+
+const HELP = {
+  kpi: {
+    title: '이 숫자들이 뜻하는 것',
+    body: '<b>프리미엄</b>은 업비트 USDT 원화 가격이 그날 원/달러 환율보다 몇 % 비싼지를 뜻해요. ' +
+          '플러스면 국내가 더 비싸다는 뜻이고, 마이너스면 오히려 더 싸게 살 수 있었다는 뜻이에요(역프). ' +
+          '프리미엄 칸 아래 <b class="accent-text">환율 반영 시</b> 숫자는 환율 변동까지 넣었을 때 실제로 남는 몫인데, 아래 환율 리스크에서 자세히 다뤄요.'
+  },
+  prem: {
+    title: '차트 읽는 법',
+    body: '<b>0% 선 아래 붉은 영역</b>이 역프 구간이에요. 국내에서 오히려 더 싸게 살 수 있었던 날이라는 뜻이죠. ' +
+          '전체 보기에서 오른쪽 옅은 띠는 <b>최근 90일</b> 구간이라, 요즘 흐름이 전체 중 어디쯤인지 나란히 비교할 수 있어요. ' +
+          '선 끝의 점이 오늘 값이고, 시작일 이전은 상장 전이라 기록 자체가 없어요.'
+  },
+  gauge: {
+    title: '순위와 히트맵 읽는 법',
+    body: '<b>상위 29%</b>는 상장 이후 모든 날을 김프가 높은 순으로 줄 세웠을 때 오늘이 위에서 29% 안에 든다는 뜻이에요. ' +
+          '반대로 낮은 쪽이면 <b>하위 N%</b>로 표시해요.<br><br>' +
+          '위쪽 30%는 <b>높음</b>, 아래쪽 30%는 <b>낮음</b>, 그 사이는 <b>보통</b> 배지가 붙어요. 높다고 좋은 것도 낮다고 나쁜 것도 아니고, 지금 위치를 알려줄 뿐이에요.<br><br>' +
+          '오른쪽 격자는 하루가 한 칸이고 세로가 요일이에요. 색이 진할수록 그날 김프가 높은 편이었다는 뜻이고, 칸에 마우스를 올리면 그날 수치가 나와요.'
+  },
+  fxrisk: {
+    title: '왜 환율을 또 따져야 하나요?',
+    body: '김프는 <b>살 때</b> 얹어주는 웃돈이라 사는 순간 정해져요. 그런데 환율은 <b>팔 때까지</b> 계속 움직이죠.<br><br>' +
+          '그래서 김프가 벌어진 만큼 벌었더라도, 들고 있는 동안 환율이 내려가면 원화로 돌아올 때 그만큼 깎여요. ' +
+          '이 구획은 그 깎인 몫이 실제로 얼마였는지를 보여줍니다.'
+  },
+  decomp: {
+    title: '두 선의 차이',
+    body: '<b class="frog-text">녹색 선</b>은 프리미엄만 따라갔을 때 쌓였을 누적 수익이고, <b class="accent-text">붉은 선</b>은 환율 변동까지 반영한 실제 누적 수익이에요.<br><br>' +
+          '두 선 사이 <b>음영이 넓어질수록</b> 그 구간에서 환율이 가져간 몫이 컸다는 뜻이에요. 선 위에 마우스를 올리면 미리보기가 되고, 클릭하면 그 날짜로 고정돼요.'
+  },
+  activity: {
+    title: '활발도 지표 읽는 법',
+    body: '<b>거래량·거래대금</b>은 업비트에서 그날 실제로 오간 양이에요. 절대 숫자만으로는 감이 안 오니 <b>30일 평균과 비교</b>해서 오늘이 평소보다 활발한 날인지 보여줘요.<br><br>' +
+          '<b>검색 관심도</b>는 네이버에서 테더를 얼마나 찾아봤는지예요. 다만 네이버가 주는 값은 실제 검색 건수가 아니라 <b>기간 안에서의 상대값</b>이라 그 자체로는 뜻이 없어요. 그래서 김프와 똑같이 순위로 바꿔서 보여줍니다.'
+  },
+  fng: {
+    title: '공포·탐욕 지수란',
+    body: '크립토 시장 전체의 투자 심리를 <b>0~100</b> 한 숫자로 나타낸 지표예요. ' +
+          '0에 가까우면 <b>극단적 공포</b>, 100에 가까우면 <b>극단적 탐욕</b>이고요. ' +
+          '변동성, 거래량, 소셜 언급량, 비트코인 시장 점유율 같은 재료를 섞어 매일 계산돼요.<br><br>' +
+          '옆의 다른 카드와 달리 <b>순위로 바꾸지 않고 원래 숫자를 그대로</b> 보여줍니다. ' +
+          '이 지표는 34면 어디서든 34로 통하는 고정된 눈금을 갖고 있어서, 자기 역사와 비교할 필요가 없거든요.<br><br>' +
+          '김프가 아니라 <b>크립토 시장 전반</b>을 보는 값이라는 점도 기억해 주세요.<br><br>' +
+          '이 카드의 값은 <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener noreferrer">alternative.me</a>에서 가져옵니다. ' +
+          '원래 이 지수를 만든 곳은 주식시장용으로 시작한 <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener noreferrer">CNN</a>이에요.'
+  },
+  bridge: {
+    title: '이 화살표가 뜻하는 것',
+    body: '왼쪽 <b class="frog-text">초록 점</b>은 프리미엄만 봤다면 남았을 수익, 오른쪽 <b class="accent-text">붉은 점</b>은 환율까지 반영한 실제 수익이에요. ' +
+          '두 점 사이 <b>화살표 길이가 곧 환율이 가져간 몫</b>이고요.<br><br>' +
+          '화살표가 0% 선을 지나 왼쪽까지 갔다면, 이익이 손실로 뒤집혔다는 뜻이에요.'
+  }
+};
+
+// 개구리가 가리킬 대상. 가리킬 것이 마땅치 않은 개구리(fxrisk 처럼 개념을 설명하는 경우)는
+// 여기에 넣지 않는다 — 그런 개구리는 말만 하고 아무것도 밝히지 않는다.
+const SPOT = {
+  kpi: '#premCard',
+  activity: '#actContent',
+  fng: '#fngCard',
+  prem: '#negArea',        // 역프 구간만 콕 집는다
+  gauge: '#gaugeSvg',
+  decomp: '#decompChart',
+  bridge: '#bridgeChart'
+};
+
+let openFrog = null;
+
+// 대상까지 올라가는 길에 있는 '형제' 요소들을 흐리게 한다.
+// 대상 자신과 그 조상은 그대로 남으므로, 결과적으로 대상만 또렷해진다.
+function applySpot(target, frogBtn) {
+  let el = target;
+  while (el && el.parentElement && !el.classList.contains('wrap')) {
+    for (const sib of el.parentElement.children) {
+      if (sib === el) continue;
+      sib.classList.add('spot-fade', 'spot-away');
+    }
+    el = el.parentElement;
+  }
+  // 말하고 있는 개구리와 말풍선은 흐려지면 안 된다
+  let f = frogBtn;
+  while (f && f !== document.body) { f.classList.remove('spot-away'); f = f.parentElement; }
+}
+
+function clearSpot() {
+  // spot-fade 는 남겨둔다 — 다시 밝아질 때도 부드럽게 돌아오도록
+  document.querySelectorAll('.spot-away').forEach(el => el.classList.remove('spot-away'));
+}
+
+function closeFrogHelp() {
+  clearSpot();
+  if (!openFrog) return;
+  openFrog.btn.setAttribute('aria-expanded', 'false');
+  openFrog.btn.innerHTML = FROG_CLOSED;
+  openFrog.bubble.hidden = true;
+  openFrog = null;
+}
+
+function mountFrogHelp() {
+  document.querySelectorAll('.frog-slot[data-help]').forEach((slot, i) => {
+    const info = HELP[slot.dataset.help];
+    if (!info || slot.dataset.mounted) return;
+    slot.dataset.mounted = '1';
+
+    // data-icon="q" 인 자리는 개구리 대신 물음표 버튼으로 그린다.
+    // (카드 안처럼 개구리가 크게 느껴지는 자리에 쓴다)
+    const isQ = slot.dataset.icon === 'q';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = isQ ? 'help-q' : 'frog-help';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', `${info.title} — 설명 열기`);
+    if (isQ) {
+      btn.textContent = '?';
+    } else {
+      btn.style.animationDelay = `${(i * 0.45).toFixed(2)}s`; // 다 같이 움직이면 어색해서 시차를 준다
+      btn.innerHTML = FROG_CLOSED;
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'frog-bubble';
+    bubble.hidden = true;
+    bubble.setAttribute('role', 'dialog');
+    bubble.innerHTML = `<h5>${info.title}</h5>${info.body}<button type="button" class="frog-bubble-close">닫기</button>`;
+
+    slot.append(btn, bubble);
+
+    const spotSel = SPOT[slot.dataset.help];
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = openFrog && openFrog.btn === btn;
+      closeFrogHelp();
+      if (isOpen) return;
+      btn.setAttribute('aria-expanded', 'true');
+      if (!isQ) btn.innerHTML = FROG_OPEN;   // 개구리만 입을 벌린다
+      bubble.hidden = false;
+      openFrog = { btn, bubble };
+      // 가리킬 대상이 지정돼 있고 실제로 화면에 있을 때만 주변을 흐리게 한다
+      if (spotSel) {
+        const target = document.querySelector(spotSel);
+        if (target) applySpot(target, btn);
+      }
+    });
+
+    bubble.addEventListener('click', (e) => e.stopPropagation());
+    bubble.querySelector('.frog-bubble-close').addEventListener('click', () => {
+      const focusBack = btn;
+      closeFrogHelp();
+      focusBack.focus();
+    });
+  });
+
+  document.addEventListener('click', closeFrogHelp);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFrogHelp(); });
+}
+
+mountFrogHelp();
+
+document.getElementById('moreInfoToggle').addEventListener('click', function () {
+  const detail = document.getElementById('moreInfoDetail');
+  const isShown = detail.classList.toggle('show');
+  this.textContent = isShown ? '접기 ▴' : '더 알아보기 — 지금 시장 상황 ▾';
+  // 펼칠 때 처음 한 번만 불러온다 (열지 않는 사람에게 요청을 낭비하지 않도록)
+  if (isShown) loadActivity();
+});
+
+function addDateLabels(g, dates, xAt, H, count) {
+  const shown = new Set();
+  for (let k = 0; k < count; k++) {
+    const idx = Math.round((k / (count - 1)) * (dates.length - 1));
+    if (shown.has(idx)) continue;
+    shown.add(idx);
+    g.appendChild(svgText(xAt(idx), H - 4, dates[idx], {
+      anchor: k === 0 ? 'start' : (k === count - 1 ? 'end' : 'middle')
+    }));
+  }
+}
+
+// ══════ 프리미엄 추이 ══════
+function renderPeriodTabs() {
+  const N = REAL.dates.length;
+  const tabs = document.getElementById('periodTabs');
+  const opts = [];
+  if (N > 90) opts.push({ label: '최근 90일', d: 90 });
+  opts.push({ label: `전체 · ${N}일`, d: N });
+
+  tabs.innerHTML = opts
+    .map((o, i) => `<div class="period-tab${i === opts.length - 1 ? ' active' : ''}" data-p="${o.d}">${o.label}</div>`)
+    .join('');
+
+  tabs.querySelectorAll('.period-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      drawPremChart(parseInt(tab.dataset.p, 10));
+    });
+  });
+}
+
+function drawPremChart(days) {
+  const svg = document.getElementById('premChart');
+  svg.innerHTML = '';
+
+  const series = REAL.premiumPct.slice(-days);
+  const dates = REAL.dates.slice(-days);
+  const W = 760, H = 180, PL = 46, PR = 14, PT = 14, PB = 20;
+  const pw = W - PL - PR, ph = H - PT - PB;
+  const minY = Math.min(...series) - 0.4, maxY = Math.max(...series) + 0.4;
+  const xAt = i => PL + (i / (series.length - 1)) * pw;
+  const yAt = v => PT + ph - ((v - minY) / (maxY - minY)) * ph;
+
+  const g = svgEl('g', {});
+
+  const showBand = series.length > 90;
+  document.getElementById('legendRecent').style.display = showBand ? '' : 'none';
+  if (showBand) {
+    const bandX = xAt(series.length - 90);
+    g.appendChild(svgEl('rect', {
+      x: bandX, y: PT, width: (W - PR) - bandX, height: ph,
+      fill: 'var(--panel2)', stroke: 'var(--border)'
+    }));
+  }
+
+  for (let s = 0; s <= 3; s++) {
+    const y = PT + ph - (s / 3) * ph;
+    const val = minY + (s / 3) * (maxY - minY);
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y, y2: y, stroke: 'var(--border)' }));
+    g.appendChild(svgText(PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
+  }
+
+  if (minY < 0 && maxY > 0) {
+    const y0 = yAt(0);
+    const negPts = series.map((v, i) => `${xAt(i).toFixed(1)},${yAt(Math.min(v, 0)).toFixed(1)}`).join(' L');
+    // id 를 주는 이유: 개구리가 '역프 구간' 을 가리킬 때 이 영역을 밝힌다
+    g.appendChild(svgEl('path', { id: 'negArea', d: `M${PL},${y0} L${negPts} L${W - PR},${y0} Z`, fill: 'var(--accent-bg)' }));
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y0, y2: y0, stroke: 'var(--mut)', 'stroke-width': 1.5 }));
+  }
+
+  addDateLabels(g, dates, xAt, H, 5);
+  svg.appendChild(g);
+
+  const line = svgEl('path', {
+    d: 'M' + series.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' L'),
+    fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2,
+    'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+  });
+  svg.appendChild(line);
+  animateStroke(line);
+
+  // 끝점 맥박 — 이 점 하나가 "지금 이 순간의 값" 이라고 말해준다
+  const lx = xAt(series.length - 1), ly = yAt(series[series.length - 1]);
+  svg.appendChild(svgEl('circle', { class: 'pulse-ring', cx: lx, cy: ly, r: 4, fill: 'var(--accent)' }));
+  svg.appendChild(svgEl('circle', {
+    cx: lx, cy: ly, r: 4, fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 2
+  }));
+
+  document.getElementById('premRangeNote').textContent =
+    `${dates[0]} ~ ${dates[dates.length - 1]} · 이 시작일 이전은 상장 전이라 기록이 없습니다`;
+}
+
+// ══════ 색 스케일 ══════
+function hexToRgb(hex) {
+  hex = hex.trim().replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const n = parseInt(hex, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+let heatColor = () => 'var(--border2)';
+
+function buildColorScale() {
+  const rootStyle = getComputedStyle(document.documentElement);
+  const low = hexToRgb(rootStyle.getPropertyValue('--border2'));
+  const mid = hexToRgb(rootStyle.getPropertyValue('--amber'));
+  const high = hexToRgb(rootStyle.getPropertyValue('--accent'));
+  const mix = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
+
+  heatColor = (t) => {
+    t = Math.max(0, Math.min(1, t));
+    const rgb = t < 0.5 ? mix(low, mid, t / 0.5) : mix(mid, high, (t - 0.5) / 0.5);
+    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+  };
+}
+
+// 백분위(0~100)를 사람이 읽는 순위 표현으로 바꾼다.
+// 위쪽이면 '상위 N%', 아래쪽이면 '하위 N%'.
+// 단어가 방향을 담고 있어서, 게이지 바늘이 가리키는 쪽과 숫자가 어긋나 보이지 않는다.
+// (백분위 71을 그대로 '상위 29%'라고만 쓰면 값이 오를수록 숫자가 줄어 헷갈린다)
+function rankLabel(score) {
+  return score >= 50 ? `상위 ${100 - score}%` : `하위 ${score}%`;
+}
+
+// 상위 30% = 높음 / 중간 40% = 보통 / 하위 30% = 낮음 (중립 서술)
+function getLabel(t) {
+  if (t >= 0.7) return { txt: '높음', cls: 'badge-accent', swatch: 'var(--accent)' };
+  if (t >= 0.3) return { txt: '보통', cls: 'badge-amber', swatch: 'var(--amber)' };
+  return { txt: '낮음', cls: 'badge-neutral', swatch: 'var(--dim)' };
+}
+
+// ══════ 게이지 ══════
+function renderGauge() {
+  const all = REAL.premiumPct;
+  const sorted = [...all].sort((a, b) => a - b);
+  pctOf = v => sorted.filter(x => x <= v).length / sorted.length;
+
+  const cur = all[all.length - 1];
+  const pc = pctOf(cur);
+  const score = Math.round(pc * 100);
+  const lower = Math.round(pc * sorted.length);
+
+  // 호 위쪽(=보통 라벨 자리)에 여백을 두려고 원 중심을 아래로 내렸다.
+  // 호 꼭대기는 cy-R-7(선 두께 절반) = 20 이고, 라벨 baseline 은 그보다 위인 12.
+  const svg = document.getElementById('gaugeSvg');
+  const cx = 160, cy = 145, R = 118, r2 = 100;
+
+  // 바늘은 '위를 향한 선'을 회전시켜 그린다.
+  // 각도 = score/100 * 180 - 90 → 0점이면 -90°(왼쪽), 50점이면 0°(위), 100점이면 +90°(오른쪽).
+  // 항상 -90°에서 출발해 목표까지 한 방향으로만 돌기 때문에 엉뚱한 쪽으로 도는 일이 없다.
+  const targetAngle = (score / 100) * 180 - 90;
+
+  let arcs = '';
+  for (let s = 0; s < 100; s += 2) {
+    const a0 = Math.PI - s / 100 * Math.PI, a1 = Math.PI - (s + 2.4) / 100 * Math.PI;
+    const x0 = cx + R * Math.cos(a0), y0 = cy - R * Math.sin(a0);
+    const x1 = cx + R * Math.cos(a1), y1 = cy - R * Math.sin(a1);
+    arcs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${heatColor(s / 100)}" stroke-width="14" stroke-linecap="round"/>`;
+  }
+
+  svg.innerHTML = `${arcs}
+    <text x="42" y="172" text-anchor="middle" font-size="11" style="fill:var(--dim)">낮음</text>
+    <text x="160" y="12" text-anchor="middle" font-size="11" style="fill:var(--dim)">보통</text>
+    <text x="278" y="172" text-anchor="middle" font-size="11" style="fill:var(--dim)">높음</text>
+    <g id="gaugeNeedle" transform="rotate(-90 ${cx} ${cy})">
+      <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - r2}" style="stroke:var(--text)" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <circle cx="${cx}" cy="${cy}" r="6" style="fill:var(--text)"/>`;
+
+  // 그린 직후 한 프레임 뒤에 목표 각도를 주어야 transition 이 실제로 동작한다
+  const needle = document.getElementById('gaugeNeedle');
+  requestAnimationFrame(() => {
+    needle.setAttribute('transform', `rotate(${targetAngle.toFixed(2)} ${cx} ${cy})`);
+  });
+
+  const lbl = getLabel(pc);
+  const gl = document.getElementById('gaugeLabel');
+  gl.textContent = lbl.txt;
+  gl.className = `gauge-label badge ${lbl.cls}`;
+
+  const gs = document.getElementById('gaugeScore');
+  gs.textContent = rankLabel(score);
+  gs.style.color = heatColor(pc);
+
+  const higher = sorted.length - lower;
+  document.getElementById('gaugeSub').innerHTML =
+    `현재 김프 <b style="color:var(--accent)">${cur.toFixed(2)}%</b> · 상장 이후 ${sorted.length}일 중 ` +
+    (score >= 50
+      ? `오늘보다 높았던 날은 ${higher}일뿐입니다.`
+      : `오늘보다 낮았던 날은 ${lower}일뿐입니다.`);
+}
+
+// ══════ 히트맵 (기간 선택 · 세로 7칸 고정) ══════
+const DOW_LABEL = ['일', '월', '화', '수', '목', '금', '토'];
+
+let heatmapBound = false; // 갱신 때마다 리스너가 겹쳐 붙는 것을 막는다
+
+function setupHeatmapControls() {
+  const first = REAL.dates[0], last = REAL.dates[REAL.dates.length - 1];
+  const from = document.getElementById('hmFrom');
+  const to = document.getElementById('hmTo');
+
+  [from, to].forEach(el => { el.min = first; el.max = last; });
+  to.value = last;
+  if (!from.value || from.value < first || from.value > last) from.value = presetStart(182);
+
+  if (heatmapBound) return;
+  heatmapBound = true;
+
+  document.getElementById('hmPresets').querySelectorAll('.hm-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('hmPresets').querySelectorAll('.hm-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      to.value = last;
+      from.value = presetStart(parseInt(btn.dataset.d, 10));
+      drawHeatmap();
+    });
+  });
+
+  [from, to].forEach(el => el.addEventListener('change', () => {
+    // 직접 날짜를 고르면 프리셋 선택은 해제한다
+    document.getElementById('hmPresets').querySelectorAll('.hm-preset').forEach(b => b.classList.remove('active'));
+    if (from.value > to.value) { const t = from.value; from.value = to.value; to.value = t; }
+    drawHeatmap();
+  }));
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawHeatmap, 150);
+  });
+}
+
+function presetStart(days) {
+  const last = new Date(`${REAL.dates[REAL.dates.length - 1]}T00:00:00Z`);
+  const start = new Date(last.getTime() - (days - 1) * DAY_MS);
+  const first = REAL.dates[0];
+  const iso = isoOf(start);
+  return iso < first ? first : iso;
+}
+
+function drawHeatmap() {
+  const from = document.getElementById('hmFrom').value;
+  const to = document.getElementById('hmTo').value;
+  const grid = document.getElementById('hmGrid');
+  const dows = document.getElementById('hmDows');
+
+  // 구간 내 실데이터를 날짜로 조회할 수 있게 맵으로
+  const byDate = new Map();
+  REAL.dates.forEach((d, i) => {
+    if (d >= from && d <= to) byDate.set(d, REAL.premiumPct[i]);
+  });
+
+  const startD = new Date(`${from}T00:00:00Z`);
+  const endD = new Date(`${to}T00:00:00Z`);
+  const totalDays = Math.round((endD - startD) / DAY_MS) + 1;
+  if (totalDays <= 0) return;
+
+  // 첫 칸이 해당 요일 행에 오도록 앞을 비운다
+  const lead = startD.getUTCDay();
+  const weeks = Math.ceil((lead + totalDays) / 7);
+
+  // 칸 크기를 폭에 맞춰 자동 조절 (세로 7칸은 항상 고정)
+  const avail = grid.getBoundingClientRect().width || 360;
+  const gap = weeks > 40 ? 1 : 2;
+  const cell = Math.max(4, Math.min(16, Math.floor((avail - gap * (weeks - 1)) / weeks)));
+
+  grid.style.gridTemplateRows = `repeat(7, ${cell}px)`;
+  grid.style.gap = `${gap}px`;
+  dows.style.gridTemplateRows = `repeat(7, ${cell}px)`;
+  dows.style.gap = `${gap}px`;
+  dows.innerHTML = DOW_LABEL.map((d, i) => `<span>${cell >= 9 && i % 2 === 1 ? d : ''}</span>`).join('');
+
+  // 칸마다 조금씩 늦게 나타나게 해서 물결처럼 채워진다.
+  // 기간이 길면 총 시간이 늘어지므로 지연은 700ms 에서 멈춘다.
+  const pop = REDUCED_MOTION ? '' : ' pop';
+  const delayOf = i => (REDUCED_MOTION ? '' : `animation-delay:${Math.min(i * 5, 700)}ms;`);
+
+  let html = '';
+  for (let i = 0; i < lead; i++) html += '<div class="hm-cell empty"></div>';
+
+  for (let i = 0; i < totalDays; i++) {
+    const d = new Date(startD.getTime() + i * DAY_MS);
+    const key = isoOf(d);
+    const prem = byDate.get(key);
+    if (prem === undefined) {
+      html += `<div class="hm-cell gap${pop}" style="${delayOf(i)}"><span class="hm-tip">${key}<br>데이터 없음</span></div>`;
+      continue;
+    }
+    const t = pctOf(prem);
+    const lbl = getLabel(t);
+    html += `<div class="hm-cell${pop}" style="background:${heatColor(t)};${delayOf(i)}">` +
+      `<span class="hm-tip">${key}<br>김프 ${prem.toFixed(2)}%<br>` +
+      `<span style="color:${lbl.swatch};font-weight:700">${lbl.txt}</span></span></div>`;
+  }
+
+  grid.innerHTML = html;
+  document.getElementById('hmNote').textContent = `${byDate.size}일 · 색은 상장 이후 전체 분포 기준`;
+}
+
+// ══════ 환율 리스크 ══════
+function buildDecompSeries() {
+  const n = Math.min(fxWindow, REAL.dates.length);
+  const start = REAL.dates.length - n;
+  const p0 = REAL.premiumPct[start];
+  const fx0 = REAL.fxRate[start];
+  const data = [];
+  for (let i = start; i < REAL.dates.length; i++) {
+    const premium = REAL.premiumPct[i] - p0;
+    const fxCum = (REAL.fxRate[i] / fx0 - 1) * 100;
+    data.push({ premium, real: premium + fxCum });
+  }
+  DECOMP_DATES = REAL.dates.slice(start);
+  return data;
+}
+
+// 두 선 비교 차트 좌표계 (마커를 다시 그릴 때도 써야 해서 밖에 둔다)
+const DC = { W: 760, H: 200, PL: 46, PR: 14, PT: 14, PB: 20 };
+
+function dcX(i) { return DC.PL + (i / (DECOMP.length - 1)) * (DC.W - DC.PL - DC.PR); }
+function dcY(v) {
+  const ph = DC.H - DC.PT - DC.PB;
+  return DC.PT + ph - ((v - DC.min) / (DC.max - DC.min)) * ph;
+}
+
+function drawDecompChart() {
+  const svg = document.getElementById('decompChart');
+  svg.innerHTML = '';
+
+  const data = DECOMP;
+  const ph = DC.H - DC.PT - DC.PB;
+  const allVals = data.flatMap(d => [d.premium, d.real]);
+  DC.min = Math.min(...allVals, 0) - 0.5;
+  DC.max = Math.max(...allVals, 0) + 0.5;
+
+  const g = svgEl('g', {});
+  for (let s = 0; s <= 3; s++) {
+    const y = DC.PT + ph - (s / 3) * ph;
+    const val = DC.min + (s / 3) * (DC.max - DC.min);
+    g.appendChild(svgEl('line', { x1: DC.PL, x2: DC.W - DC.PR, y1: y, y2: y, stroke: 'var(--border)' }));
+    g.appendChild(svgText(DC.PL - 6, y + 3, val.toFixed(1) + '%', { anchor: 'end' }));
+  }
+  if (DC.min < 0 && DC.max > 0) {
+    g.appendChild(svgEl('line', {
+      x1: DC.PL, x2: DC.W - DC.PR, y1: dcY(0), y2: dcY(0),
+      stroke: 'var(--mut)', 'stroke-width': 1.5
+    }));
+  }
+  addDateLabels(g, DECOMP_DATES, dcX, DC.H, 3);
+  svg.appendChild(g);
+
+  const premLine = data.map((d, i) => `${dcX(i).toFixed(1)},${dcY(d.premium).toFixed(1)}`).join(' L');
+  const realRev = data.slice().reverse().map((d, i) => `${dcX(data.length - 1 - i).toFixed(1)},${dcY(d.real).toFixed(1)}`).join(' L');
+  svg.appendChild(svgEl('path', { d: `M${premLine} L${realRev} Z`, fill: 'var(--accent-bg)' }));
+
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((d, i) => `${dcX(i)},${dcY(d.premium)}`).join(' '),
+    fill: 'none', stroke: 'var(--frog)', 'stroke-width': 2
+  }));
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((d, i) => `${dcX(i)},${dcY(d.real)}`).join(' '),
+    fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.2
+  }));
+
+  // 선택 마커 + 클릭/호버를 받는 투명 판
+  svg.appendChild(svgEl('g', { id: 'dcMarker' }));
+  const hit = svgEl('rect', {
+    x: DC.PL, y: DC.PT, width: DC.W - DC.PL - DC.PR, height: ph, fill: 'transparent'
+  });
+  svg.appendChild(hit);
+
+  const idxFromEvent = (e) => {
+    const r = svg.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    const x = (point.clientX - r.left) / r.width * DC.W;
+    const ratio = (x - DC.PL) / (DC.W - DC.PL - DC.PR);
+    return Math.max(0, Math.min(data.length - 1, Math.round(ratio * (data.length - 1))));
+  };
+
+  hit.addEventListener('mousemove', e => renderPick(idxFromEvent(e), false));
+  hit.addEventListener('mouseleave', () => renderPick(pinnedIdx, false, true));
+  hit.addEventListener('click', e => { pinnedIdx = idxFromEvent(e); renderPick(pinnedIdx, true); });
+  hit.addEventListener('touchstart', e => {
+    pinnedIdx = idxFromEvent(e);
+    renderPick(pinnedIdx, true, true);
+    e.preventDefault();
+  }, { passive: false });
+}
+
+function drawMarker(i) {
+  const marker = document.getElementById('dcMarker');
+  if (!marker) return;
+  const d = DECOMP[i];
+  marker.innerHTML =
+    `<line x1="${dcX(i)}" y1="${DC.PT}" x2="${dcX(i)}" y2="${DC.H - DC.PB}" stroke="var(--dim)" stroke-dasharray="3 3"/>` +
+    `<circle cx="${dcX(i)}" cy="${dcY(d.premium)}" r="4.5" fill="var(--frog)" stroke="var(--panel)" stroke-width="2"/>` +
+    `<circle cx="${dcX(i)}" cy="${dcY(d.real)}" r="4.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="2"/>`;
+}
+
+// 수치선 축은 전체 구간 기준으로 한 번만 정한다.
+// 날짜를 바꿀 때마다 축이 다시 잡히면 0% 선까지 같이 움직여서 눈이 어지럽다.
+const BR = { W: 760, PL: 70, PR: 70, axisY: 88, arrowY: 50 };
+
+function fixBridgeScale() {
+  const vals = DECOMP.flatMap(d => [d.premium, d.real]).concat(0);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max((hi - lo) * 0.12, 0.3);
+  BR.lo = lo - pad;
+  BR.hi = hi + pad;
+}
+
+function brX(v) {
+  return BR.PL + ((v - BR.lo) / (BR.hi - BR.lo)) * (BR.W - BR.PL - BR.PR);
+}
+
+// 클릭으로 날짜를 옮길 때 점이 순간이동하지 않고 미끄러지도록,
+// 지금 그려진 값에서 목표 값까지 짧게 보간한다.
+// (마우스를 훑는 중에는 즉시 반응해야 자연스러우므로 애니메이션을 쓰지 않는다)
+let brShown = null;
+let brRaf = 0;
+
+function setBridge(target, animate) {
+  cancelAnimationFrame(brRaf);
+  if (!animate || REDUCED_MOTION || !brShown) {
+    brShown = target;
+    drawBridge(target);
+    return;
+  }
+  const from = brShown, dur = 220, t0 = performance.now();
+  (function step(now) {
+    const p = Math.min(1, (now - t0) / dur);
+    const e = 1 - Math.pow(1 - p, 3);
+    const cur = {
+      premium: from.premium + (target.premium - from.premium) * e,
+      real: from.real + (target.real - from.real) * e
+    };
+    drawBridge(cur);
+    brShown = cur;
+    if (p < 1) brRaf = requestAnimationFrame(step);
+    else brShown = target;
+  })(t0);
+}
+
+// 선택한 시점의 수치선을 그린다 (그래프가 입력, 이 함수가 출력)
+function drawBridge(d) {
+  const svg = document.getElementById('bridgeChart');
+  svg.innerHTML = '';
+
+  const W = BR.W, PL = BR.PL, PR = BR.PR, axisY = BR.axisY, arrowY = BR.arrowY;
+  const xAt = brX;
+
+  const lost = d.real < d.premium;
+  const color = lost ? 'var(--accent)' : 'var(--frog)';
+  const gap = Math.abs(d.premium - d.real);
+
+  // 0% 선은 항상 같은 자리 — 점과 화살표만 움직인다
+  const zx = xAt(0);
+  svg.appendChild(svgEl('line', { x1: zx, x2: zx, y1: 22, y2: axisY + 8, stroke: 'var(--mut)', 'stroke-dasharray': '3 3' }));
+  svg.appendChild(svgText(zx, 16, '0%', { fill: 'var(--mut)' }));
+  svg.appendChild(svgEl('line', { x1: PL - 24, x2: W - PR + 24, y1: axisY, y2: axisY, stroke: 'var(--border2)' }));
+
+  const from = xAt(d.premium), to = xAt(d.real);
+
+  // 두 점이 거의 붙어 있으면 화살표가 의미가 없다
+  if (Math.abs(from - to) >= 3) {
+    const dir = to < from ? 1 : -1;
+    svg.appendChild(svgEl('path', { d: `M${from - dir * 6} ${arrowY} L${to + dir * 12} ${arrowY}`, stroke: color, 'stroke-width': 2.5, fill: 'none' }));
+    svg.appendChild(svgEl('path', { d: `M${to} ${arrowY} L${to + dir * 12} ${arrowY - 6} L${to + dir * 12} ${arrowY + 6} Z`, fill: color }));
+  }
+  svg.appendChild(svgText((from + to) / 2, arrowY - 14,
+    gap < 0.005 ? '환율 영향 거의 없음' : `${lost ? '환율이 가져간' : '환율이 더해준'} ${gap.toFixed(2)}%p`,
+    { size: 13, fill: color, weight: 700 }));
+
+  const dot = (x, c) => svgEl('circle', { cx: x, cy: axisY, r: 6, fill: c, stroke: 'var(--panel)', 'stroke-width': 2 });
+
+  // ── 라벨 자리 잡기 ──
+  // 두 값이 가까우면 점은 제자리에 두고 글자만 최소 간격만큼 벌린다.
+  // 벌어진 만큼 점과 글자를 잇는 선을 그어서 어느 쪽 라벨인지 알 수 있게 한다.
+  const MIN_GAP = 170;   // '프리미엄만 봤다면' 폭(약 90px) 기준으로 잡은 여유
+  const EDGE = 56;       // 글자가 잘리지 않는 최소 여백
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  let lFrom = from, lTo = to;
+  if (Math.abs(from - to) < MIN_GAP) {
+    const mid = (from + to) / 2;
+    const half = MIN_GAP / 2;
+    // 원래 좌우 순서를 유지한 채 벌린다
+    if (from <= to) { lFrom = mid - half; lTo = mid + half; }
+    else            { lFrom = mid + half; lTo = mid - half; }
+  }
+  lFrom = clamp(lFrom, EDGE, W - EDGE);
+  lTo = clamp(lTo, EDGE, W - EDGE);
+
+  const leader = (dotX, labelX, c) => {
+    if (Math.abs(dotX - labelX) < 4) return;
+    svg.appendChild(svgEl('path', {
+      d: `M${dotX} ${axisY + 8} L${dotX} ${axisY + 14} L${labelX} ${axisY + 14}`,
+      stroke: c, 'stroke-width': 1, fill: 'none', 'stroke-opacity': 0.5
+    }));
+  };
+  leader(from, lFrom, 'var(--frog)');
+  leader(to, lTo, color);
+
+  svg.appendChild(dot(from, 'var(--frog)'));
+  svg.appendChild(dot(to, color));
+
+  svg.appendChild(svgText(lFrom, axisY + 34, fmtPct(d.premium), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(lFrom, axisY + 52, '프리미엄만 봤다면', { size: 11, fill: 'var(--mut)' }));
+  svg.appendChild(svgText(lTo, axisY + 34, fmtPct(d.real), { size: 15, fill: 'var(--text)', weight: 700, mono: true }));
+  svg.appendChild(svgText(lTo, axisY + 52, '실제로 남은 것', { size: 11, fill: 'var(--mut)' }));
+
+  const base = 1000000;
+  document.getElementById('bridgeNote').innerHTML =
+    `100만원을 넣었다면 · <b>${fmtMoney(base * (1 + d.premium / 100))}</b>이 됐어야 할 돈이 ` +
+    `<b>${fmtMoney(base * (1 + d.real / 100))}</b>으로`;
+}
+
+// 그래프에서 고른 시점을 아래 수치선에 반영
+// animate: 클릭·되돌리기·기간 변경처럼 '결정된' 이동에만 켠다
+function renderPick(idx, pinned, animate = false) {
+  const i = (idx === null || idx === undefined) ? DECOMP.length - 1 : idx;
+  drawMarker(i);
+  setBridge(DECOMP[i], animate);
+
+  const isToday = i === DECOMP.length - 1;
+  const label = document.getElementById('pickLabel');
+  label.innerHTML = isToday
+    ? '오늘 기준 · 환율이 가져간 몫'
+    : `<b>${DECOMP_DATES[i]}</b> 시점 · 환율이 가져간 몫${pinned ? '' : ' (미리보기)'}`;
+
+  document.getElementById('pickReset').disabled = pinnedIdx === null;
+}
+
+document.getElementById('pickReset').addEventListener('click', () => {
+  pinnedIdx = null;
+  renderPick(null, false, true);
+});
+
+// ══════ 보유 기간 선택 ══════
+// 며칠을 들고 있었느냐에 따라 환율이 가져가는 몫이 크게 달라진다.
+// 임의로 60일을 못 박는 대신 직접 만져보게 한다.
+let fxPresetsBound = false;
+
+function renderFxPresets() {
+  const N = REAL.dates.length;
+  const opts = [30, 60, 90].filter(d => d < N).map(d => ({ label: `${d}일`, d }));
+  opts.push({ label: `전체 · ${N}일`, d: N });
+  if (!opts.some(o => o.d === fxWindow)) fxWindow = opts[Math.min(1, opts.length - 1)].d;
+
+  const box = document.getElementById('fxPresets');
+  box.innerHTML = opts.map(o =>
+    `<button type="button" class="fx-preset${o.d === fxWindow ? ' active' : ''}" data-d="${o.d}" aria-pressed="${o.d === fxWindow}">${o.label}</button>`
+  ).join('');
+
+  if (fxPresetsBound) return;
+  fxPresetsBound = true;
+
+  box.addEventListener('click', (e) => {
+    const btn = e.target.closest('.fx-preset');
+    if (!btn) return;
+    fxWindow = parseInt(btn.dataset.d, 10);
+    box.querySelectorAll('.fx-preset').forEach(b => {
+      const on = b === btn;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    applyFxWindow();
+  });
+}
+
+// 기간이 바뀌면 누적 시계열·축·차트·수치선·상단 카드 힌트를 모두 다시 맞춘다
+function applyFxWindow() {
+  DECOMP = buildDecompSeries();
+  fixBridgeScale();
+  brShown = null;   // 축이 다시 잡혔으므로 이전 값에서 보간하지 않는다
+  pinnedIdx = null;
+  drawDecompChart();
+  renderPick(null, false);
+  updatePremHint();
+}
+
+function updatePremHint() {
+  document.getElementById('stPremHint').textContent =
+    `환율 반영 시 ${fmtPct(DECOMP[DECOMP.length - 1].real)}`;
+  document.getElementById('fxWindowLabel').textContent =
+    DECOMP.length >= REAL.dates.length ? '상장 이후 전체 기간' : `최근 ${DECOMP.length}일`;
+}
+
+// ══════ 오늘의 숫자 ══════
+function renderKpi() {
+  const last = REAL.dates.length - 1;
+  const lastUsdt = REAL.usdtPrice[last];
+  const lastFx = REAL.fxRate[last];
+
+  countUp(document.getElementById('stUsdt'), lastUsdt, fmtWon);
+  countUp(document.getElementById('stFx'), lastFx, fmtWon);
+  countUp(document.getElementById('stPrem'), REAL.premiumPct[last], fmtPct);
+
+  // 아래 환율 리스크 구획과 같은 계산을 쓴다 (두 숫자가 어긋날 일이 없도록)
+  updatePremHint();
+
+  const fetched = new Date(REAL.fetchedAt || Date.now());
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('kpiAsOf').innerHTML =
+    `${REAL.dates[last]} 기준<span class="kpi-meta-sep">·</span>` +
+    `${pad(fetched.getHours())}:${pad(fetched.getMinutes())}:${pad(fetched.getSeconds())} 갱신`;
+
+}
+
+// ══════ 시장 활발도 (거래량 · 거래대금 · 검색 관심도) ══════
+// 거래량과 거래대금은 update_data.py 가 하루 1회 미리 계산해 data/history.json에
+// volume/value 필드로 저장해 둔다. 브라우저가 업비트 API를 직접 부르지 않으므로
+// shared.js의 getUsdtPremiumData/getBtcPremiumData와 같은 방식이다.
+const ACT_DAYS = 90;
+const ACT_BASELINE = 30;   // "N일 평균 대비" 기준
+
+let activityLoading = false;
+let activityDone = false;
+
+const fmtKoNum = (n) => {
+  if (!Number.isFinite(n)) return '–';
+  if (n >= 1e8) return (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + '억';
+  if (n >= 1e4) return (n / 1e4).toFixed(n >= 1e5 ? 0 : 1) + '만';
+  return Math.round(n).toLocaleString('ko-KR');
+};
+
+// 방향은 화살표가 알려준다. 색으로 좋고 나쁨을 칠하지 않는다.
+function deltaText(now, base, unitLabel) {
+  if (!Number.isFinite(base) || base === 0) return '&nbsp;';
+  const pct = (now / base - 1) * 100;
+  if (Math.abs(pct) < 0.5) return `${unitLabel} 비슷`;   // '-0%' 같은 표기를 피한다
+  return `<span class="arrow">${pct > 0 ? '▲' : '▼'}</span> ${unitLabel} ${pct > 0 ? '+' : ''}${pct.toFixed(0)}%`;
+}
+
+const HISTORY_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+// data/history.json의 각 행이 실제로 쓸 수 있는 데이터인지 검사한다.
+// r이 null/배열/원시값이 아닌 객체인지, date가 YYYY-MM-DD 형식의 문자열인지,
+// 그 문자열이 실존하는 달력 날짜인지(예: "2026-99-99"나 "2026-02-30" 같은
+// 값은 new Date로 파싱해도 다른 날짜로 굴러가거나 Invalid Date가 될 수 있어
+// 파싱 결과를 다시 문자열로 만들어 원래 값과 비교해야 걸러진다), volume/value가
+// 유한한 숫자인지까지 확인한다.
+function isValidHistoryRow(r) {
+  if (r === null || typeof r !== 'object' || Array.isArray(r)) return false;
+  if (typeof r.date !== 'string' || !HISTORY_DATE_RE.test(r.date)) return false;
+
+  const d = new Date(`${r.date}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return false;
+  const roundTrip = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  if (roundTrip !== r.date) return false;
+
+  return Number.isFinite(r.volume) && Number.isFinite(r.value);
+}
+
+async function fetchUpbitActivity(days) {
+  let rows;
+  try {
+    const res = await fetch('/data/history.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    rows = await res.json();
+  } catch (err) {
+    console.error('fetchUpbitActivity: /data/history.json 을(를) 불러오지 못했습니다 —', err);
+    throw new Error('거래량·거래대금 데이터를 불러오지 못했습니다.');
+  }
+
+  if (!Array.isArray(rows)) {
+    console.error('fetchUpbitActivity: /data/history.json 형식 오류 — 배열이 아님', rows);
+    throw new Error('거래량·거래대금 데이터 형식이 올바르지 않습니다.');
+  }
+
+  // 당일 마감 전 등에는 volume/value가 아직 없는 날짜도 섞여 있어 걸러낸다.
+  const filtered = rows
+    .filter(isValidHistoryRow)
+    .map(r => ({ date: r.date, volume: r.volume, value: r.value }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (filtered.length === 0) throw new Error('거래량 데이터가 비어 있습니다.');
+
+  return filtered.slice(-days);
+}
+
+// scripts/fetch_naver_trend.py 가 만들어 두는 파일.
+// 아직 없으면 조용히 null 을 돌려주고 카드는 '준비 중' 상태로 둔다.
+async function loadSearchTrend() {
+  try {
+    const res = await fetch('naver_trend.json', { cache: 'no-cache' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const group = json['테더'] || json[Object.keys(json)[0]];
+    if (!group || typeof group !== 'object') return null;
+    const dates = Object.keys(group).sort();
+    if (dates.length === 0) return null;
+    return { dates, values: dates.map(d => Number(group[d])) };
+  } catch (e) {
+    return null;
+  }
+}
+
+// 공포·탐욕 지수 (alternative.me) — 키도 CORS 제한도 없어 브라우저에서 바로 부른다.
+// 실패해도 나머지 활발도 지표는 그대로 보여야 하므로 조용히 null 을 돌려준다.
+const FNG_KO = {
+  'Extreme Fear': '극단적 공포',
+  'Fear': '공포',
+  'Neutral': '중립',
+  'Greed': '탐욕',
+  'Extreme Greed': '극단적 탐욕'
+};
+
+function fngLabel(value, cls) {
+  if (FNG_KO[cls]) return FNG_KO[cls];
+  // 분류 문자열이 바뀌었을 때를 대비한 수치 기반 대체
+  if (value < 25) return '극단적 공포';
+  if (value < 45) return '공포';
+  if (value < 56) return '중립';
+  if (value < 76) return '탐욕';
+  return '극단적 탐욕';
+}
+
+async function fetchFearGreed(days) {
+  try {
+    const res = await fetch(`https://api.alternative.me/fng/?limit=${days}&format=json`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const rows = (json && Array.isArray(json.data)) ? json.data : [];
+    const out = rows
+      .map(r => ({
+        date: new Date(Number(r.timestamp) * 1000).toISOString().slice(0, 10),
+        value: Number(r.value),
+        cls: r.value_classification
+      }))
+      .filter(r => Number.isFinite(r.value))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    return out.length ? out : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// 공포탐욕지수 게이지의 색.
+// 양 끝(극단적 공포·극단적 탐욕)을 함께 강조하고 가운데(중립)는 차분하게 둔다.
+// 한쪽만 붉게 칠하면 "탐욕은 나쁘고 공포는 좋다" 같은 판단으로 읽히기 때문이다.
+function fngColor(t) {
+  const rootStyle = getComputedStyle(document.documentElement);
+  const calm = hexToRgb(rootStyle.getPropertyValue('--dim'));
+  const mid = hexToRgb(rootStyle.getPropertyValue('--amber'));
+  const edge = hexToRgb(rootStyle.getPropertyValue('--accent'));
+  const mix = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
+  const d = Math.min(1, Math.abs(t - 0.5) * 2);   // 가운데 0, 양 끝 1
+  const rgb = d < 0.5 ? mix(calm, mid, d / 0.5) : mix(mid, edge, (d - 0.5) / 0.5);
+  return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+}
+
+function drawFngGauge(value) {
+  const svg = document.getElementById('fngGauge');
+  if (!svg) return;
+  const cx = 80, cy = 76, R = 52, needleLen = 42;
+
+  let arcs = '';
+  for (let s = 0; s < 100; s += 2.5) {
+    const a0 = Math.PI - s / 100 * Math.PI, a1 = Math.PI - (s + 3) / 100 * Math.PI;
+    const x0 = cx + R * Math.cos(a0), y0 = cy - R * Math.sin(a0);
+    const x1 = cx + R * Math.cos(a1), y1 = cy - R * Math.sin(a1);
+    arcs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A ${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${fngColor(s / 100)}" stroke-width="9" stroke-linecap="round"/>`;
+  }
+
+  // 김프 게이지와 같은 방식 — 위를 향한 선을 -90°에서 목표까지 한 방향으로 돌린다
+  const angle = (value / 100) * 180 - 90;
+  svg.innerHTML = `${arcs}
+    <text x="80" y="12" text-anchor="middle" font-size="10" style="fill:var(--dim)">중립</text>
+    <text x="18" y="93" text-anchor="middle" font-size="10" style="fill:var(--dim)">공포</text>
+    <text x="142" y="93" text-anchor="middle" font-size="10" style="fill:var(--dim)">탐욕</text>
+    <g id="fngNeedle" transform="rotate(-90 ${cx} ${cy})">
+      <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - needleLen}" style="stroke:var(--text)" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+    <circle cx="${cx}" cy="${cy}" r="4" style="fill:var(--text)"/>`;
+
+  const needle = document.getElementById('fngNeedle');
+  requestAnimationFrame(() => {
+    needle.setAttribute('transform', `rotate(${angle.toFixed(2)} ${cx} ${cy})`);
+  });
+}
+
+function setActState(state, message) {
+  document.getElementById('actLoading').style.display = state === 'loading' ? '' : 'none';
+  document.getElementById('actError').style.display = state === 'error' ? '' : 'none';
+  document.getElementById('actContent').style.display = state === 'loaded' ? '' : 'none';
+  if (state === 'error') {
+    document.getElementById('actError').querySelector('.js-error-msg').textContent =
+      message || '잠시 후 다시 시도해주세요.';
+  }
+}
+
+const mean = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length;
+
+function renderActivity(act, trend, fng) {
+  const last = act[act.length - 1];
+  const volBase = mean(act.slice(-ACT_BASELINE).map(r => r.volume));
+  const valBase = mean(act.slice(-ACT_BASELINE).map(r => r.value));
+
+  // 거래대금과 거래량은 같은 거래를 두 단위로 본 것이라 한 카드에 함께 둔다
+  document.getElementById('stTrade').innerHTML =
+    `${fmtKoNum(last.value)} <span style="font-size:0.72rem;color:var(--dim);">원</span>` +
+    ` <span style="color:var(--dim);">/</span> ` +
+    `${fmtKoNum(last.volume)} <span style="font-size:0.72rem;color:var(--dim);">USDT</span>`;
+  document.getElementById('stValDelta').innerHTML = `거래대금 ${deltaText(last.value, valBase, `${ACT_BASELINE}일 평균 대비`)}`;
+  document.getElementById('stVolDelta').innerHTML = `거래량 ${deltaText(last.volume, volBase, `${ACT_BASELINE}일 평균 대비`)}`;
+
+  // 공포탐욕지수는 눈금이 고정된 지표라 '30일 평균 대비'로 바꾸지 않고
+  // 원래 숫자와 분류를 그대로 보여준다.
+  const fngValue = document.getElementById('stFng');
+  if (fng) {
+    const lastFng = fng[fng.length - 1];
+    drawFngGauge(lastFng.value);
+    fngValue.style.color = fngColor(lastFng.value / 100);
+    countUp(fngValue, lastFng.value, v => String(Math.round(v)));
+    document.getElementById('stFngHint').textContent = fngLabel(lastFng.value, lastFng.cls);
+  } else {
+    document.getElementById('fngGauge').innerHTML = '';
+    fngValue.textContent = '—';
+    document.getElementById('stFngHint').textContent = '불러오지 못했습니다';
+  }
+
+  const pending = document.getElementById('searchPending');
+  const block = document.getElementById('interestBlock');
+
+  if (!trend) {
+    document.getElementById('stSearch').textContent = '준비 중';
+    document.getElementById('stSearchDelta').innerHTML = '&nbsp;';
+    pending.style.display = '';
+    block.style.display = 'none';
+    return;
+  }
+
+  // 데이터랩 값은 요청 구간 안에서의 상대값이라 절대 크기에 의미가 없다.
+  // 그래서 김프와 똑같이 '전체 기간 중 몇 등인지'로 바꿔서 보여준다.
+  const sortedTrend = [...trend.values].sort((a, b) => a - b);
+  const trendPct = v => sortedTrend.filter(x => x <= v).length / sortedTrend.length;
+
+  const nowSearch = trend.values[trend.values.length - 1];
+  const searchBase = mean(trend.values.slice(-ACT_BASELINE));
+  const score = Math.round(trendPct(nowSearch) * 100);
+
+  document.getElementById('stSearch').textContent = rankLabel(score);
+  document.getElementById('stSearchDelta').innerHTML = deltaText(nowSearch, searchBase, `${ACT_BASELINE}일 평균 대비`);
+
+  pending.style.display = 'none';
+  block.style.display = '';
+  drawInterestChart(trend, trendPct);
+}
+
+// 김프 순위와 검색 관심도 순위를 같은 0~100 축에 겹친다.
+// 단위가 다른 두 지표를 축 두 개로 그리면 눈금 잡기에 따라 상관관계가
+// 있어 보이게도 없어 보이게도 만들 수 있어서, 둘 다 순위로 바꿔 축을 하나로 둔다.
+function drawInterestChart(trend, trendPct) {
+  const svg = document.getElementById('interestChart');
+  svg.innerHTML = '';
+  if (typeof pctOf !== 'function' || !REAL) return;
+
+  const tmap = new Map(trend.dates.map((d, i) => [d, trend.values[i]]));
+  const rows = [];
+  REAL.dates.forEach((d, i) => {
+    if (!tmap.has(d)) return;
+    rows.push({ date: d, kim: pctOf(REAL.premiumPct[i]) * 100, sea: trendPct(tmap.get(d)) * 100 });
+  });
+
+  const data = rows.slice(-ACT_DAYS);
+  if (data.length < 2) {
+    svg.innerHTML = '';
+    document.getElementById('interestBlock').style.display = 'none';
+    return;
+  }
+
+  const W = 760, H = 180, PL = 40, PR = 14, PT = 12, PB = 22;
+  const pw = W - PL - PR, ph = H - PT - PB;
+  const xAt = i => PL + (i / (data.length - 1)) * pw;
+  const yAt = v => PT + ph - (v / 100) * ph;
+
+  const g = svgEl('g', {});
+  [0, 50, 100].forEach(v => {
+    g.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: yAt(v), y2: yAt(v), stroke: 'var(--border)' }));
+    g.appendChild(svgText(PL - 6, yAt(v) + 3, String(v), { anchor: 'end' }));
+  });
+  addDateLabels(g, data.map(r => r.date), xAt, H, 3);
+  svg.appendChild(g);
+
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((r, i) => `${xAt(i)},${yAt(r.sea)}`).join(' '),
+    fill: 'none', stroke: 'var(--amber)', 'stroke-width': 2, 'stroke-linejoin': 'round'
+  }));
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((r, i) => `${xAt(i)},${yAt(r.kim)}`).join(' '),
+    fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2, 'stroke-linejoin': 'round'
+  }));
+}
+
+async function loadActivity() {
+  if (activityDone || activityLoading) return;
+  activityLoading = true;
+  setActState('loading');
+
+  try {
+    const [act, trend, fng] = await Promise.all([
+      fetchUpbitActivity(ACT_DAYS),
+      loadSearchTrend(),
+      fetchFearGreed(ACT_DAYS)
+    ]);
+    renderActivity(act, trend, fng);
+    setActState('loaded');
+    activityDone = true;
+  } catch (err) {
+    console.error('활발도 지표 로드 실패:', err);
+    setActState('error', err.message);   // 실패해도 대시보드 본문에는 영향이 없다
+  } finally {
+    activityLoading = false;
+  }
+}
+
+// ══════ 로드 ══════
+const DATA_SECTIONS = ['kpi', 'prem', 'gauge', 'fx'];
+
+function setSectionState(name, state, message) {
+  const loading = document.getElementById(name + 'Loading');
+  const error = document.getElementById(name + 'Error');
+  const content = document.getElementById(name + 'Content');
+  if (loading) loading.style.display = state === 'loading' ? '' : 'none';
+  if (error) error.style.display = state === 'error' ? '' : 'none';
+  if (content) content.style.display = state === 'loaded' ? '' : 'none';
+  if (state === 'error' && error) {
+    error.querySelector('.js-error-msg').textContent = message || '잠시 후 다시 시도해주세요.';
+  }
+}
+
+// shared.js 가 주는 것: { dates, usdtPrice, fxRate }
+// 프리미엄%와 불러온 시각은 이 페이지에서 계산해 붙인다.
+function setLoadingMessage(text) {
+  document.querySelectorAll('.js-loading-msg').forEach(el => { el.textContent = text; });
+}
+
+async function loadRealData(force) {
+  const data = await getUsdtPremiumData({
+    force,
+    onProgress: (n, phase) => {
+      if (phase === 'upbit') setLoadingMessage(`업비트 일봉 ${n.toLocaleString('ko-KR')}일 불러오는 중…`);
+      else if (phase === 'fx') setLoadingMessage('환율 불러오는 중…');
+      else setLoadingMessage('시세 불러오는 중…');
+    }
+  });
+
+  if (!data || !Array.isArray(data.dates) || data.dates.length === 0) {
+    throw new Error('받아온 데이터가 비어 있습니다.');
+  }
+
+  const premiumPct = data.usdtPrice.map((p, i) => (p - data.fxRate[i]) / data.fxRate[i] * 100);
+  return { ...data, premiumPct, fetchedAt: readCachedFetchTime() || Date.now() };
+}
+
+// shared.js 는 받아온 시각을 돌려주지 않지만 캐시에 savedAt 으로 적어둔다.
+// 그 값을 읽어야 "몇 시에 받은 데이터인지"를 정확히 보여줄 수 있다.
+// (키가 바뀌면 조용히 현재 시각으로 넘어간다 — shared.js 상단 CACHE_PREFIX 참고)
+function readCachedFetchTime() {
+  try {
+    const raw = localStorage.getItem('premiumData:v2:KRW-USDT');
+    if (!raw) return null;
+    const savedAt = JSON.parse(raw).savedAt;
+    return Number.isFinite(savedAt) ? savedAt : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+const refreshBtn = document.getElementById('refreshBtn');
+
+async function loadAndRenderAll(force = false) {
+  DATA_SECTIONS.forEach(name => setSectionState(name, 'loading'));
+  setLoadingMessage('데이터를 불러오는 중…');
+  refreshBtn.disabled = true;
+
+  try {
+    REAL = await loadRealData(force);
+  } catch (err) {
+    console.error('데이터 로드 실패:', err);
+    DATA_SECTIONS.forEach(name => setSectionState(name, 'error', err.message));
+    refreshBtn.disabled = false;
+    return;
+  }
+
+  DATA_SECTIONS.forEach(name => setSectionState(name, 'loaded'));
+
+  renderFxPresets();
+  DECOMP = buildDecompSeries();
+  fixBridgeScale();
+  brShown = null;   // 축이 다시 잡혔으므로 이전 값에서 보간하지 않는다
+  pinnedIdx = null;
+
+  buildColorScale();
+  renderKpi();
+  renderPeriodTabs();
+  const activeTab = document.querySelector('.period-tab.active');
+  drawPremChart(activeTab ? parseInt(activeTab.dataset.p, 10) : REAL.dates.length);
+  renderGauge();
+  setupHeatmapControls();
+  drawHeatmap();
+  drawDecompChart();
+  renderPick(null, false);
+
+  refreshBtn.disabled = false;
+}
+
+// force: true 면 shared.js 가 캐시를 건너뛰고 다시 받아온다.
+// clearPremiumCache() 는 인자 없이 부르면 다른 페이지(BTC 등) 캐시까지 지워서 쓰지 않는다.
+refreshBtn.addEventListener('click', () => loadAndRenderAll(true));
+
+loadAndRenderAll();
+</script>
+
+</body>
+</html>

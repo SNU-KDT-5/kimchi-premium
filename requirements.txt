@@ -1,5 +1,5 @@
-fastapi
-uvicorn[standard]
-python-dotenv
-google-generativeai
-requests
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+python-dotenv==1.2.3
+google-generativeai==0.8.6
+requests==2.34.2

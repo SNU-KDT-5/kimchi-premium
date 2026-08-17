@@ -5,18 +5,19 @@
 - LLM 호출은 매 요청 1회(Tool Use 없이 data/current.json을 시스템 프롬프트에 직접 삽입)로 고정한다.
 """
 
+import asyncio
 import json
 import os
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPICallError
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ValidationError
 
 load_dotenv()
 
@@ -28,8 +29,35 @@ DATA_PATH = BASE_DIR / "data" / "current.json"
 
 SESSION_CHAT_LIMIT = 10
 DAILY_CHAT_LIMIT = 100
+# X-Session-ID는 클라이언트가 자유롭게 정하는 값이라 헤더를 바꾸면 세션당
+# 제한을 우회할 수 있다. 이를 막기 위한 독립적인 IP 기반 백스톱.
+IP_CHAT_LIMIT = 30
+GEMINI_TIMEOUT_SECONDS = 15
+# 주말/공휴일에 update-data 워크플로우가 안 돌 수 있어 여유를 둔다.
+MAX_DATA_AGE_DAYS = 3
 
-BANNED_WORDS = ["매수", "매도", "사세요", "파세요"]
+BANNED_WORDS = [
+    "매수",
+    "매도",
+    "사세요",
+    "파세요",
+    "매수하세요",
+    "매도하세요",
+    "투자하세요",
+    "투자를 추천",
+    "지금이 기회",
+    "오를 것",
+    "오를것",
+    "오를 겁니다",
+    "내릴 것",
+    "내릴것",
+    "떨어질 것",
+    "수익률이 오를",
+    "수익을 낼 수",
+    "buy",
+    "sell",
+    "invest now",
+]
 DISCLAIMER = "(본 내용은 투자 조언이 아니며 데이터 해석 참고용입니다.)"
 SAFE_FALLBACK_REPLY = (
     "죄송합니다. 투자 행동을 유도하는 표현이 포함되어 있어 답변을 대체합니다. "
@@ -49,20 +77,35 @@ else:
 
 app = FastAPI(title="Kimchi Premium Chatbot API")
 
-# 개발 중엔 전체 허용. 배포 직전에 프론트 실제 도메인으로 좁힐 것!
+# 배포된 프론트 도메인만 허용. 로컬 개발용 주소는 기본값으로 유지하고,
+# 필요 시 ALLOWED_ORIGINS 환경변수(콤마 구분)로 덮어쓴다.
+DEFAULT_ALLOWED_ORIGINS = "https://kimplog.vercel.app,http://localhost:5500,http://127.0.0.1:5500"
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", DEFAULT_ALLOWED_ORIGINS).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["POST"],
+    allow_headers=["Content-Type", "X-Session-ID"],
 )
 
 # 비용 제어용 인메모리 카운터. 날짜가 바뀌면 전부 리셋된다.
+# ⚠️ 워커(프로세스)마다 별도 메모리를 쓰므로, 워커가 2개 이상이면 카운터가
+# 워커별로 따로 세져서 일일/세션 제한이 사실상 무력화된다.
+# 배포 시 반드시 단일 워커로 실행할 것 (예: `uvicorn main:app --workers 1`,
+# 또는 --workers 옵션을 아예 생략 - uvicorn 기본값이 1).
+# 제한을 워커 여러 개에서도 정확히 지켜야 한다면 이 인메모리 dict를
+# Redis 등 외부 저장소로 옮겨야 한다.
 _usage_state = {
     "date": date.today(),
     "daily_count": 0,
     "session_counts": defaultdict(int),
+    "ip_counts": defaultdict(int),
 }
 
 
@@ -72,9 +115,18 @@ def _reset_counters_if_new_day() -> None:
         _usage_state["date"] = today
         _usage_state["daily_count"] = 0
         _usage_state["session_counts"] = defaultdict(int)
+        _usage_state["ip_counts"] = defaultdict(int)
 
 
-def _load_market_data() -> dict:
+class MarketData(BaseModel):
+    premium_pct: float
+    fx_rate: float
+    percentile: int
+    recent_event: str
+    as_of: date
+
+
+def _load_market_data() -> MarketData:
     if not DATA_PATH.exists():
         raise HTTPException(
             status_code=500,
@@ -82,15 +134,31 @@ def _load_market_data() -> dict:
         )
     try:
         with DATA_PATH.open("r", encoding="utf-8") as f:
-            return json.load(f)
+            raw = json.load(f)
     except json.JSONDecodeError as exc:
         raise HTTPException(
             status_code=500,
             detail="시장 데이터 파일(data/current.json)의 형식이 올바르지 않습니다.",
         ) from exc
 
+    try:
+        data = MarketData.model_validate(raw)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="시장 데이터 파일(data/current.json)의 필드가 올바르지 않습니다.",
+        ) from exc
 
-def _build_system_prompt(data: dict) -> str:
+    if date.today() - data.as_of > timedelta(days=MAX_DATA_AGE_DAYS):
+        raise HTTPException(
+            status_code=503,
+            detail="시장 데이터가 오래되어(최신화 실패) 챗봇을 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+        )
+
+    return data
+
+
+def _build_system_prompt(data: MarketData) -> str:
     # Tool Use(함수 호출) 대신, 매 요청마다 서버가 먼저 data/current.json을 읽어
     # 그 내용을 시스템 프롬프트에 텍스트로 끼워 넣는다.
     # 이렇게 하면 "데이터 조회 tool_use -> tool_result -> 최종 응답"으로 이어지는
@@ -98,10 +166,11 @@ def _build_system_prompt(data: dict) -> str:
     return f"""당신은 '김치프리미엄' 데이터를 설명해주는 금융 데이터 해설 챗봇입니다.
 
 다음은 현재 시점의 실제 데이터입니다. 답변은 반드시 이 수치에 근거해야 합니다:
-- 프리미엄(premium_pct): {data.get("premium_pct")}%
-- 원/달러 환율(fx_rate): {data.get("fx_rate")}
-- USDT 상장(2024-06-07) 이후 전체 기간 대비 백분위(percentile): {data.get("percentile")}
-- 최근 이벤트(recent_event): {data.get("recent_event")}
+- 기준일(as_of): {data.as_of.isoformat()}
+- 프리미엄(premium_pct): {data.premium_pct}%
+- 원/달러 환율(fx_rate): {data.fx_rate}
+- USDT 상장(2024-06-07) 이후 전체 기간 대비 백분위(percentile): {data.percentile}
+- 최근 이벤트(recent_event): {data.recent_event}
 
 [답변 원칙 - 반드시 지킬 것]
 1. 위 데이터의 실제 수치를 근거로만 답변하세요. 데이터에 없는 내용은 추측해서 말하지 마세요.
@@ -114,11 +183,12 @@ def _build_system_prompt(data: dict) -> str:
 
 
 def _violates_safety_policy(reply: str) -> bool:
-    return any(word in reply for word in BANNED_WORDS)
+    lowered = reply.lower()
+    return any(word.lower() in lowered for word in BANNED_WORDS)
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(min_length=1, max_length=500)
 
 
 class ChatResponse(BaseModel):
@@ -127,7 +197,9 @@ class ChatResponse(BaseModel):
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(body: ChatRequest, x_session_id: str = Header(...)) -> ChatResponse:
+async def chat(
+    body: ChatRequest, request: Request, x_session_id: str = Header(...)
+) -> ChatResponse:
     if not GEMINI_API_KEY:
         raise HTTPException(
             status_code=500,
@@ -136,10 +208,20 @@ async def chat(body: ChatRequest, x_session_id: str = Header(...)) -> ChatRespon
 
     _reset_counters_if_new_day()
 
+    client_ip = request.client.host if request.client else "unknown"
+
     if _usage_state["daily_count"] >= DAILY_CHAT_LIMIT:
         raise HTTPException(
             status_code=429,
             detail="오늘의 대화 한도에 도달했습니다. 내일 다시 이용해 주세요.",
+        )
+
+    # X-Session-ID는 클라이언트가 임의로 바꿀 수 있으므로, 헤더 회전으로
+    # session_counts 제한을 우회하지 못하도록 IP 기준 제한을 별도로 건다.
+    if _usage_state["ip_counts"][client_ip] >= IP_CHAT_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail="현재 위치에서 사용 가능한 채팅 횟수를 모두 사용했습니다.",
         )
 
     if _usage_state["session_counts"][x_session_id] >= SESSION_CHAT_LIMIT:
@@ -150,6 +232,7 @@ async def chat(body: ChatRequest, x_session_id: str = Header(...)) -> ChatRespon
 
     # 제한을 통과한 시점에 슬롯을 즉시 예약한다 (이 지점까지는 await가 없어 동시 요청에도 안전).
     _usage_state["daily_count"] += 1
+    _usage_state["ip_counts"][client_ip] += 1
     _usage_state["session_counts"][x_session_id] += 1
 
     market_data = _load_market_data()
@@ -160,16 +243,47 @@ async def chat(body: ChatRequest, x_session_id: str = Header(...)) -> ChatRespon
             MODEL_NAME,
             system_instruction=system_prompt,
         )
-        response = model.generate_content(body.message)
-        reply_text = response.text
+        # generate_content는 동기(블로킹) 호출이라 이벤트 루프를 막지 않도록
+        # 별도 스레드에서 실행하고, 응답이 지연되면 타임아웃으로 끊는다.
+        response = await asyncio.wait_for(
+            asyncio.to_thread(model.generate_content, body.message),
+            timeout=GEMINI_TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError as exc:
+        raise HTTPException(
+            status_code=504,
+            detail="Gemini API 응답이 지연되어 요청을 중단했습니다. 다시 시도해 주세요.",
+        ) from exc
     except GoogleAPICallError as exc:
         raise HTTPException(
             status_code=502,
             detail=f"Gemini API 호출에 실패했습니다: {exc.message}",
         ) from exc
 
-    # 2차 안전장치: 금지 단어가 섞여 나오면 안전한 대체 메시지로 교체한다.
-    if _violates_safety_policy(reply_text):
+    # response.text는 candidate가 없거나 안전 필터에 걸려 차단된 경우 ValueError를
+    # 던진다. 바로 읽지 않고 candidate/차단 여부를 먼저 확인해 안전한 대체 응답으로
+    # 처리한다.
+    blocked = bool(
+        getattr(response, "prompt_feedback", None)
+        and getattr(response.prompt_feedback, "block_reason", None)
+    )
+    has_valid_candidate = any(
+        getattr(candidate, "content", None) and candidate.content.parts
+        for candidate in getattr(response, "candidates", None) or []
+    )
+
+    if blocked or not has_valid_candidate:
+        reply_text = SAFE_FALLBACK_REPLY
+    else:
+        reply_text = response.text
+
+    # 2차 안전장치: 금지 단어가 섞여 나오거나, 길이/디스클레이머 형식을 지키지
+    # 않으면 안전한 대체 메시지로 교체한다.
+    if (
+        _violates_safety_policy(reply_text)
+        or len(reply_text) > 200
+        or not reply_text.endswith(DISCLAIMER)
+    ):
         reply_text = SAFE_FALLBACK_REPLY
 
     return ChatResponse(reply=reply_text, generated_at=date.today().isoformat())

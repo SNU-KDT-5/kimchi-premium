@@ -242,6 +242,7 @@ def main() -> int:
         "fx_rate": round(latest["fx_rate"], 2),
         "percentile": percentile,
         "recent_event": recent_event,
+        "as_of": latest["date"],
     }
 
     # 매 실행마다 상장일부터 오늘까지 전체를 다시 계산하므로, history.json은

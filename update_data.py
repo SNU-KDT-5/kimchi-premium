@@ -332,20 +332,27 @@ def fetch_foreign_btc_usd_history(start_date: date) -> tuple:
 
 
 def compute_premium_rows(usdt_data: dict, fx_rates: dict) -> list:
-    """두 데이터를 날짜 기준 교집합으로 병합해 날짜별 premium_pct를 계산한다 (날짜 오름차순).
+    """업비트 USDT 거래일 전체를 기준으로 날짜별 premium_pct를 계산한다 (날짜 오름차순).
 
-    Frankfurter는 주말/공휴일 환율을 제공하지 않으므로, 두 데이터셋에
-    공통으로 존재하는 날짜만 사용한다. (기존 로직 그대로 — usdt_data의 값이
-    가격 하나(float)에서 {usdt_price, volume, value} dict로 바뀐 것만 반영.)
+    Frankfurter는 주말/공휴일이나 아직 발표되지 않은 최신 날짜의 환율을
+    제공하지 않으므로, BTC 프리미엄 계산과 동일하게 _forward_fill_fx_rates로
+    직전 거래일 환율을 채워서 쓴다. 이렇게 하면 환율 발표 여부와 무관하게
+    usdt_data에 있는 모든 날짜(업비트 거래일 전체)에 대해 premium_pct가
+    계산되고, 그 결과 as_of(가장 최근 행의 날짜)도 "가장 최근 환율 발표일"이
+    아니라 "가장 최근 업비트 거래일"이 된다.
     """
-    common_dates = sorted(set(usdt_data) & set(fx_rates))
-    if not common_dates:
-        raise DataFetchError("업비트와 환율 데이터의 날짜가 하나도 겹치지 않습니다.")
+    target_dates = sorted(usdt_data)
+    if not target_dates:
+        raise DataFetchError("업비트 USDT 데이터가 비어 있습니다.")
+
+    filled_fx = _forward_fill_fx_rates(fx_rates, target_dates)
 
     rows = []
-    for trade_date in common_dates:
+    for trade_date in target_dates:
+        if trade_date not in filled_fx:
+            continue  # 이 날짜 이전에 발표된 환율이 아직 하나도 없음 (아주 초기 날짜)
         usdt_price = usdt_data[trade_date]["usdt_price"]
-        fx_rate = fx_rates[trade_date]
+        fx_rate = filled_fx[trade_date]
         premium_pct = (usdt_price - fx_rate) / fx_rate * 100
         rows.append(
             {
@@ -357,6 +364,10 @@ def compute_premium_rows(usdt_data: dict, fx_rates: dict) -> list:
                 "value": usdt_data[trade_date]["value"],
             }
         )
+
+    if not rows:
+        raise DataFetchError("업비트와 환율 데이터를 병합한 결과가 비어 있습니다.")
+
     return rows
 
 

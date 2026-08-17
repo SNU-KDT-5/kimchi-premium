@@ -50,6 +50,8 @@
   .risk-desc { display: block; font-size: 0.8rem; color: var(--mut); line-height: 1.6; }
   .risk-progress { font-size: 0.82rem; font-weight: 600; color: var(--mut); margin-top: var(--sp-4); text-align: center; }
   .risk-progress.done { color: var(--frog); }
+  /* 근거 문단은 .caption 을 쓰되, 여러 줄이라 가운데 정렬만 푼다 */
+  .risk-source { text-align: left; line-height: 1.7; margin-top: var(--sp-5); }
 
   .intro-banner {
     display: flex; gap: var(--sp-3); align-items: flex-start;
@@ -300,7 +302,9 @@
       <div class="wf-row" id="wfRow"></div>
 
       <div class="breakeven-card" id="breakEvenBox"></div>
-      <p class="calc-footnote">환율은 ECB(Frankfurter) 기준이며, 주말·공휴일은 직전 영업일 값을 씁니다.</p>
+      <p class="calc-footnote">이 페이지는 Upbit·Bitstamp 시세와 ECB(Frankfurter) 환율로 김프를 계산하며, 주말·공휴일 환율은 직전 영업일 값을 씁니다.<br>
+        Upbit·Binance 시세와 한국은행 매매기준율로 계산한 옥현민(2023)은 2017년 11월~2022년 9월 일평균 2.20%, 최대 59.40%를 보고했습니다.
+        어느 거래소와 어느 환율을 쓰느냐에 따라 수치는 조금씩 달라집니다.</p>
     </div>
   </div>
 
@@ -308,10 +312,15 @@
   <div class="section-block" id="riskSection" hidden>
     <div class="section-label">⑤ 계산에 안 들어간 것들</div>
     <div class="card">
-      <p class="section-intro">위 숫자는 <b>사고파는 순간이 동시에 이뤄지고 그 사이에 아무 마찰도 없다</b>고 가정한 값입니다.
+      <p class="section-intro">이 사이트가 보여주는 수치는 <b>과거 데이터를 가정한 참고용 계산 결과</b>이며, 예측이나 투자 권유가 아닙니다.
+        게다가 위 계산은 <b>사고파는 순간이 동시에 이뤄지고 그 사이에 아무 마찰도 없다</b>고 본 값입니다.
         실제로는 아래 다섯 가지가 결과를 갉아먹습니다. 하나씩 읽고 눌러서 확인해보세요.</p>
       <div class="risk-list" id="riskList"></div>
       <p class="risk-progress" id="riskProgress" role="status" aria-live="polite">-</p>
+
+      <p class="caption risk-source">국가 간 가격 차이는 자본시장이 나뉘어 있거나 국경을 넘는 돈의 흐름이 느릴 때에만 오래 유지된다는 연구가 있습니다(Makarov &amp; Schoar, 2020).
+        위에 적은 마찰들이 바로 그 &lsquo;느린 흐름&rsquo;에 해당하며, 김프가 곧바로 메워지지 않고 남아 있는 이유이기도 합니다.
+        <br>재인용: 옥현민(2023), 「김치프리미엄의 발생 원인에 대한 실증적 분석」, 서울시립대학교 석사학위논문.</p>
     </div>
   </div>
 
@@ -421,7 +430,7 @@ const RISKS = [
   },
   {
     t: '해외 거래소 KYC와 외환 송금 규제',
-    d: '해외 거래소는 신원확인(KYC)을 통과해야 출금이 되고, 국내에서 해외로 보내는 자금은 외국환거래 신고 대상이 될 수 있습니다. 준비가 안 돼 있으면 시점을 놓치거나 실행 자체가 막힙니다.'
+    d: '해외 거래소는 신원확인(KYC)을 통과해야 출금이 되고, 국내에서 해외로 보내는 자금은 외국환거래 신고 대상이 될 수 있습니다. 준비가 안 돼 있으면 시점을 놓치거나 실행 자체가 막힙니다. 한국의 외환 규제로 대표되는 이런 자본 통제는 김프를 만드는 원인 중 하나로도 지목됩니다(옥현민, 2023).'
   },
   {
     t: '호가 스프레드와 슬리피지',

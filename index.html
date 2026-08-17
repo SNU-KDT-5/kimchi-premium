@@ -50,6 +50,7 @@
     .kf-scrolly2 { height: 520vh; }
     .kf-scrolly3 { height: 820vh; }
     .kf-scrolly4 { height: 460vh; }
+    .kf-scrolly5 { height: 560vh; }
 
     /* 56px = shared.css의 .topnav-inner 높이 */
     .kf-stage {
@@ -234,6 +235,36 @@
     .kf-mini-kimp { fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linejoin: round; }
     .kf-mini-fill { fill: var(--accent); fill-opacity: 0.16; }
     .kf-mini-axis { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; fill: none; }
+    /* ── 다섯 번째 장면: 원화로 본 테더 ── */
+    .kf-tick { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+    .kf-tick-label { fill: var(--mut); font-family: 'Pretendard', sans-serif; font-size: 24px; font-weight: 700; }
+    .kf-won { fill: var(--text); font-family: 'Pretendard', sans-serif; font-size: 34px; font-weight: 800; }
+    .kf-line-label { font-family: 'Pretendard', sans-serif; font-size: 26px; font-weight: 800; }
+    .kf-line-label.rate { fill: var(--text); }
+    .kf-line-label.kimp { fill: var(--accent); }
+    /* '김프' '환율' — 도장 찍듯이 쾅 */
+    .kf-stamp {
+      font-family: 'Pretendard', sans-serif; font-size: 62px; font-weight: 800;
+      opacity: 0; transform-box: fill-box; transform-origin: center;
+    }
+    .kf-stamp.kimp { fill: var(--accent); }
+    .kf-stamp.rate { fill: var(--text); }
+    .kf-stamp.is-on { animation: kf-stamp .34s cubic-bezier(.2, .8, .3, 1.5) both; }
+    @keyframes kf-stamp {
+      0%   { opacity: 0; transform: scale(2.6) rotate(-12deg); }
+      60%  { opacity: 1; transform: scale(0.94) rotate(-5deg); }
+      100% { opacity: 1; transform: scale(1) rotate(-5deg); }
+    }
+    /* 마지막 대사가 뜨면 아래 버튼을 눈에 띄게 */
+    .idx-cta.is-call {
+      background: var(--frog-bg);
+      animation: kf-cta-call 1.5s ease-in-out infinite;
+    }
+    @keyframes kf-cta-call {
+      0%, 100% { transform: translateY(0); box-shadow: 0 0 0 0 var(--frog-line); }
+      50%      { transform: translateY(-3px); box-shadow: 0 0 0 9px transparent; }
+    }
+
     /* 얼굴 오른쪽에 붙을 때는 꼬리가 왼쪽을 향한다 */
     .kf-say.is-side:after {
       left: -8px; bottom: auto; top: var(--tail-y, 50%); margin-left: 0; margin-top: -7px;
@@ -245,6 +276,7 @@
       .kf-scrolly2 { height: 470vh; }
       .kf-scrolly3 { height: 740vh; }
       .kf-scrolly4 { height: 430vh; }
+      .kf-scrolly5 { height: 520vh; }
       .kf-dollar { font-size: 34px; }
       .kf-trade { font-size: 38px; }
       .kf-say { font-size: 0.86rem; padding: var(--sp-2) var(--sp-4); max-width: 84%; }
@@ -258,6 +290,8 @@
       .kf-scroll-hint .arr { animation: none; }
       .kf-say { transition: none; }
       .kf-floor.is-blink { animation: none; }
+      .kf-stamp.is-on { animation: none; opacity: 1; }
+      .idx-cta.is-call { animation: none; }
     }
   </style>
 </head>
@@ -451,6 +485,33 @@
             <image id="p4Face" class="kf-fade" opacity="0" href="assets/face-smile.svg"></image>
           </svg>
           <div class="kf-say is-hidden" id="say4a"><span id="say4aText"></span></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════ 다섯 번째 장면 ══════════ 원화로 보면 환율에 김프가 더해진다 -->
+    <div class="kf-scrolly kf-scrolly5" id="scrolly5">
+      <div class="kf-stage" id="stage5">
+        <div class="kf-chart-wrap" id="chartWrap5">
+          <svg class="kf-chart" id="chart5" viewBox="0 0 1080 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <g class="kf-fade" id="p5Axis" opacity="0">
+              <path class="kf-axis" d="M190 132 L190 640 L1020 640"></path>
+              <text class="kf-won" x="176" y="150" text-anchor="end">₩</text>
+              <g id="p5Ticks"></g>
+            </g>
+            <image id="p5Logo" class="kf-fade" opacity="0" href="assets/%ED%85%8C%EB%8D%94.png"
+                   x="212" y="96" width="152" height="55"></image>
+            <path class="kf-line-price" id="p5Rate"></path>
+            <path class="kf-line-kimp" id="p5Kimp"></path>
+            <text class="kf-line-label rate" id="p5RateLabel" opacity="0" text-anchor="start">환율</text>
+            <text class="kf-line-label kimp" id="p5KimpLabel" opacity="0" text-anchor="middle">환율 + 김프</text>
+            <image id="p5Face" class="kf-fade" opacity="0" href="assets/face-smile.svg"
+                   x="465" y="150" width="150" height="108"></image>
+            <text class="kf-stamp kimp" id="p5StampA" x="426" y="228" text-anchor="end">김프</text>
+            <text class="kf-stamp rate" id="p5StampB" x="654" y="228" text-anchor="start">환율</text>
+          </svg>
+          <div class="kf-say is-hidden" id="say5"><span id="say5Text"></span></div>
         </div>
       </div>
     </div>
@@ -2434,6 +2495,173 @@
       update();
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', function () { laidOut = null; update(); }, { passive: true });
+    })();
+  </script>
+  <script>
+    // ══════════════════════════════════════════════════════════════
+    // 다섯 번째 장면 — 원화로 보면 '환율'에 '김프'가 더해진다
+    //   · 검은 선 = 환율, 빨간 선 = 환율 × (1 + 김프)
+    //   · 마지막에 '김프'와 '환율'을 도장 찍듯 하나씩 박고 아래 버튼으로 보낸다
+    // ══════════════════════════════════════════════════════════════
+    (function () {
+      var SVGNS = 'http://www.w3.org/2000/svg';
+      function el(t, a) { var n = document.createElementNS(SVGNS, t); for (var k in a) n.setAttribute(k, a[k]); return n; }
+      function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function ease(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+
+      var scrolly = document.getElementById('scrolly5');
+      var stage = document.getElementById('stage5');
+      var wrap = document.getElementById('chartWrap5');
+      var svg = document.getElementById('chart5');
+      var axisG = document.getElementById('p5Axis');
+      var ticksG = document.getElementById('p5Ticks');
+      var logo = document.getElementById('p5Logo');
+      var rateLine = document.getElementById('p5Rate');
+      var kimpLine = document.getElementById('p5Kimp');
+      var rateLabel = document.getElementById('p5RateLabel');
+      var kimpLabel = document.getElementById('p5KimpLabel');
+      var face = document.getElementById('p5Face');
+      var stampA = document.getElementById('p5StampA');
+      var stampB = document.getElementById('p5StampB');
+      var sayBox = document.getElementById('say5');
+      var sayText = document.getElementById('say5Text');
+
+      // ── 무대 ──
+      var X0 = 214, X1 = 1004, TOP = 320, BOT = 640;
+      var V0 = 1280, V1 = 1760;                  // 세로축이 담는 원화 범위
+      function yOf(v) { return BOT - (v - V0) / (V1 - V0) * (BOT - TOP); }
+      function xOf(t) { return lerp(X0, X1, t); }
+
+      // ── 환율(원)과 그 위에 붙는 김프(%) ──
+      var RATE = [1405, 1435, 1470, 1488, 1455, 1428, 1438, 1462, 1478, 1452, 1420,
+                  1402, 1418, 1448, 1470, 1482, 1462, 1478, 1500, 1478, 1425];
+      var KIMP = [0.4, 4.5, 8.0, 9.0, 6.5, 3.0, 0.5, 2.0, 7.0, 13.5, 11.0,
+                  6.0, 1.0, 0.4, 0.6, 0.3, 4.0, 9.0, 13.5, 7.5, 0.2];
+
+      // ── 구간 ──
+      var P_SET = 0.02;
+      var P_SAY1 = 0.06, P_RATE0 = 0.09, P_RATE1 = 0.22;
+      var P_SAY2 = 0.28, P_KIMP0 = 0.31, P_KIMP1 = 0.44;
+      var P_SAY3 = 0.52, P_STAMP_A = 0.57, P_STAMP_B = 0.63;
+      var P_SAY4 = 0.74;
+
+      var SAYS = [
+        { from: P_SAY1, to: P_SAY2, html: '물론 <b>원화 기준</b>으로 보면<br>국내 테더 가격은 <b>환율</b>에 따라 오르고 내려' },
+        { from: P_SAY2, to: P_SAY3, html: '그래서 국내 거래소의 테더 가격은<br><b>환율</b>에 <span class="kimp">김프</span>가 더해져서 결정돼' },
+        { from: P_SAY3, to: P_SAY4, html: '그러니 <span class="kimp">김프</span> 수익을 얻으려면<br><span class="kimp">김프</span>와 <b>환율</b>을 꼭 함께 봐야 해' },
+        { from: P_SAY4, to: 1.01,   html: '이제 아래를 클릭해서<br>김프로그 투자의 고수가 되어보자구 개굴!' }
+      ];
+
+      // ── 눈금 ──
+      [1300, 1400, 1500, 1600, 1700].forEach(function (v) {
+        var y = yOf(v);
+        ticksG.appendChild(el('path', { class: 'kf-tick', d: 'M176 ' + y.toFixed(1) + ' L204 ' + y.toFixed(1) }));
+        if (v <= 1600) {
+          var t = el('text', { class: 'kf-tick-label', x: 166, y: (y + 8).toFixed(1), 'text-anchor': 'end' });
+          t.textContent = v;
+          ticksG.appendChild(t);
+        }
+      });
+
+      // ── 두 선 ──
+      var N = RATE.length - 1;
+      function seriesPath(vals, upTo) {
+        var last = clamp(upTo, 0, 1);
+        if (last <= 0) return '';
+        var d = '', steps = 160;
+        for (var i = 0; i <= steps; i++) {
+          var t = (i / steps) * last;
+          var f = t * N, k = Math.min(Math.floor(f), N - 1);
+          var v = lerp(vals[k], vals[k + 1], ease(f - k));
+          d += (i ? ' L' : 'M') + xOf(t).toFixed(1) + ' ' + yOf(v).toFixed(1);
+        }
+        return d;
+      }
+      var WITH_KIMP = RATE.map(function (v, i) { return v * (1 + KIMP[i] / 100); });
+
+      // ── 말풍선 ──
+      function toWrapPx(x, y) {
+        var m = svg.getScreenCTM();
+        if (!m) return { x: 0, y: 0 };
+        var r = wrap.getBoundingClientRect();
+        return { x: x * m.a + y * m.c + m.e - r.left, y: x * m.b + y * m.d + m.f - r.top };
+      }
+      function placeSay() {
+        var head = toWrapPx(+face.getAttribute('x') + (+face.getAttribute('width')) / 2, +face.getAttribute('y'));
+        var W = wrap.clientWidth, H = wrap.clientHeight;
+        sayBox.style.left = '0px';                 // 재기 전에 왼쪽 끝으로
+        var bw = sayBox.offsetWidth, bh = sayBox.offsetHeight;
+        var left = clamp(head.x - bw / 2, 6, Math.max(6, W - bw - 6));
+        var top = clamp(head.y - bh - 24, 4, Math.max(4, H - bh - 4));
+        sayBox.style.left = left.toFixed(0) + 'px';
+        sayBox.style.top = top.toFixed(0) + 'px';
+        sayBox.style.setProperty('--tail-x', clamp(head.x - left, 18, Math.max(18, bw - 18)).toFixed(0) + 'px');
+      }
+      var lastIdx = -1, swapTimer = null;
+      function updateSay(p) {
+        var idx = -1;
+        for (var i = 0; i < SAYS.length; i++) if (p >= SAYS[i].from && p < SAYS[i].to) { idx = i; break; }
+        if (idx !== lastIdx) {
+          lastIdx = idx;
+          sayBox.classList.add('is-hidden');
+          clearTimeout(swapTimer);
+          if (idx !== -1) {
+            swapTimer = setTimeout(function () {
+              sayText.innerHTML = SAYS[idx].html;
+              placeSay();
+              sayBox.classList.remove('is-hidden');
+            }, 170);
+          }
+        }
+        if (idx !== -1 && !sayBox.classList.contains('is-hidden')) placeSay();
+      }
+
+      // ── 그리기 ──
+      var cta = document.querySelector('.idx-cta');
+      function render(p) {
+        var on = p >= P_SET ? 1 : 0;
+        axisG.setAttribute('opacity', on);
+        logo.setAttribute('opacity', on);
+        face.setAttribute('opacity', on);
+
+        var r = p < P_RATE0 ? 0 : ease((p - P_RATE0) / (P_RATE1 - P_RATE0));
+        rateLine.setAttribute('d', seriesPath(RATE, r));
+        var k = p < P_KIMP0 ? 0 : ease((p - P_KIMP0) / (P_KIMP1 - P_KIMP0));
+        kimpLine.setAttribute('d', seriesPath(WITH_KIMP, k));
+
+        // 선 이름표 — 각자 선이 다 그어지면 붙는다
+        rateLabel.setAttribute('opacity', r >= 1 ? 1 : 0);
+        rateLabel.setAttribute('x', (X1 + 8).toFixed(1));
+        rateLabel.setAttribute('y', (yOf(RATE[N]) + 32).toFixed(1));
+        kimpLabel.setAttribute('opacity', k >= 1 ? 1 : 0);
+        kimpLabel.setAttribute('x', xOf(18 / N).toFixed(1));
+        kimpLabel.setAttribute('y', (yOf(WITH_KIMP[18]) - 22).toFixed(1));
+
+        stampA.classList.toggle('is-on', p >= P_STAMP_A);
+        stampB.classList.toggle('is-on', p >= P_STAMP_B);
+        if (cta) cta.classList.toggle('is-call', p >= P_SAY4);
+
+        updateSay(p);
+      }
+
+      // ── 스크롤 ──
+      var ticking = false;
+      function update() {
+        var rect = scrolly.getBoundingClientRect();
+        var stickyTop = parseFloat(getComputedStyle(stage).top) || 0;
+        var travel = scrolly.offsetHeight - stage.offsetHeight;
+        render(travel > 0 ? clamp((stickyTop - rect.top) / travel, 0, 1) : 0);
+        ticking = false;
+      }
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+      update();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
     })();
   </script>
 </body>

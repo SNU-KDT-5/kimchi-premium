@@ -3,9 +3,15 @@
   "fx_rate": 1411.27,
   "percentile": 32,
   "recent_event": "특이 이벤트 없음",
-  "as_of": "2026-08-17",
+  "as_of": "2026-08-14",
   "historical_max_premium_pct": 8.33,
   "historical_max_premium_date": "2025-02-05",
   "historical_min_premium_pct": -3.22,
-  "historical_min_premium_date": "2026-06-01"
+  "historical_min_premium_date": "2026-06-01",
+  "volume": 106180136.2075,
+  "value": 149827987665.89,
+  "btc_premium_pct": 0.27,
+  "btc_krw_price": 89120000.0,
+  "foreignUsd": 62975.97,
+  "foreignSource": "Bitstamp"
 }

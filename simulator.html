@@ -661,16 +661,20 @@ function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
 function commas(n){ return Math.round(n).toLocaleString('ko-KR'); }
 
 // 매수 시점(buyIdx)부터 오늘까지의 누적수익(%)
-//   프리미엄만 : 김프 배수의 변화   ((1 + p[t]) / (1 + p[buy]) - 1) * 100
-//   환율까지   : 위 값 + 환율 변화율 (fx[t] / fx[buy] - 1) * 100
-// BTC 달러 가격은 상쇄된다고 보고 김프와 환율의 변화만 남긴다.
+//   프리미엄만 : 김프 배수         (1 + p[t]) / (1 + p[buy])
+//   환율까지   : 김프 배수 × 환율 배수 (fx[t] / fx[buy])
+// 두 수익률을 더하면 교차항(김프변화 × 환율변화)이 빠져 근사가 된다.
+// 김프와 환율이 둘 다 크게 움직인 구간(예: 2018-01)에서는 10%p 넘게 어긋나므로
+// 배수끼리 곱한 뒤 1을 뺀다. BTC 달러 가격은 상쇄된다고 본다.
 function computeSeriesFromIdx(buyIdx){
   const pBuy = PREMIUM[buyIdx];
   const fxBuy = FX[buyIdx];
   const arr = [];
   for (let i = buyIdx; i < DATES.length; i++) {
-    const premium = ((1 + PREMIUM[i]) / (1 + pBuy) - 1) * 100;
-    const real = premium + (FX[i] / fxBuy - 1) * 100;
+    const premMul = (1 + PREMIUM[i]) / (1 + pBuy);
+    const fxMul = FX[i] / fxBuy;
+    const premium = (premMul - 1) * 100;
+    const real = (premMul * fxMul - 1) * 100;
     arr.push({ premium, real });
   }
   return arr;
@@ -785,8 +789,11 @@ function renderAll(){
 
   // 손익분기점: 프리미엄 쪽 수익(수수료 반영)이 이미 확보된 상태에서,
   // 환율이 매수 시점 대비 얼마나 반대로 움직여야 실질 수익이 0이 되는지 계산
-  const netPremiumEdge = (last.premium - totalFee);
-  const breakEvenFx = fxAt * (1 - netPremiumEdge / 100);
+  // 순수익이 0이 되는 환율. 누적수익이 곱셈 합성이므로 손익분기도 같은 식에서 푼다.
+  //   (김프배수 × fx/fxAt - 1) * 100 - totalFee = 0  →  fx = fxAt × (1 + totalFee/100) / 김프배수
+  const premMul = 1 + last.premium / 100;
+  const breakEvenFx = fxAt * (1 + totalFee / 100) / premMul;
+  const netPremiumEdge = last.premium - totalFee;   // 환율을 빼고 본 손익 (문구용)
   const box = document.getElementById('breakEvenBox');
 
   // 여백을 폭에 비례시킨다. 고정 15원이면 김프가 큰 시점(세 값이 수백 원씩 벌어짐)에서
@@ -802,11 +809,11 @@ function renderAll(){
 
   let desc;
   if (netPremiumEdge >= 0) {
+    const dropPct = (1 - breakEvenFx / fxAt) * 100;   // 손익분기까지 남은 환율 하락폭
     const gapPct = (fxNow - breakEvenFx) / breakEvenFx * 100;
-    desc = `매수 시점(${commas(fxAt)}원)보다 환율이 ${Math.abs(netPremiumEdge).toFixed(2)}% 넘게 떨어지면 손실로 바뀌는데, 오늘 환율(${commas(fxNow)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
+    desc = `매수 시점(${commas(fxAt)}원)보다 환율이 ${dropPct.toFixed(2)}% 넘게 떨어지면 손실로 바뀌는데, 오늘 환율(${commas(fxNow)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
   } else {
-    desc = `프리미엄과 수수료만 놓고 보면 이미 ${Math.abs(netPremiumEdge).toFixed(2)}%p 손해인 상태라,
-      환율이 매수 시점(${commas(fxAt)}원)보다 더 올라야 본전이 됩니다.`;
+    desc = `프리미엄과 수수료만 놓고 보면 이미 ${Math.abs(netPremiumEdge).toFixed(2)}%p 손해인 상태라, 환율이 매수 시점(${commas(fxAt)}원)보다 ${((breakEvenFx / fxAt - 1) * 100).toFixed(2)}% 더 올라야 본전이 됩니다.`;
   }
 
   box.innerHTML = `

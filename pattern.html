@@ -96,8 +96,9 @@
      ① 이 기간에 김프가 가장 크게 움직인 구간 ② 그 최저·최고점 ③ 사건이 있었던 날 */
   /* 방향 색 — 오름은 빨강, 내림은 파랑(국내 시세 표기 관행)입니다.
      이 색은 "변화"에만 쓰고, 김프 수준값 같은 방향 없는 숫자에는 쓰지 않습니다. */
+  :root { --down: #2f5d9e; --down-bg: rgba(47, 93, 158, 0.12); --down-line: rgba(47, 93, 158, 0.3); }
   .dir-up   { --dir: var(--accent); --dir-bg: var(--accent-bg); --dir-line: var(--accent-line); }
-  .dir-down { --dir: #2f5d9e; --dir-bg: rgba(47, 93, 158, 0.12); --dir-line: rgba(47, 93, 158, 0.3); }
+  .dir-down { --dir: var(--down); --dir-bg: var(--down-bg); --dir-line: var(--down-line); }
 
   .swing-band { fill: var(--dir-bg); pointer-events: none; }
   .swing-guide { stroke: var(--dir-line); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
@@ -112,6 +113,7 @@
   /* 사건일·촉발일은 amber로 통일해 "그날"이라는 걸 드러냅니다. */
   .marker-line { stroke: var(--amber); stroke-width: 1.6; stroke-dasharray: 3 3; }
 
+  .tag-base { fill: var(--panel2); }
   .tag-box { fill: var(--panel); stroke: var(--border2); stroke-width: 1; }
   .tag-box--dir { fill: var(--dir-bg); stroke: var(--dir-line); }
   .tag-box--amber { fill: var(--amber-bg); stroke: var(--amber); }
@@ -131,6 +133,22 @@
     background: var(--dir-bg); border: 1px solid var(--dir); display: inline-block;
   }
   .zoom-legend .swatch--amber { background: var(--amber-bg); border-color: var(--amber); }
+
+  /* 장중 저가 — 종가만으로는 안 보이는 하루 안의 급락을 드러낼 때만 씁니다. */
+  .low-line { fill: none; stroke: var(--down); stroke-width: 1.4; opacity: 0.5; stroke-linejoin: round; }
+  .dip-wick { stroke: var(--down); stroke-width: 3; }
+  .dip-head { fill: var(--down); }
+  .dip-dot { fill: var(--down); stroke: var(--panel); stroke-width: 2; }
+  .dip-close-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
+  .tag-box--down { fill: var(--down-bg); stroke: var(--down-line); }
+  .tag-text--down { fill: var(--down); }
+  .zoom-legend .swatch--low { background: var(--down-bg); border-color: var(--down); }
+  /* display:inline-block가 hidden 속성을 이겨버리므로 명시적으로 꺼줍니다. */
+  .zoom-legend .swatch[hidden] { display: none; }
+
+  /* 종가 아래에 장중 저점을 나란히 두어, 종가만 크게 읽히지 않게 합니다. */
+  .headline-sub { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; color: var(--down); margin-top: 2px; }
+  .headline-sub .cap { font-family: var(--font-body); font-size: 0.72rem; color: var(--dim); font-weight: 600; }
 
   /* 환율·BTC 미니 차트의 끝점 */
   .mini-end-dot { stroke: var(--panel2); stroke-width: 1.5; }
@@ -234,6 +252,7 @@
           <div class="detail-headline">
             <div class="value" id="dHeadline">-</div>
             <div class="label" id="dHeadlineLabel">-</div>
+            <div class="headline-sub" id="dHeadlineSub" hidden></div>
           </div>
         </div>
 
@@ -247,6 +266,7 @@
             <span class="swatch dir-up"></span>김프가 가장 크게 오른 구간
             <span class="swatch dir-down"></span>가장 크게 내린 구간
             <span class="swatch swatch--amber"></span>사건일·촉발일
+            <span class="swatch swatch--low" id="lowSwatch" hidden></span><span id="lowLegend" hidden>장중 저가 기준 김프</span>
           </p>
         </div>
 
@@ -504,6 +524,11 @@
 
     let lo = Math.min.apply(null, values), hi = Math.max.apply(null, values);
     if (opts.includeZero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+    // 선으로 그리지는 않지만 축에는 들어가야 하는 값(장중 저점)
+    if (opts.domainExtra != null) {
+      lo = Math.min(lo, opts.domainExtra);
+      hi = Math.max(hi, opts.domainExtra);
+    }
     const pad = Math.max((hi - lo) * 0.15, 0.3);
     lo -= pad; hi += pad;
 
@@ -646,6 +671,13 @@
     const w = textWidth(text, 10.5) + 16;
     const h = 19;
     const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
+    // 색이 있는 태그는 배경이 반투명이라, 뒤를 지나는 점선이 글씨를 뚫고 보입니다.
+    // 불투명한 판을 먼저 깔아 가려줍니다.
+    if (variant) {
+      svg.appendChild(el('rect', {
+        class: 'tag-base', x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
+      }));
+    }
     svg.appendChild(el('rect', {
       class: 'tag-box' + suffix + (extra ? ' ' + extra : ''),
       x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
@@ -716,16 +748,46 @@
     return null;
   }
 
-  function renderZoom(from, to, markIdx, markText) {
+  // 종가와 장중 저가의 김프 차이가 이만큼(%p) 넘게 벌어진 날은, 종가선만 봐서는
+  // "아무 일 없던 날"로 읽힙니다. 비상계엄(2024-12-03, 33.8%p)이 그런 날입니다.
+  // 이 정도로 큰 날에만 저가를 함께 그립니다 — 낮게 잡으면 평범한 변동성까지
+  // 걸려서 오히려 그날이 안 도드라집니다.
+  const LOW_GAP = 10;
+
+  // i일의 종가↔장중 저점 차이(%p). 저가가 없으면 null.
+  function lowGapAt(i) {
+    if (!market.lowPremium || !market.btcPriceLow || market.btcPriceLow[i] == null) return null;
+    return market.premium[i] - market.lowPremium[i];
+  }
+
+  function renderZoom(from, to, markIdx, markText, dipIdx) {
     const svg = document.getElementById('zoom');
     const values = market.premium.slice(from, to + 1);
+    const hasDip = dipIdx != null;
+
     const g = drawLine(svg, values, {
       width: ZOOM.W, height: ZOOM.H,
       margin: { left: ZOOM.left, right: ZOOM.right, top: ZOOM.top, bottom: ZOOM.bottom },
-      lineClass: 'kimp-line', includeZero: true
+      lineClass: 'kimp-line', includeZero: true,
+      // 저점까지 축을 늘려야 급락이 실제 크기로 보입니다.
+      domainExtra: hasDip ? market.lowPremium[dipIdx] : null
     });
     const plotTop = ZOOM.top;
     const plotBottom = ZOOM.H - ZOOM.bottom;
+
+    // 장중 저가 김프를 종가선 아래 옅은 선으로 함께 그립니다. 평소에는 종가선에
+    // 거의 붙어 있다가 급락일에만 뚝 떨어져서, 그날이 얼마나 예외적인지가 대비로
+    // 드러납니다. 값 하나만 찍으면 "원래 이런 날이 흔한가?"에 답하지 못합니다.
+    if (hasDip) {
+      svg.insertBefore(el('path', {
+        class: 'low-line',
+        d: market.lowPremium.slice(from, to + 1).map(function (v, i) {
+          return (i ? 'L' : 'M') + g.px(i).toFixed(1) + ',' + g.py(v).toFixed(1);
+        }).join(' ')
+      }), svg.firstChild.nextSibling);
+    }
+    document.getElementById('lowSwatch').hidden = !hasDip;
+    document.getElementById('lowLegend').hidden = !hasDip;
 
     // 이 기간의 최저·최고와, 그 둘 사이(= 가장 크게 움직인 구간)를 먼저 구합니다.
     let minI = 0, maxI = 0;
@@ -740,8 +802,12 @@
     // 오르면 빨강, 내리면 파랑. 밴드·화살표·최저최고 태그가 이 색을 같이 씁니다.
     const dirClass = swing >= 0 ? 'dir-up' : 'dir-down';
 
+    // 급락일이 있으면 그날이 이 카드의 본론이므로, 종가 기준 "가장 큰 변화" 강조는
+    // 접어둡니다. 둘을 같이 켜면 서로 시선을 뺏습니다.
+    const showSwing = !hasDip;
+
     // ① 가장 크게 움직인 구간을 배경으로 깔아 시선을 먼저 잡습니다.
-    if (swingTo > swingFrom) {
+    if (showSwing && swingTo > swingFrom) {
       svg.insertBefore(el('rect', {
         class: 'swing-band ' + dirClass,
         x: g.px(swingFrom), y: plotTop,
@@ -771,7 +837,7 @@
 
     // ② 변화폭을 최저→최고를 잇는 대각선 화살표로 보여줍니다.
     //    기울기가 곧 움직임의 방향과 속도라서, 길이만 재던 세로 화살표보다 잘 읽힙니다.
-    if (swingTo > swingFrom && Math.abs(swing) > 0.5) {
+    if (showSwing && swingTo > swingFrom && Math.abs(swing) > 0.5) {
       const A = placeArrow(g, values, swingFrom, swingTo, plotTop, plotBottom);
       if (A) {
         const hx = A.ex - A.ux * 12, hy = A.ey - A.uy * 12;   // 화살촉이 시작되는 지점
@@ -791,7 +857,7 @@
     }
 
     // ③ 최저·최고점은 링을 두른 점 + 값 태그로 강조합니다.
-    [[minI, '최저'], [maxI, '최고']].forEach(function (pair) {
+    if (showSwing) [[minI, '최저'], [maxI, '최고']].forEach(function (pair) {
       const i = pair[0];
       const cx = g.px(i), cy = g.py(values[i]);
       svg.appendChild(el('circle', { class: 'peak-halo ' + dirClass, cx: cx, cy: cy, r: 8 }));
@@ -815,7 +881,7 @@
     });
 
     // 최대 변화폭은 구간 위쪽에 한 번 더 못박아 둡니다.
-    if (swingTo > swingFrom && Math.abs(swing) > 0.5) {
+    if (showSwing && swingTo > swingFrom && Math.abs(swing) > 0.5) {
       drawTag(svg, (g.px(swingFrom) + g.px(swingTo)) / 2, plotTop - 14,
         '가장 큰 변화 ' + fmtPP(swing), 'dir', dirClass);
     }
@@ -828,6 +894,25 @@
       }));
       drawTag(svg, g.px(i), plotTop - 34, markText, 'amber');
     }
+
+    // ⑤ 급락일 — 종가에서 장중 저점까지 세로로 내려긋고 양쪽 값을 붙입니다.
+    //    사건일 표시(④)보다 뒤에 그려야 amber 점선이 태그를 뚫고 지나가지 않습니다.
+    if (hasDip) {
+      const at = dipIdx - from;
+      const x = g.px(at);
+      const yClose = g.py(values[at]);
+      const yLow = g.py(market.lowPremium[dipIdx]);
+      svg.appendChild(el('line', { class: 'dip-wick', x1: x, x2: x, y1: yClose, y2: yLow }));
+      svg.appendChild(el('polygon', {
+        class: 'dip-head', points: [x, yLow, x - 5, yLow - 10, x + 5, yLow - 10].join(' ')
+      }));
+      svg.appendChild(el('circle', { class: 'dip-dot', cx: x, cy: yLow, r: 4 }));
+      svg.appendChild(el('circle', { class: 'dip-close-dot', cx: x, cy: yClose, r: 4 }));
+      drawTag(svg, x, yClose - 20, '종가 ' + fmtPct(values[at]), null);
+      drawTag(svg, x, Math.min(yLow + 20, plotBottom - 12),
+        '장중 저점 ' + fmtPct(market.lowPremium[dipIdx]), 'down');
+    }
+
     return { values, minI, maxI };
   }
 
@@ -879,7 +964,9 @@
       const from = Math.max(0, s - pad);
       const to = Math.min(market.dates.length - 1, e + pad);
 
-      const z = renderZoom(from, to, p.triggerDate ? findIndex(p.triggerDate) : null, '촉발일');
+      // 구간 카드는 여러 주에 걸친 흐름이 본론이라, 하루 안의 급락은 넣지 않습니다
+      // (2018년 초처럼 급락일이 여럿인 구간에서는 표시가 뒤엉킵니다).
+      const z = renderZoom(from, to, p.triggerDate ? findIndex(p.triggerDate) : null, '촉발일', null);
       const fxNet = renderMini('fxChart', 'fxValue', 'fxRate', from, to, 'fx-line');
       const btcNet = renderMini('btcChart', 'btcValue', 'btcPrice', from, to, 'btc-line');
 
@@ -919,7 +1006,11 @@
       const from = Math.max(0, c - 14);
       const to = Math.min(market.dates.length - 1, c + 14);
 
-      renderZoom(from, to, c, ev.date.slice(5));
+      // 사건 당일이 종가로는 멀쩡해 보이는데 장중에 크게 빠진 날이면, 그 하루를
+      // 드러내는 게 이 카드의 본론입니다.
+      const dipGap = lowGapAt(c);
+      const dipIdx = dipGap !== null && dipGap > LOW_GAP ? c : null;
+      renderZoom(from, to, c, ev.date.slice(5), dipIdx);
       const fxNet = renderMini('fxChart', 'fxValue', 'fxRate', from, to, 'fx-line');
       const btcNet = renderMini('btcChart', 'btcValue', 'btcPrice', from, to, 'btc-line');
 
@@ -935,15 +1026,32 @@
       // 당일 김프는 변화가 아니라 수준값이라 방향 색을 쓰지 않습니다.
       head.className = 'value';
       document.getElementById('dHeadlineLabel').textContent = '당일 김프';
+
+      // 종가만 크게 띄우면 "아무 일 없던 날"로 읽히므로 장중 저점을 나란히 둡니다.
+      const sub = document.getElementById('dHeadlineSub');
+      sub.hidden = dipIdx === null;
+      if (dipIdx !== null) {
+        sub.innerHTML = '<span class="cap">장중 저점 </span>' + fmtPct(market.lowPremium[c]);
+      }
+
       document.getElementById('dDesc').textContent = ev.desc;
       document.getElementById('zoomTitle').textContent =
         '사건 전후 김프 움직임 · ' + market.dates[from] + ' ~ ' + market.dates[to] + ' (전후 약 2주)';
 
-      setStats([
-        ['1일 전 대비', diff(1) === null ? '—' : fmtPP(diff(1))],
-        ['3일 전 대비', diff(3) === null ? '—' : fmtPP(diff(3))],
-        ['7일 전 대비', diff(7) === null ? '—' : fmtPP(diff(7))]
-      ]);
+      // 급락일에는 "1·3·7일 전 대비"가 전부 0.1%p라서 오히려 오해를 키웁니다.
+      if (dipIdx !== null) {
+        setStats([
+          ['당일 종가 김프', fmtPct(current)],
+          ['당일 장중 저점', fmtPct(market.lowPremium[c])],
+          ['종가↔저점 차이', fmtPP(-dipGap)]
+        ]);
+      } else {
+        setStats([
+          ['1일 전 대비', diff(1) === null ? '—' : fmtPP(diff(1))],
+          ['3일 전 대비', diff(3) === null ? '—' : fmtPP(diff(3))],
+          ['7일 전 대비', diff(7) === null ? '—' : fmtPP(diff(7))]
+        ]);
+      }
 
       let text = '환율·BTC는 확대 구간 첫날을 0%로 두고 그린 변화율입니다. ' +
         '이 2주 동안 환율은 ' + fmtPct(fxNet) + ', BTC(원화)는 ' + fmtPct(btcNet) + ' 움직였습니다.';
@@ -951,13 +1059,9 @@
       // 종가만으로는 하루 안의 급락·되돌림이 가려지므로,
       // 장중 저가로 추정한 당일 저점이 뚜렷이 낮을 때만 덧붙입니다.
       // 저가(btc_krw_low)가 없는 날도 있어(예: 오늘 갱신 전) 항상 값을 확인합니다.
-      if (market.btcPriceLow && market.btcPriceLow[c]) {
-        const converted = market.foreignUsd[c] * market.fxRate[c];
-        const lowPremium = (market.btcPriceLow[c] - converted) / converted * 100;
-        if (current - lowPremium > 5) {
-          text += ' BTC 장중 저가 기준으로 보면 이날 김프가 한때 ' + fmtPct(lowPremium) +
-            '까지 내려갔던 것으로 추정됩니다(환율·해외 시세는 종가 기준이라 근사치입니다).';
-        }
+      if (dipIdx !== null) {
+        text += ' BTC 장중 저가 기준으로 보면 이날 김프가 한때 ' + fmtPct(market.lowPremium[c]) +
+          '까지 내려갔던 것으로 추정됩니다(환율·해외 시세는 종가 기준이라 근사치입니다).';
       }
       note.textContent = text;
     }
@@ -996,6 +1100,14 @@
         premium: premium,
         btcPrice: data.btcPrice,
         btcPriceLow: data.btcPriceLow,
+        // 장중 저가로 계산한 김프. 저가가 없는 날은 종가 김프를 그대로 둬서
+        // 선을 그릴 때 구멍이 생기지 않게 합니다.
+        lowPremium: data.dates.map(function (d, i) {
+          const low = data.btcPriceLow && data.btcPriceLow[i];
+          if (low == null) return premium[i];
+          const conv = data.foreignUsd[i] * data.fxRate[i];
+          return (low - conv) / conv * 100;
+        }),
         foreignUsd: data.foreignUsd,
         fxRate: data.fxRate,
         indexByDate: new Map(data.dates.map((d, i) => [d, i])),

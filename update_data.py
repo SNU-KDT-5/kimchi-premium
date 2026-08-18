@@ -167,9 +167,13 @@ def fetch_full_usdt_price_history() -> dict:
     return {d: v for d, v in result.items() if d >= listing_date_str}
 
 
-def fetch_full_btc_price_history() -> dict:
-    """업비트에서 BTC_LISTING_DATE부터 오늘까지 전체 BTC/KRW 종가를
-    {"YYYY-MM-DD": price} 형태로 반환한다.
+def fetch_full_btc_price_history() -> tuple:
+    """업비트에서 BTC_LISTING_DATE부터 오늘까지 전체 BTC/KRW 종가와 장중 저가를
+    ({"YYYY-MM-DD": 종가}, {"YYYY-MM-DD": 저가}) 형태로 반환한다.
+
+    저가는 종가와 같은 응답에 이미 들어 있어 추가 호출이 필요 없다. 종가만
+    보면 하루 안에 급락했다가 되돌아온 날(예: 2024-12-03 비상계엄)이 "변화
+    없는 날"로 보이므로, 그런 날을 설명할 수 있도록 함께 내보낸다.
 
     날짜 키는 candle_date_time_kst가 아니라 candle_date_time_utc를 기준으로
     만든다. 해외 BTC 시세(Bitstamp/Coinbase)와 Frankfurter 환율이 모두 UTC
@@ -180,14 +184,19 @@ def fetch_full_btc_price_history() -> dict:
     listing_date_str = BTC_LISTING_DATE.isoformat()
 
     prices = {}
+    lows = {}
     for candle in candles:
         try:
             trade_date = candle["candle_date_time_utc"][:10]
             prices[trade_date] = float(candle["trade_price"])
+            lows[trade_date] = float(candle["low_price"])
         except (KeyError, TypeError, ValueError) as exc:
             raise DataFetchError(f"업비트 BTC 캔들 데이터 파싱 실패: {candle!r}") from exc
 
-    return {d: p for d, p in prices.items() if d >= listing_date_str}
+    return (
+        {d: p for d, p in prices.items() if d >= listing_date_str},
+        {d: p for d, p in lows.items() if d >= listing_date_str},
+    )
 
 
 def fetch_full_fx_rate_history() -> dict:
@@ -427,7 +436,11 @@ def _forward_fill_fx_rates(fx_rates: dict, target_dates: list) -> dict:
 
 
 def compute_btc_premium_rows(
-    btc_krw_prices: dict, foreign_usd_prices: dict, fx_rates: dict, foreign_source: str
+    btc_krw_prices: dict,
+    foreign_usd_prices: dict,
+    fx_rates: dict,
+    foreign_source: str,
+    btc_krw_lows: dict = None,
 ) -> list:
     """업비트 BTC, 해외 BTC, 환율(주말/공휴일은 직전 거래일 값으로 forward-fill)을
     날짜 기준으로 병합해 날짜별 btc_premium_pct를 계산한다 (날짜 오름차순).
@@ -445,23 +458,26 @@ def compute_btc_premium_rows(
         fx_rate = filled_fx[trade_date]
         foreign_krw_equiv = foreign_usd * fx_rate
         btc_premium_pct = (btc_krw_price - foreign_krw_equiv) / foreign_krw_equiv * 100
-        rows.append(
-            {
-                "date": trade_date,
-                "btc_krw_price": btc_krw_price,
-                "foreignUsd": foreign_usd,
-                "foreignSource": foreign_source,
-                "btc_premium_pct": btc_premium_pct,
-                # fx_rate도 함께 내보낸다. 예전에는 이 값이 USDT 행에만 실렸는데,
-                # BTC만 있는 과거 구간에는 USDT 행이 없어 fx_rate가 통째로 빠진다.
-                # shared.js의 getBtcPremiumData는 btc_krw_price/foreignUsd/fx_rate가
-                # 셋 다 있는 날짜만 통과시키므로, 이게 없으면 과거 구간을 다 받아와도
-                # 프런트에서 전부 걸러져 simulator가 예전과 똑같이 2024-06-07부터만
-                # 보인다. USDT와 겹치는 날짜에는 같은 forward-fill 결과가 들어가므로
-                # 기존 행의 fx_rate 값은 달라지지 않는다.
-                "fx_rate": fx_rate,
-            }
-        )
+        row = {
+            "date": trade_date,
+            "btc_krw_price": btc_krw_price,
+            "foreignUsd": foreign_usd,
+            "foreignSource": foreign_source,
+            "btc_premium_pct": btc_premium_pct,
+            # fx_rate도 함께 내보낸다. 예전에는 이 값이 USDT 행에만 실렸는데,
+            # BTC만 있는 과거 구간에는 USDT 행이 없어 fx_rate가 통째로 빠진다.
+            # shared.js의 getBtcPremiumData는 btc_krw_price/foreignUsd/fx_rate가
+            # 셋 다 있는 날짜만 통과시키므로, 이게 없으면 과거 구간을 다 받아와도
+            # 프런트에서 전부 걸러져 simulator가 예전과 똑같이 2024-06-07부터만
+            # 보인다. USDT와 겹치는 날짜에는 같은 forward-fill 결과가 들어가므로
+            # 기존 행의 fx_rate 값은 달라지지 않는다.
+            "fx_rate": fx_rate,
+        }
+        # 저가는 있는 날에만 넣는다. 없는 날에 None을 채우면 shared.js의
+        # `!= null` 필터를 통과해버려 프런트가 null을 숫자로 다루게 된다.
+        if btc_krw_lows and trade_date in btc_krw_lows:
+            row["btc_krw_low"] = btc_krw_lows[trade_date]
+        rows.append(row)
     return rows
 
 
@@ -510,10 +526,10 @@ def main() -> int:
         fx_rates = fetch_full_fx_rate_history()
         rows = compute_premium_rows(usdt_data, fx_rates)
 
-        btc_krw_prices = fetch_full_btc_price_history()
+        btc_krw_prices, btc_krw_lows = fetch_full_btc_price_history()
         foreign_usd_prices, foreign_source = fetch_foreign_btc_usd_history(BTC_LISTING_DATE)
         btc_rows = compute_btc_premium_rows(
-            btc_krw_prices, foreign_usd_prices, fx_rates, foreign_source
+            btc_krw_prices, foreign_usd_prices, fx_rates, foreign_source, btc_krw_lows
         )
     except DataFetchError as exc:
         logger.error(
@@ -601,6 +617,8 @@ def main() -> int:
                 "fx_rate": round(btc_row["fx_rate"], 2),
             }
         )
+        if "btc_krw_low" in btc_row:
+            entry["btc_krw_low"] = round(btc_row["btc_krw_low"], 2)
 
     history = [history_by_date[d] for d in sorted(history_by_date)]
 

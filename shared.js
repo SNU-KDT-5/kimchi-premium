@@ -85,8 +85,12 @@
 
   /**
    * 비트코인(BTC) 데이터. 해외 시세까지 포함해 김프 계산이 가능하다.
-   * @returns {Promise<{dates:string[], btcPrice:number[], foreignUsd:number[],
-   *                    fxRate:number[], foreignSource:string}>}
+   *
+   * btcPriceLow(업비트 장중 저가)는 없는 날은 null이다. 종가만 보면 하루 안에
+   * 급락했다 되돌아온 날이 "변화 없는 날"로 보이므로, 그런 날을 설명해야 하는
+   * 화면(pattern)에서만 쓰고 나머지는 무시하면 된다.
+   * @returns {Promise<{dates:string[], btcPrice:number[], btcPriceLow:(number|null)[],
+   *                    foreignUsd:number[], fxRate:number[], foreignSource:string}>}
    */
   function getBtcPremiumData() {
     return loadHistory().then(function (rows) {
@@ -100,6 +104,9 @@
       return {
         dates: filtered.map(function (r) { return r.date; }),
         btcPrice: filtered.map(function (r) { return r.btc_krw_price; }),
+        btcPriceLow: filtered.map(function (r) {
+          return r.btc_krw_low != null ? r.btc_krw_low : null;
+        }),
         foreignUsd: filtered.map(function (r) { return r.foreignUsd; }),
         fxRate: filtered.map(function (r) { return r.fx_rate; }),
         foreignSource: lastSource

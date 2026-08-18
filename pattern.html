@@ -136,7 +136,12 @@
      김프는 국내÷(해외×환율)이라 폭락장에서도 오르기 때문에, 원인을 함께 적지 않으면
      화면의 ▲가 "국내는 괜찮았다"로 잘못 읽힙니다. */
   .detail-desc { display: flex; flex-direction: column; gap: var(--sp-3); margin: var(--sp-4) 0 var(--sp-5); }
+  /* 장중 저점이 한 줄 더 보이는 사건은 설명이 과하게 밀려 보이지 않도록 위 간격만 조금 줄입니다. */
+  #detail.has-headline-sub .detail-desc { margin-top: var(--sp-2); }
   .desc-row { display: flex; align-items: flex-start; gap: var(--sp-3); }
+  /* 설명이 실제 화면에서 한 줄일 때만 배지와 문장을 세로 가운데에 맞춥니다. */
+  .desc-row.single-line { align-items: center; }
+  .desc-row.single-line .desc-tag { margin-top: 0; }
   .desc-tag {
     flex: none; width: 40px; text-align: center; margin-top: 2px;
     padding: 3px 0; border-radius: var(--r-sm);
@@ -454,7 +459,7 @@
   </div>
 
 <p class="caption" style="margin-top: var(--sp-8); text-align: center;">
-  출처: 업비트 · Frankfurter(ECB 기준) · <span id="foreignSourceLabel">해외 거래소</span> · 팀 데이터(data/history.json)
+  출처: 업비트 · Frankfurter(ECB 기준) · <span id="foreignSourceLabel">해외 거래소</span>
 </p>
 </div>
 
@@ -496,10 +501,10 @@
       end: '2018-01-10',
       chartLabel: '2017년 말 폭등',
       title: '2017년 말 김프 대폭등',
-      what: '김프가 두 달 남짓 만에 -0.2%에서 +57.6%까지 올라 사상 최고 수준에 닿았습니다. ' +
-            '국내외 BTC가 함께 올랐지만 오른 폭이 달랐습니다.',
-      why: '국내 BTC가 188% 오르는 동안 해외는 87% 오르는 데 그쳤고, 그 격차가 그대로 김프가 됐습니다. ' +
-           '환율은 거의 움직이지 않았습니다. 특정 발표가 아니라 여러 주에 걸친 국내 개인 매수세가 누적된 결과입니다.'
+      what: '두 달 남짓한 사이 김프가 -0.2%에서 +57.6%까지 올라, 사상 최고 수준에 닿았어요. ' +
+            '국내와 해외에서 BTC 가격이 모두 올랐지만, 오르는 폭은 서로 달랐어요.',
+      why: '국내 BTC는 188% 올랐지만 해외는 87% 올랐어요. 이 차이가 그대로 김프가 되었어요. ' +
+           '환율은 거의 움직이지 않았어요. 한 번의 발표 때문이라기보다, 여러 주 동안 국내 개인들이 사려는 움직임이 쌓인 결과예요.'
     },
     {
       id: 'w-park-regulation',
@@ -508,10 +513,10 @@
       triggerDate: '2018-01-11',
       chartLabel: '박상기 규제 충격',
       title: '박상기 거래소 폐쇄 발언과 규제 충격',
-      what: '법무부장관의 거래소 폐쇄 검토 발언(1/11) 이후 김프가 +57.6%에서 -4.9%까지 62.5%p 줄었습니다.',
-      why: '국내 BTC가 한 달 새 62% 빠지는 동안 해외는 38% 빠지는 데 그쳤습니다. 국내만 더 크게 밀린 만큼 ' +
-           '김프가 사라졌고, 환율은 거의 영향이 없었습니다. 발언 이후에도 규제 우려가 이어지며 낙폭이 ' +
-           '여러 달에 걸쳐 확대됐습니다.'
+      what: '법무부장관이 거래소 폐쇄를 검토한다고 말한 1월 11일 이후, 김프가 +57.6%에서 -4.9%까지 62.5%p 줄었어요.',
+      why: '한 달 동안 국내 BTC는 62%, 해외는 38% 떨어졌어요. 국내 가격이 더 크게 떨어진 만큼 ' +
+           '김프도 사라졌고, 환율의 영향은 거의 없었어요. 발언 뒤에도 규제에 대한 걱정이 이어지면서 하락 폭이 ' +
+           '여러 달 동안 더 커졌어요.'
     },
     {
       id: 'w-2021-reversal',
@@ -519,9 +524,9 @@
       end: '2021-04-25',
       chartLabel: '저점→고점 반전',
       title: '역프에서 급등까지, 2021년 상반기 김프 반전',
-      what: '한때 -6%로 역프였던 김프가 두 달여 만에 +21%까지 반전됐습니다.',
-      why: '환율이 거의 제자리인 가운데 국내 BTC가 92% 오르는 동안 해외는 49% 오르는 데 그쳤습니다. ' +
-           '국내 매수세가 앞서간 만큼 격차가 벌어졌습니다.'
+      what: '한때 -6%로 역프였던 김프가 두 달여 만에 +21%까지 바뀌었어요.',
+      why: '환율은 거의 그대로였지만, 국내 BTC가 92% 오르는 동안 해외는 49% 올랐어요. ' +
+           '국내에서 사려는 움직임이 더 앞서가면서 가격 차이가 벌어졌어요.'
     },
     {
       id: 'w-ftx-normalize',
@@ -530,11 +535,11 @@
       triggerDate: '2022-11-08',
       chartLabel: 'FTX 이후 정상화',
       title: 'FTX 거래소 파산 이후 김프 정상화',
-      what: '인출 중단(11/8)과 파산 신청(11/11)으로 국내외 가격이 함께 무너졌습니다. ' +
-            'BTC(원화)는 한 달여 만에 23% 빠졌는데, 김프는 -1.9%에서 +5.8%로 오히려 올랐습니다.',
-      why: '**국내가 버텨서가 아닙니다.** 국내(-19.5%)와 해외(-19.6%)가 거의 같은 폭으로 빠지는 사이 ' +
-           '**원/달러가 1,423원에서 1,281원으로 10% 내렸고, 김프 상승분의 절반 이상이 이 환율 하락에서 ' +
-           '나왔습니다.** 국내 수급과는 사실상 무관한 상승입니다.'
+      what: '11월 8일에 인출이 멈추고 11월 11일에 파산을 신청하면서, 국내외 가격이 함께 크게 떨어졌어요. ' +
+            'BTC(원화)는 한 달여 만에 23% 떨어졌는데, 김프는 -1.9%에서 +5.8%로 오히려 올랐어요.',
+      why: '**국내외 가격 차이보다 환율 하락의 영향이 더 컸어요.** 국내(-19.5%)와 해외(-19.6%)가 거의 같은 폭으로 떨어지는 사이 ' +
+           '**원/달러가 1,423원에서 1,281원으로 10% 내렸고, 김프가 오른 폭의 절반 이상이 이 환율 하락에서 ' +
+           '나왔어요.** 국내에서 사고파는 움직임과는 거의 관계없이 오른 셈이에요.'
     },
     {
       id: 'w-2024-etf-rally',
@@ -543,12 +548,12 @@
       triggerDate: '2024-01-10',
       chartLabel: '2024 ETF 랠리',
       title: '현물 ETF 승인과 2024년 상반기 고김프',
-      what: '김프가 +1.0%에서 +11.7%까지 올랐습니다. 이 구간에서 5%를 넘긴 날이 51일, 10%를 넘긴 날이 ' +
-            '3일로, 두 달 넘게 이어진 고김프 국면이었습니다. 같은 기간 BTC(원화)는 52% 올랐습니다.',
-      why: '미국 현물 비트코인 ETF 승인(1/10)으로 시작된 상승장에 국내가 더 크게 반응했습니다. ' +
-           '2월 중순 저점부터 3월 고점까지 국내 BTC가 38% 오르는 동안 해외는 24% 오르는 데 그쳤습니다. ' +
-           '환율은 이 기간 5% 올라(원화 약세) 김프를 낮추는 쪽으로 작용했으므로, 실제 가격 격차는 ' +
-           '김프 수치보다 더 컸습니다.'
+      what: '김프가 +1.0%에서 +11.7%까지 올랐어요. 이 구간에서 5%를 넘긴 날은 51일, 10%를 넘긴 날은 ' +
+            '3일이었어요. 높은 김프가 두 달 넘게 이어졌고, 같은 기간 BTC(원화)는 52% 올랐어요.',
+      why: '미국 현물 비트코인 ETF가 승인된 1월 10일부터 시작된 상승장에서 국내 가격이 더 크게 움직였어요. ' +
+           '2월 중순 저점부터 3월 고점까지 국내 BTC가 38% 오르는 동안 해외는 24% 올랐어요. ' +
+           '환율은 이 기간 5% 올라 원화 가치가 약해졌고, 이는 김프를 낮추는 방향으로 작용했어요. 그래서 실제 가격 차이는 ' +
+           '김프 수치보다 더 컸어요.'
     },
     {
       id: 'w-2025-ath-cooldown',
@@ -557,9 +562,9 @@
       triggerDate: '2025-10-10',
       chartLabel: 'ATH FOMO→진정',
       title: '비트코인 ATH와 국내 매수세, 그리고 진정',
-      what: '비트코인이 사상 최고가를 경신하는 시기 김프가 +8%대까지 올랐다가, 한 달여에 걸쳐 진정됐습니다.',
-      why: '관세발 글로벌 청산 사태(10/10)에서 해외가 11% 빠지는 동안 국내는 4% 빠지는 데 그쳐 격차가 ' +
-           '벌어졌고, 이후 국내가 뒤늦게 따라 내리며 좁혀졌습니다.'
+      what: '비트코인이 사상 최고가를 새로 쓰던 시기에 김프가 +8%대까지 올랐어요. 그 뒤 한 달여 동안 다시 차분해졌어요.',
+      why: '관세 문제로 세계 시장에서 큰 청산이 일어난 10월 10일, 해외 가격은 11% 떨어졌지만 국내 가격은 4% 떨어졌어요. 그래서 가격 차이가 ' +
+           '벌어졌고, 이후 국내 가격도 뒤늦게 따라 내려가면서 다시 좁혀졌어요.'
     }
   ];
 
@@ -569,37 +574,37 @@
       date: '2020-03-12',
       chartLabel: '코로나19 쇼크',
       title: '코로나19 팬데믹 쇼크',
-      what: '글로벌 금융시장 패닉 속에 BTC가 폭락한 날입니다. 김프는 오히려 +8.7%까지 올랐습니다.',
-      why: '**김프가 올랐다고 국내가 무사했던 것은 아닙니다.** 일주일 새 국내도 41% 빠졌고, ' +
-           '해외가 47% 빠지며 더 크게 밀린 그 차이만큼 김프가 벌어졌습니다.'
+      what: '세계 금융시장이 크게 불안해지면서 BTC 가격이 급락한 날이에요. 그런데 김프는 오히려 +8.7%까지 올랐어요.',
+      why: '**김프가 올랐다고 해서 국내 가격이 괜찮았던 것은 아니에요.** 일주일 동안 국내도 41% 떨어졌고, ' +
+           '해외는 47% 떨어졌어요. 해외 가격이 더 크게 떨어진 그 차이만큼 김프가 벌어졌어요.'
     },
     {
       id: 'd-eunsungsoo-2021',
       date: '2021-04-22',
       chartLabel: '은성수 발언',
       title: '은성수 거래소 폐쇄 발언',
-      what: '금융위원장의 거래소 폐쇄 가능성 발언 이후 투자심리가 얼어붙으며 김프가 +13%에서 +4%로 좁혀졌습니다.',
-      why: '일주일 새 국내가 25% 빠지는 동안 해외는 18% 빠지는 데 그쳤습니다. 국내만 더 밀린 만큼 ' +
-           '김프가 줄었고, 환율은 거의 그대로였습니다.'
+      what: '금융위원장이 거래소를 폐쇄할 수도 있다고 말한 뒤, 투자 심리가 위축되면서 김프가 +13%에서 +4%로 좁혀졌어요.',
+      why: '일주일 동안 국내 가격은 25%, 해외 가격은 18% 떨어졌어요. 국내 가격이 더 크게 떨어진 만큼 ' +
+           '김프가 줄었고, 환율은 거의 그대로였어요.'
     },
     {
       id: 'd-519-2021',
       date: '2021-05-19',
       chartLabel: '5·19 크래시',
       title: '5·19 크래시와 중국 채굴 전면 금지',
-      what: '중국의 채굴 단속 발표와 겹쳐 글로벌 시장이 급락한 날입니다. 김프는 +21%까지 올랐습니다.',
-      why: '일주일 새 해외가 26% 빠지는 동안 국내는 19% 빠지는 데 그쳐, 그 낙폭 차이만큼 김프가 ' +
-           '벌어졌습니다. 국내도 크게 빠진 날입니다.'
+      what: '중국의 채굴 단속 발표와 겹치면서 세계 시장이 크게 떨어진 날이에요. 김프는 +21%까지 올랐어요.',
+      why: '일주일 동안 해외 가격은 26%, 국내 가격은 19% 떨어졌어요. 해외 가격이 더 크게 떨어진 만큼 김프가 ' +
+           '벌어졌어요. 국내 가격도 크게 떨어진 날이에요.'
     },
     {
       id: 'd-terra-2022',
       date: '2022-05-11',
       chartLabel: '테라·루나',
       title: '테라·루나 UST 디페깅',
-      what: '스테이블코인 UST의 디페깅으로 루나 생태계가 무너지며 글로벌 시장이 크게 흔들린 날입니다. ' +
-            'BTC(원화)도 일주일 새 20% 빠졌는데, 김프는 +9%까지 올랐습니다.',
-      why: '해외가 27% 빠지며 더 크게 밀린 탓입니다. ' +
-           '**국내가 덜 빠진 것이지 안 빠진 것이 아닙니다.**'
+      what: '스테이블코인 UST의 가치가 기준에서 벗어나는 디페깅이 일어나면서, 루나 생태계가 무너지고 세계 시장도 크게 흔들렸어요. ' +
+            'BTC(원화)도 일주일 동안 20% 떨어졌는데, 김프는 +9%까지 올랐어요.',
+      why: '해외 가격이 27% 떨어지며 더 크게 내려갔기 때문이에요. ' +
+           '**국내 가격도 떨어졌지만, 해외 가격보다 덜 떨어진 거예요.**'
     },
     {
       id: 'd-martial-law-2024',
@@ -607,10 +612,10 @@
       chartLabel: '비상계엄',
       title: '비상계엄 선포',
       milestone: true,
-      what: '비상계엄이 선포된 날입니다. 종가 기준 김프는 -0.7%로 하루 변화가 작지만, ' +
-            '장중에는 한때 -34.4%까지 내려갔다 되돌아왔습니다.',
-      why: '**종가만 놓고 보면 국내·해외 가격도 환율도 거의 같이 움직여 김프 변화가 없습니다.** ' +
-           '선포 직후 짧은 시간 안에 국내 가격만 급락했다 회복된 것이라, 종가 차트로는 잡히지 않습니다.'
+      what: '비상계엄이 선포된 날이에요. 하루 마감 가격인 종가로 계산한 김프는 -0.7%로 변화가 작았지만, ' +
+            '하루 중에는 한때 -34.4%까지 내려갔다가 다시 돌아왔어요.',
+      why: '**종가만 보면 국내 가격, 해외 가격, 환율이 거의 함께 움직여서 김프 변화가 없어요.** ' +
+           '선포 직후 짧은 시간 동안 국내 가격만 급락했다가 회복했기 때문에, 종가 차트에는 이 움직임이 나타나지 않아요.'
     }
   ];
 
@@ -1160,6 +1165,11 @@
   // 하나뿐입니다. 10으로 낮추면 5·19 크래시(18.7%p)가 함께 걸립니다.
   const LOW_GAP = 20;
 
+  // 모든 변화 화살표는 길이·방향과 상관없이 같은 느린 속도로 그립니다.
+  const ARROW_DRAW_MS = 1400;
+  const ARROW_HEAD_MS = 200;
+  const ARROW_HEAD_DELAY_MS = ARROW_DRAW_MS - ARROW_HEAD_MS;
+
   // i일의 종가↔장중 저점 차이(%p). 저가가 없으면 null.
   function lowGapAt(i) {
     if (!market.lowPremium || !market.btcPriceLow || market.btcPriceLow[i] == null) return null;
@@ -1268,23 +1278,22 @@
         svg.appendChild(arrowLine);
         svg.appendChild(arrowHead);
 
-        // 선택하는 순간 화살표가 같은 속도로 자라나게 해 변화 방향을 자연스럽게 보여줍니다.
+        // 선택하는 순간 모든 변화 화살표가 같은 느린 속도로 자라납니다.
         const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const lineLen = Math.hypot(hx - arrow.sx, hy - arrow.sy) || 0.01;
-        const duration = Math.max(350, Math.min(1100, lineLen / (500 / 700)));
         if (!reduceMotion) {
           [arrowHalo, arrowLine].forEach(function (lineEl) {
             lineEl.setAttribute('stroke-dasharray', lineLen);
             lineEl.setAttribute('stroke-dashoffset', lineLen);
             lineEl.animate(
               [{ strokeDashoffset: lineLen }, { strokeDashoffset: 0 }],
-              { duration: duration, easing: 'ease-out', fill: 'forwards' }
+              { duration: ARROW_DRAW_MS, easing: 'linear', fill: 'forwards' }
             );
           });
           arrowHead.style.opacity = 0;
           arrowHead.animate(
             [{ opacity: 0 }, { opacity: 1 }],
-            { duration: duration * (300 / 700), delay: Math.max(0, duration - 60), easing: 'ease-out', fill: 'forwards' }
+            { duration: ARROW_HEAD_MS, delay: ARROW_HEAD_DELAY_MS, easing: 'linear', fill: 'forwards' }
           );
         }
       }
@@ -1338,7 +1347,7 @@
       svg.appendChild(dipHead);
       svg.appendChild(el('circle', { class: 'dip-dot', cx: x, cy: yLow, r: 4 }));
 
-      // 다른 변화 화살표와 같은 방식으로 아래 방향이 짧게 그려지며 나타납니다.
+      // 다른 변화 화살표와 같은 느린 속도로 아래 방향이 그려집니다.
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const arrowLen = Math.max(0.01, arrowBaseY - arrowStartY);
       if (!reduceMotion) {
@@ -1347,13 +1356,13 @@
           lineEl.setAttribute('stroke-dashoffset', arrowLen);
           lineEl.animate(
             [{ strokeDashoffset: arrowLen }, { strokeDashoffset: 0 }],
-            { duration: 550, easing: 'ease-out', fill: 'forwards' }
+            { duration: ARROW_DRAW_MS, easing: 'linear', fill: 'forwards' }
           );
         });
         dipHead.style.opacity = 0;
         dipHead.animate(
           [{ opacity: 0 }, { opacity: 1 }],
-          { duration: 180, delay: 450, easing: 'ease-out', fill: 'forwards' }
+          { duration: ARROW_HEAD_MS, delay: ARROW_HEAD_DELAY_MS, easing: 'linear', fill: 'forwards' }
         );
       }
       drawTag(svg, x, Math.min(yLow + 20, plotBottom - 12),
@@ -1471,6 +1480,17 @@
     });
   }
 
+  // 화면 폭에 따라 한 줄·여러 줄 여부가 달라지므로 실제 높이를 재서 정렬 방식을 바꿉니다.
+  function syncDescRowAlignment() {
+    document.querySelectorAll('#dDesc .desc-row').forEach(function (row) {
+      const text = row.querySelector('.desc-text');
+      if (!text) return;
+      const lineHeight = parseFloat(window.getComputedStyle(text).lineHeight);
+      const isSingleLine = text.getBoundingClientRect().height <= lineHeight * 1.25;
+      row.classList.toggle('single-line', isSingleLine);
+    });
+  }
+
   function setDesc(item) {
     const box = document.getElementById('dDesc');
     box.replaceChildren();
@@ -1487,7 +1507,10 @@
       row.append(tag, text);
       box.appendChild(row);
     });
+    requestAnimationFrame(syncDescRowAlignment);
   }
+
+  window.addEventListener('resize', syncDescRowAlignment);
 
   // item: { label, value, date? } — date가 있으면 라벨 밑, 값 위에 줄바꿈해서 보여줍니다.
   function setStats(items) {
@@ -1561,6 +1584,7 @@
       head.textContent = fmtPP(swing);
       // 변화폭이라 방향 색을 씁니다(오름 빨강 / 내림 파랑).
       head.className = 'value ' + (swing >= 0 ? 'dir-up' : 'dir-down');
+      detail.classList.remove('has-headline-sub');
       document.getElementById('dHeadlineSub').hidden = true;
       document.getElementById('dHeadlineLabel').textContent = '최대 김프 변화폭';
       setDesc(p);
@@ -1617,6 +1641,7 @@
       // 종가만 크게 띄우면 "아무 일 없던 날"로 읽히므로 장중 저점을 나란히 둡니다.
       const sub = document.getElementById('dHeadlineSub');
       sub.hidden = dipIdx === null;
+      detail.classList.toggle('has-headline-sub', dipIdx !== null);
       if (dipIdx !== null) {
         sub.innerHTML = '<span class="cap">장중 저점 </span>' + fmtPct(market.lowPremium[c]);
       }
@@ -1629,7 +1654,7 @@
         setStats([
           { label: '당일 종가 김프', value: fmtPct(current) },
           { label: '당일 장중 저점', value: fmtPct(market.lowPremium[c]) },
-          { label: '종가↔저점 차이', value: fmtPP(-dipGap) }
+          { label: '종가 ↔ 저점 차이', value: fmtPP(-dipGap) }
         ]);
       } else {
         setStats([
@@ -1648,7 +1673,7 @@
       // 장중 저점 수치 자체는 위 "현상"과 차트 태그에 이미 있으므로 여기서는
       // 그 값이 어떻게 나온 것인지만 덧붙입니다.
       if (dipIdx !== null) {
-        text += ' 장중 저점 김프는 업비트 일봉 저가로 계산한 추정치입니다(환율·해외 시세는 종가 기준).';
+        text += ' 장중 저점 김프는 업비트에서 그날 가장 낮았던 가격으로 계산한 추정치예요. 환율과 해외 시세는 그날의 종가를 사용했어요.';
       }
       note.textContent = text;
       note.hidden = !text;
@@ -1741,18 +1766,12 @@
   const HELP = {
     fx: {
       title: '환율 그래프 읽는 법',
-      body: '<b>이 기간이 시작한 날을 0%</b>로 두고, 그날부터 환율이 얼마나 움직였는지 그래프로 보여드려요. ' +
-            '옆에 적힌 숫자도 같은 기준으로 계산한, 이 기간 전체의 변화율이에요. ' +
-            '주말·공휴일처럼 환율 시세가 쉬는 날엔, <b>바로 전 영업일 환율</b>을 그대로 이어서 써요. ' +
-            '사건 카드의 <b>"당일 저점" 김프</b>를 계산할 때도 환율은 해당 날짜의 종가를 사용하므로 근사치예요.'
+      body: '<b>기간 첫날을 0%</b>로 둔 환율 변화율이에요. 숫자는 기간 전체의 변화율을 뜻해요. ' +
+            '주말·공휴일에는 <b>직전 영업일 환율</b>을 이어서 사용해요.'
     },
     btc: {
       title: 'BTC 그래프 읽는 법',
-      body: '<b>이 기간이 시작한 날을 0%</b>로 두고, 그날부터 BTC 가격이 얼마나 움직였는지 그래프로 보여드려요. ' +
-            '옆에 적힌 숫자도 같은 기준으로 계산한, 이 기간 전체의 변화율이에요. ' +
-            '여기서 쓰는 BTC 가격은 <b>업비트 종가</b>(하루를 마감한 가격) 기준이고, ' +
-            '사건 카드에 나오는 <b>"당일 저점"</b>만 그날 가장 낮았던 가격으로 따로 잡은 값이에요. ' +
-            '다만 해외 시세는 종가를 사용하므로 당일 저점 김프는 근사치예요.'
+      body: '<b>기간 첫날을 0%</b>로 둔 업비트 BTC 종가 변화율이에요. 숫자는 기간 전체의 변화율을 뜻해요.'
     }
   };
 

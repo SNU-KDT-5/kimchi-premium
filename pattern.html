@@ -148,6 +148,12 @@
   .desc-text b { color: var(--text); font-weight: 800; }
   /* 구간 최저/최고/최대 변동 기간처럼 제목을 굵게 강조하고 싶을 때만 붙이는 클래스 (shared.css 기본 라벨은 600). */
   .stat-card .label.label-strong { font-weight: 800; }
+  /* 숫자 카드를 누르면 위 확대 차트의 대응 지점을 짚어주는 연동 카드입니다. */
+  .stat-card.linkable {
+    cursor: pointer; transition: border-color .15s, transform .1s;
+  }
+  .stat-card.linkable:hover { border-color: var(--accent-line); }
+  .stat-card.linkable:active { transform: scale(0.98); }
   /* 최대 변동 기간 값: 두 줄이라 구간 최저/최고(한 줄)보다 커 보이지 않도록 살짝 줄이고,
      화살표 자리를 고정 폭으로 비워 두 줄의 "월" 위치가 서로 어긋나지 않게 맞춥니다. */
   .stat-card .value.swing-value { font-size: 1.05rem; line-height: 1.55; }
@@ -178,10 +184,21 @@
   .peak-dot { fill: var(--dir); stroke: var(--panel); stroke-width: 2; }
   .peak-halo { fill: none; stroke: var(--dir); stroke-width: 1.5; opacity: 0.35; }
 
+  /* 숫자 카드를 눌렀을 때 확대 차트의 연결된 점에서 잠깐 번지는 링 효과입니다. */
+  .zoom-ping {
+    fill: none; stroke: var(--accent); stroke-width: 2.5;
+    transform-box: fill-box; transform-origin: center;
+    animation: zoomPing 0.9s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes zoomPing {
+    from { transform: scale(0.3); opacity: 0.9; }
+    to   { transform: scale(3.4); opacity: 0; }
+  }
+
   /* 사건일·촉발일은 amber로 통일해 "그날"이라는 걸 드러냅니다. */
   .marker-line { stroke: var(--amber); stroke-width: 1.6; stroke-dasharray: 3 3; }
 
-  .tag-base { fill: var(--panel2); }
   /* 태그는 불투명한 배경과 방향색 테두리를 사용해 차트 선 위에서도 또렷하게 보이게 합니다. */
   .tag-box { fill: var(--panel); stroke: var(--border2); stroke-width: 1; }
   .tag-box--accent { fill: var(--panel); stroke: var(--accent); stroke-width: 1.4; }
@@ -202,9 +219,10 @@
   .tag-text--frog { fill: var(--frog); }
   .tag-text--down { fill: var(--down); }
 
+  /* 확대 차트 제목 바로 아래에서 색과 표시의 의미를 먼저 설명합니다. */
   .zoom-legend {
     display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px;
-    font-size: 0.72rem; color: var(--dim); margin-top: var(--sp-2);
+    font-size: 0.72rem; color: var(--dim); margin: 0 0 var(--sp-2);
   }
   .zoom-legend .swatch {
     width: 11px; height: 11px; border-radius: 3px; margin-right: -8px;
@@ -213,11 +231,10 @@
   .zoom-legend .swatch--amber { background: var(--amber-bg); border-color: var(--amber); }
 
   /* 장중 저가 — 종가만으로는 안 보이는 하루 안의 급락을 드러낼 때만 씁니다. */
-  .dip-wick { stroke: var(--down); stroke-width: 3; }
-  .dip-head { fill: var(--down); }
+  .dip-arrow-halo { stroke: var(--panel2); stroke-width: 7; stroke-linecap: round; }
+  .dip-wick { stroke: var(--down); stroke-width: 3; stroke-linecap: round; }
+  .dip-head { fill: var(--down); stroke: var(--panel2); stroke-width: 1.2; }
   .dip-dot { fill: var(--down); stroke: var(--panel); stroke-width: 2; }
-  .tag-box--down { fill: var(--panel); stroke: var(--down); stroke-width: 1.4; }
-  .tag-text--down { fill: var(--down); }
 
   /* 종가 아래에 장중 저점을 나란히 두어, 종가만 크게 읽히지 않게 합니다. */
   .headline-sub { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; color: var(--down); margin-top: 2px; }
@@ -437,10 +454,7 @@
   </div>
 
 <p class="caption" style="margin-top: var(--sp-8); text-align: center;">
-  업비트·Frankfurter(ECB 기준)와 <span id="foreignSourceLabel">해외 거래소</span> 시세를 모아둔
-  팀 데이터(data/history.json)를 사용합니다.<br>
-  주말·공휴일 환율은 직전 영업일 값을 적용하며, 카드의 수치는 모두 이 데이터로 계산한 값입니다.<br>
-  사건명과 설명만 팀이 직접 정리한 내용이고, "장중 저가 기준" 김프는 업비트 일봉 저가로 계산한 추정치입니다.
+  출처: 업비트 · Frankfurter(ECB 기준) · <span id="foreignSourceLabel">해외 거래소</span> · 팀 데이터(data/history.json)
 </p>
 </div>
 
@@ -1039,23 +1053,11 @@
   const ZOOM = { W: 1000, H: 270, left: 44, right: 16, top: 34, bottom: 58 };
 
   // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
-  // 태그가 왼쪽으로 갈 수 있는 한계. 기본은 플롯 영역 안이지만, 고점·저점이 차트
-  // 맨 왼쪽에 붙어 있으면 축 라벨 자리까지 빌려 써야 글씨가 점을 안 덮습니다.
-  const TAG_EDGE = 2;
-
-  function drawTag(svg, x, y, text, variant, extra, minX) {
+  function drawTag(svg, x, y, text, variant, extra) {
     const suffix = variant ? ' tag-box--' + variant : '';
     const w = textWidth(text, 10.5) + 16;
     const h = 19;
-    const left = (minX == null ? ZOOM.left : minX) + w / 2;
-    const cx = Math.max(left, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
-    // 색이 있는 태그는 배경이 반투명이라, 뒤를 지나는 점선이나 축 라벨이 글씨를
-    // 뚫고 보입니다. 불투명한 판을 먼저 깔아 가려줍니다.
-    if (variant) {
-      svg.appendChild(el('rect', {
-        class: 'tag-base', x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
-      }));
-    }
+    const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
     svg.appendChild(el('rect', {
       class: 'tag-box' + suffix + (extra ? ' ' + extra : ''),
       x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
@@ -1069,9 +1071,7 @@
     return cx;
   }
 
-  // 최저→최고를 잇는 대각선 화살표를 놓을 자리를 찾습니다.
-  // 김프 선 위/아래 중 더 적게 밀어내도 되는 쪽으로 평행 이동시켜, 선과 겹치지 않게 합니다.
-  // 자리가 안 나오면 구간을 조금씩 좁혀가며 다시 시도합니다.
+  // 최저→최고 화살표를 김프 선과 겹치지 않는 가까운 자리에 평행하게 놓습니다.
   function placeArrow(g, values, a, b, plotTop, plotBottom) {
     const x1 = g.px(a), y1 = g.py(values[a]);
     const dx = g.px(b) - x1, dy = g.py(values[b]) - y1;
@@ -1079,7 +1079,6 @@
     if (len < 24) return null;
 
     const plotW = ZOOM.W - ZOOM.left - ZOOM.right;
-    // 픽셀 x 위치에서의 김프 선 높이(선형 보간).
     const lineY = function (x) {
       const c = Math.max(0, Math.min(values.length - 1,
         (x - ZOOM.left) / plotW * (values.length - 1)));
@@ -1087,14 +1086,15 @@
       return g.py(values[i] + (values[j] - values[i]) * (c - i));
     };
 
-    const CLEAR = 12;          // 김프 선과 최소한 이만큼은 떨어뜨립니다.
+    const CLEAR = 12;
     const EDGE = 5;
-    // side +1 = 선 아래, -1 = 선 위 (구간은 항상 왼→오른쪽이라 dx > 0)
-    const fits = function (t0, t1, side, d) {
-      const nx = side * -dy / len * d, ny = side * dx / len * d;
+    const fits = function (t0, t1, side, distance) {
+      const nx = side * -dy / len * distance;
+      const ny = side * dx / len * distance;
       for (let k = 0; k <= 32; k++) {
         const t = t0 + (t1 - t0) * (k / 32);
-        const ax = x1 + dx * t + nx, ay = y1 + dy * t + ny;
+        const ax = x1 + dx * t + nx;
+        const ay = y1 + dy * t + ny;
         if (ay < plotTop + EDGE || ay > plotBottom - EDGE) return false;
         if (ax < ZOOM.left + EDGE || ax > ZOOM.W - ZOOM.right - EDGE) return false;
         const ly = lineY(ax);
@@ -1103,27 +1103,51 @@
       return true;
     };
 
-    const spans = [[0, 1], [0.12, 0.94], [0.25, 0.85]];
+    // 전체 구간을 유지할 수 있을 때만 선을 피합니다. 길이를 줄여야만 자리가 나는 경우에는
+    // 끊겨 보이지 않도록 호출부에서 최저·최고점을 직접 잇는 방식으로 전환합니다.
+    const spans = [[0, 1]];
     for (let s = 0; s < spans.length; s++) {
       let best = null;
       [-1, 1].forEach(function (side) {
-        for (let d = 14; d <= 80; d += 3) {
-          if (fits(spans[s][0], spans[s][1], side, d)) {
-            if (!best || d < best.d) best = { side: side, d: d };
+        for (let distance = 14; distance <= 80; distance += 3) {
+          if (fits(spans[s][0], spans[s][1], side, distance)) {
+            if (!best || distance < best.distance) best = { side: side, distance: distance };
             return;
           }
         }
       });
       if (best) {
-        const nx = best.side * -dy / len * best.d, ny = best.side * dx / len * best.d;
+        const nx = best.side * -dy / len * best.distance;
+        const ny = best.side * dx / len * best.distance;
         return {
-          sx: x1 + dx * spans[s][0] + nx, sy: y1 + dy * spans[s][0] + ny,
-          ex: x1 + dx * spans[s][1] + nx, ey: y1 + dy * spans[s][1] + ny,
-          ux: dx / len, uy: dy / len
+          sx: x1 + dx * spans[s][0] + nx,
+          sy: y1 + dy * spans[s][0] + ny,
+          ex: x1 + dx * spans[s][1] + nx,
+          ey: y1 + dy * spans[s][1] + ny,
+          ux: dx / len,
+          uy: dy / len
         };
       }
     }
     return null;
+  }
+
+  // 선을 피하면서 전체 길이를 유지할 수 없을 때 쓰는 안전한 대체 위치입니다.
+  function directArrow(g, values, a, b) {
+    const x1 = g.px(a), y1 = g.py(values[a]);
+    const x2 = g.px(b), y2 = g.py(values[b]);
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    if (len < 24) return null;
+    const ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+    const inset = Math.min(9, Math.max(0, len / 2 - 3));
+    return {
+      sx: x1 + ux * inset,
+      sy: y1 + uy * inset,
+      ex: x2 - ux * inset,
+      ey: y2 - uy * inset,
+      ux: ux,
+      uy: uy
+    };
   }
 
   // 종가와 장중 저가의 김프 차이가 이만큼(%p) 넘게 벌어진 날은, 종가선만 봐서는
@@ -1152,8 +1176,8 @@
       margin: { left: ZOOM.left, right: ZOOM.right, top: ZOOM.top, bottom: ZOOM.bottom },
       lineClass: 'kimp-line', includeZero: true,
       minTop: 10,
-      // 저점까지 축을 늘려야 급락이 실제 크기로 보입니다.
-      domainExtra: hasDip ? market.lowPremium[dipIdx] : null
+      // 장중 급락을 실제 크기로 보여주고, 비상계엄 차트에는 -40% 눈금까지 표시합니다.
+      domainExtra: hasDip ? Math.min(market.lowPremium[dipIdx], -40) : null
     });
     const plotTop = ZOOM.top;
     const plotBottom = ZOOM.H - ZOOM.bottom;
@@ -1211,22 +1235,33 @@
       svg.appendChild(t);
     });
 
-    // ② 변화폭을 최저→최고를 잇는 대각선 화살표로 보여줍니다.
-    //    기울기가 곧 움직임의 방향과 속도라서, 길이만 재던 세로 화살표보다 잘 읽힙니다.
-    if (showSwing && swingTo > swingFrom && Math.abs(swing) > 0.5) {
-      const A = placeArrow(g, values, swingFrom, swingTo, plotTop, plotBottom);
-      if (A) {
-        const hx = A.ex - A.ux * 12, hy = A.ey - A.uy * 12;   // 화살촉이 시작되는 지점
-        const nx = -A.uy, ny = A.ux;                          // 진행 방향의 수직
+    // ② 최저→최고 방향은 유지하면서, 김프 선과 겹치지 않는 가까운 자리에 화살표를 놓습니다.
+    if (showSwing) {
+      const placedArrow = placeArrow(g, values, swingFrom, swingTo, plotTop, plotBottom);
+      const bandLeft = Math.min(g.px(swingFrom), g.px(swingTo));
+      const bandRight = Math.max(g.px(swingFrom), g.px(swingTo));
+      // 선을 피한 결과가 하이라이트 밖으로 크게 밀리면 끊기거나 엉뚱한 구간을 가리켜 보입니다.
+      // 그 경우에만 최저·최고점을 직접 잇는 방식으로 안전하게 전환합니다.
+      const outsideBand = placedArrow && (
+        Math.min(placedArrow.sx, placedArrow.ex) < bandLeft - 8 ||
+        Math.max(placedArrow.sx, placedArrow.ex) > bandRight + 8
+      );
+      const arrow = (!placedArrow || outsideBand)
+        ? directArrow(g, values, swingFrom, swingTo)
+        : placedArrow;
+      if (arrow) {
+        const hx = arrow.ex - arrow.ux * 12;
+        const hy = arrow.ey - arrow.uy * 12;
+        const nx = -arrow.uy, ny = arrow.ux;
         const arrowHalo = el('line', {
-          class: 'swing-arrow-halo', x1: A.sx, y1: A.sy, x2: hx, y2: hy
+          class: 'swing-arrow-halo', x1: arrow.sx, y1: arrow.sy, x2: hx, y2: hy
         });
         const arrowLine = el('line', {
-          class: 'swing-arrow ' + dirClass, x1: A.sx, y1: A.sy, x2: hx, y2: hy
+          class: 'swing-arrow ' + dirClass, x1: arrow.sx, y1: arrow.sy, x2: hx, y2: hy
         });
         const arrowHead = el('polygon', {
           class: 'swing-arrow-head ' + dirClass,
-          points: [A.ex, A.ey, hx + nx * 6, hy + ny * 6, hx - nx * 6, hy - ny * 6]
+          points: [arrow.ex, arrow.ey, hx + nx * 6, hy + ny * 6, hx - nx * 6, hy - ny * 6]
             .map(function (n) { return n.toFixed(1); }).join(' ')
         });
         svg.appendChild(arrowHalo);
@@ -1235,7 +1270,7 @@
 
         // 선택하는 순간 화살표가 같은 속도로 자라나게 해 변화 방향을 자연스럽게 보여줍니다.
         const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const lineLen = Math.hypot(hx - A.sx, hy - A.sy) || 0.01;
+        const lineLen = Math.hypot(hx - arrow.sx, hy - arrow.sy) || 0.01;
         const duration = Math.max(350, Math.min(1100, lineLen / (500 / 700)));
         if (!reduceMotion) {
           [arrowHalo, arrowLine].forEach(function (lineEl) {
@@ -1284,16 +1319,57 @@
       const x = g.px(at);
       const yClose = g.py(values[at]);
       const yLow = g.py(market.lowPremium[dipIdx]);
-      svg.appendChild(el('line', { class: 'dip-wick', x1: x, x2: x, y1: yClose, y2: yLow }));
-      svg.appendChild(el('polygon', {
-        class: 'dip-head', points: [x, yLow, x - 5, yLow - 10, x + 5, yLow - 10].join(' ')
-      }));
+      // 종가에서 장중 저점 쪽으로 내려가는 화살표를 그려, 하루 안의 급락 방향을 보여줍니다.
+      // 저점 점과 겹치지 않도록 화살촉은 점 바로 위에서 끝냅니다.
+      const arrowStartY = Math.min(yClose + 7, yLow - 18);
+      const arrowTipY = yLow - 7;
+      const arrowBaseY = arrowTipY - 11;
+      const dipHalo = el('line', {
+        class: 'dip-arrow-halo', x1: x, x2: x, y1: arrowStartY, y2: arrowBaseY
+      });
+      const dipArrow = el('line', {
+        class: 'dip-wick', x1: x, x2: x, y1: arrowStartY, y2: arrowBaseY
+      });
+      const dipHead = el('polygon', {
+        class: 'dip-head', points: [x, arrowTipY, x - 6, arrowBaseY, x + 6, arrowBaseY].join(' ')
+      });
+      svg.appendChild(dipHalo);
+      svg.appendChild(dipArrow);
+      svg.appendChild(dipHead);
       svg.appendChild(el('circle', { class: 'dip-dot', cx: x, cy: yLow, r: 4 }));
+
+      // 다른 변화 화살표와 같은 방식으로 아래 방향이 짧게 그려지며 나타납니다.
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const arrowLen = Math.max(0.01, arrowBaseY - arrowStartY);
+      if (!reduceMotion) {
+        [dipHalo, dipArrow].forEach(function (lineEl) {
+          lineEl.setAttribute('stroke-dasharray', arrowLen);
+          lineEl.setAttribute('stroke-dashoffset', arrowLen);
+          lineEl.animate(
+            [{ strokeDashoffset: arrowLen }, { strokeDashoffset: 0 }],
+            { duration: 550, easing: 'ease-out', fill: 'forwards' }
+          );
+        });
+        dipHead.style.opacity = 0;
+        dipHead.animate(
+          [{ opacity: 0 }, { opacity: 1 }],
+          { duration: 180, delay: 450, easing: 'ease-out', fill: 'forwards' }
+        );
+      }
       drawTag(svg, x, Math.min(yLow + 20, plotBottom - 12),
         '장중 저점 ' + fmtPct(market.lowPremium[dipIdx]), 'down');
     }
 
-    return { values, minI, maxI };
+    // 통계 카드가 같은 좌표계의 최저·최고점을 정확히 짚을 수 있도록 차트 정보도 돌려줍니다.
+    return { values, minI, maxI, svg, px: g.px, py: g.py };
+  }
+
+  // 숫자 카드를 클릭하면 확대 차트의 연결된 점에서 링이 잠깐 번집니다.
+  function pingZoomPoint(svg, cx, cy) {
+    if (!svg) return;
+    const ring = el('circle', { class: 'zoom-ping', cx: cx, cy: cy, r: 6 });
+    svg.appendChild(ring);
+    ring.addEventListener('animationend', function () { ring.remove(); });
   }
 
   // 환율·BTC는 확대 구간 첫날을 0%로 두고 변화율 선으로 그립니다.
@@ -1431,6 +1507,11 @@
       valueEl.innerHTML = item.value;
       if (item.accent) valueEl.classList.add('accent');
       if (item.valueClass) valueEl.classList.add(item.valueClass);
+      // 연결 정보가 있는 카드만 클릭할 수 있게 만들고, 위 차트의 대응 지점을 강조합니다.
+      if (item.onClick) {
+        card.classList.add('linkable');
+        card.addEventListener('click', item.onClick);
+      }
       row.appendChild(card);
     });
   }
@@ -1449,10 +1530,7 @@
     if (type === 'period') {
       const p = periods[index];
       const s = findIndex(p.start), e = findIndex(p.end);
-      // 구간만 딱 자르면 앞뒤 맥락이 사라져서 여유를 조금 둡니다.
-      // 앞쪽 여유를 더 둡니다. 구간의 고점·저점은 시작 직후에 몰리는 일이 잦은데,
-      // 차트 왼쪽 끝에 붙어버리면 값 태그를 점 왼쪽에 놓을 자리가 안 나옵니다.
-      // (박상기 구간의 최고점이 그런 경우였습니다.)
+      // 구간의 고점·저점이 시작 직후에 몰리는 경우가 있어, 사건 이전 흐름을 더 길게 보여줍니다.
       const span = e - s;
       const padL = Math.max(10, Math.round(span * 0.2));
       const padR = Math.max(3, Math.round(span * 0.08));
@@ -1489,12 +1567,21 @@
       // 날짜 구간은 위 배지·아래 눈금 등 다른 곳에도 이미 나와 있어서 빼되,
       // 총 며칠인지는 여기 말고 딱히 나오는 곳이 없어서 괄호로 남겨둡니다.
       document.getElementById('zoomTitle').textContent =
-        '이 사건의 김프 움직임 (' + (to - from) + '일)';
+        '이 사건의 김프 움직임 (' + (to - from + 1) + '일)';
 
+      // 숫자 카드를 누르면 확대 차트가 화면에 보이도록 이동한 뒤 대응 지점을 강조합니다.
+      const jumpToZoom = function (indices) {
+        return function () {
+          z.svg.closest('.zoom-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          indices.forEach(function (i) {
+            pingZoomPoint(z.svg, z.px(i), z.py(z.values[i]));
+          });
+        };
+      };
       setStats([
-        { label: '구간 최저', date: fmtMonthDay(market.dates[from + z.minI]), value: fmtPct(z.values[z.minI]), labelBold: true },
-        { label: '구간 최고', date: fmtMonthDay(market.dates[from + z.maxI]), value: fmtPct(z.values[z.maxI]), labelBold: true },
-        { label: '최대 변동 기간', value: fmtSwingRange(market.dates[from + a], market.dates[from + b]), labelBold: true, valueClass: 'swing-value' }
+        { label: '구간 최저', date: fmtMonthDay(market.dates[from + z.minI]), value: fmtPct(z.values[z.minI]), labelBold: true, onClick: jumpToZoom([z.minI]) },
+        { label: '구간 최고', date: fmtMonthDay(market.dates[from + z.maxI]), value: fmtPct(z.values[z.maxI]), labelBold: true, onClick: jumpToZoom([z.maxI]) },
+        { label: '최대 변동 기간', value: fmtSwingRange(market.dates[from + a], market.dates[from + b]), labelBold: true, valueClass: 'swing-value', onClick: jumpToZoom([a, b]) }
       ]);
       // 환율·BTC 변화율은 위 미니 차트 값(fxValue/btcValue)에 이미 나와 있어서 다시 문장으로 안 적습니다.
       // 같은 기간 기준이라는 설명은 개구리 툴팁(HELP.fx/btc)에서 대신 알려줍니다.
@@ -1656,14 +1743,16 @@
       title: '환율 그래프 읽는 법',
       body: '<b>이 기간이 시작한 날을 0%</b>로 두고, 그날부터 환율이 얼마나 움직였는지 그래프로 보여드려요. ' +
             '옆에 적힌 숫자도 같은 기준으로 계산한, 이 기간 전체의 변화율이에요. ' +
-            '주말·공휴일처럼 환율 시세가 쉬는 날엔, <b>바로 전 영업일 환율</b>을 그대로 이어서 써요.'
+            '주말·공휴일처럼 환율 시세가 쉬는 날엔, <b>바로 전 영업일 환율</b>을 그대로 이어서 써요. ' +
+            '사건 카드의 <b>"당일 저점" 김프</b>를 계산할 때도 환율은 해당 날짜의 종가를 사용하므로 근사치예요.'
     },
     btc: {
       title: 'BTC 그래프 읽는 법',
       body: '<b>이 기간이 시작한 날을 0%</b>로 두고, 그날부터 BTC 가격이 얼마나 움직였는지 그래프로 보여드려요. ' +
             '옆에 적힌 숫자도 같은 기준으로 계산한, 이 기간 전체의 변화율이에요. ' +
             '여기서 쓰는 BTC 가격은 <b>업비트 종가</b>(하루를 마감한 가격) 기준이고, ' +
-            '사건 카드에 나오는 <b>"당일 저점"</b>만 그날 가장 낮았던 가격으로 따로 잡은 값이에요.'
+            '사건 카드에 나오는 <b>"당일 저점"</b>만 그날 가장 낮았던 가격으로 따로 잡은 값이에요. ' +
+            '다만 해외 시세는 종가를 사용하므로 당일 저점 김프는 근사치예요.'
     }
   };
 

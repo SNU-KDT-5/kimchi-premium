@@ -951,6 +951,11 @@
       if (lineMinY < labelBottom + 10) {
         dotLabelY[i] -= (labelBottom + 10 - lineMinY);
       }
+      // 사건 간 충돌 회피와 주간 선 회피가 둘 다 위로만 밀어내기 때문에, 누적되면
+      // 라벨이 viewBox 위로 넘어가 잘립니다(루트 svg의 overflow 기본값이 hidden).
+      // 지금 데이터에서는 상단에 여유가 있어 안 드러나지만, 초반 주간 값이 더
+      // 높아지면 나타나는 종류라 마지막에 한 번 붙잡아 둡니다.
+      dotLabelY[i] = Math.max(dotLabelY[i], 12);
     });
 
     events.forEach(function (e, i) {
@@ -1192,8 +1197,11 @@
       margin: { left: ZOOM.left, right: ZOOM.right, top: ZOOM.top, bottom: ZOOM.bottom },
       lineClass: 'kimp-line', includeZero: true,
       minTop: 10,
-      // 장중 급락을 실제 크기로 보여주고, 비상계엄 차트에는 -40% 눈금까지 표시합니다.
-      domainExtra: hasDip ? Math.min(market.lowPremium[dipIdx], -40) : null
+      // 장중 급락을 실제 크기로 보여줍니다. 저점보다 조금만 아래로 여유를 둡니다.
+      // -40 같은 고정값을 쓰면 저점이 얕은 사건이 추가됐을 때도 축이 -40까지
+      // 늘어나, 김프 선이 위쪽에 납작하게 눌려 보입니다.
+      // (비상계엄은 저점이 -34.4%라 이 식으로도 -40% 눈금이 그대로 나옵니다.)
+      domainExtra: hasDip ? market.lowPremium[dipIdx] - 5 : null
     });
     const plotTop = ZOOM.top;
     const plotBottom = ZOOM.H - ZOOM.bottom;

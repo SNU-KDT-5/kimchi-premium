@@ -81,7 +81,8 @@
   .detail-headline { text-align: right; }
   .detail-headline .value {
     font-family: var(--font-mono); font-size: 1.7rem; font-weight: 800;
-    color: var(--accent); white-space: nowrap;
+    /* 방향이 있는 값(변화폭)이면 dir-up/dir-down이 붙어 색이 바뀝니다. */
+    color: var(--dir, var(--accent)); white-space: nowrap;
   }
   .detail-headline .label { font-size: 0.72rem; color: var(--dim); }
   .detail-desc { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin: var(--sp-4) 0 var(--sp-5); }
@@ -93,28 +94,43 @@
   .zoom-title { font-size: 0.74rem; font-weight: 700; color: var(--mut); letter-spacing: .04em; margin-bottom: var(--sp-1); }
   /* 확대 차트에서 눈에 먼저 들어와야 하는 것:
      ① 이 기간에 김프가 가장 크게 움직인 구간 ② 그 최저·최고점 ③ 사건이 있었던 날 */
-  .swing-band { fill: var(--accent-bg); opacity: 0.5; pointer-events: none; }
-  .swing-guide { stroke: var(--accent-line); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
-  .swing-arrow { stroke: var(--accent); stroke-width: 1.8; fill: none; }
-  .swing-arrow-head { fill: var(--accent); stroke: var(--panel2); stroke-width: 1.5; }
-  /* 화살표가 김프 선과 겹쳐도 읽히도록 뒤에 같은 색 배경을 깔아줍니다. */
-  .swing-arrow-halo { stroke: var(--panel2); stroke-width: 5; fill: none; opacity: 0.9; }
+  /* 방향 색 — 오름은 빨강, 내림은 파랑(국내 시세 표기 관행)입니다.
+     이 색은 "변화"에만 쓰고, 김프 수준값 같은 방향 없는 숫자에는 쓰지 않습니다. */
+  .dir-up   { --dir: var(--accent); --dir-bg: var(--accent-bg); --dir-line: var(--accent-line); }
+  .dir-down { --dir: #2f5d9e; --dir-bg: rgba(47, 93, 158, 0.12); --dir-line: rgba(47, 93, 158, 0.3); }
 
-  .peak-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
-  .peak-halo { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: 0.35; }
+  .swing-band { fill: var(--dir-bg); pointer-events: none; }
+  .swing-guide { stroke: var(--dir-line); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+  .swing-arrow { stroke: var(--dir); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+  .swing-arrow-head { fill: var(--dir); stroke: var(--panel2); stroke-width: 1.2; }
+  /* 화살표는 김프 선을 피해 놓지만, 격자·0선 위를 지날 수 있어 뒤를 한 번 지웁니다. */
+  .swing-arrow-halo { stroke: var(--panel2); stroke-width: 7; fill: none; opacity: 0.95; stroke-linecap: round; }
+
+  .peak-dot { fill: var(--dir); stroke: var(--panel); stroke-width: 2; }
+  .peak-halo { fill: none; stroke: var(--dir); stroke-width: 1.5; opacity: 0.35; }
 
   /* 사건일·촉발일은 amber로 통일해 "그날"이라는 걸 드러냅니다. */
   .marker-line { stroke: var(--amber); stroke-width: 1.6; stroke-dasharray: 3 3; }
 
   .tag-box { fill: var(--panel); stroke: var(--border2); stroke-width: 1; }
-  .tag-box--accent { fill: var(--accent-bg); stroke: var(--accent-line); }
+  .tag-box--dir { fill: var(--dir-bg); stroke: var(--dir-line); }
   .tag-box--amber { fill: var(--amber-bg); stroke: var(--amber); }
   .tag-text {
     font-size: 10.5px; font-weight: 800; font-family: var(--font-mono);
     fill: var(--text); pointer-events: none;
   }
-  .tag-text--accent { fill: var(--accent); }
+  .tag-text--dir { fill: var(--dir); }
   .tag-text--amber { fill: var(--amber); }
+
+  .zoom-legend {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px;
+    font-size: 0.72rem; color: var(--dim); margin-top: var(--sp-2);
+  }
+  .zoom-legend .swatch {
+    width: 11px; height: 11px; border-radius: 3px; margin-right: -8px;
+    background: var(--dir-bg); border: 1px solid var(--dir); display: inline-block;
+  }
+  .zoom-legend .swatch--amber { background: var(--amber-bg); border-color: var(--amber); }
 
   /* 환율·BTC 미니 차트의 끝점 */
   .mini-end-dot { stroke: var(--panel2); stroke-width: 1.5; }
@@ -226,6 +242,11 @@
           <div class="zoom-title" id="zoomTitle">-</div>
           <svg id="zoom" viewBox="0 0 1000 270" xmlns="http://www.w3.org/2000/svg"
                aria-label="선택한 시기의 김프 추이"></svg>
+          <p class="zoom-legend">
+            <span class="swatch dir-up"></span>김프가 가장 크게 오른 구간
+            <span class="swatch dir-down"></span>가장 크게 내린 구간
+            <span class="swatch swatch--amber"></span>사건일·촉발일
+          </p>
         </div>
 
         <div class="mini-grid">
@@ -619,21 +640,79 @@
   const ZOOM = { W: 1000, H: 270, left: 44, right: 16, top: 48, bottom: 30 };
 
   // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
-  function drawTag(svg, x, y, text, variant) {
+  function drawTag(svg, x, y, text, variant, extra) {
+    const suffix = variant ? ' tag-box--' + variant : '';
     const w = textWidth(text, 10.5) + 16;
     const h = 19;
     const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
     svg.appendChild(el('rect', {
-      class: 'tag-box' + (variant ? ' tag-box--' + variant : ''),
+      class: 'tag-box' + suffix + (extra ? ' ' + extra : ''),
       x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
     }));
     const t = el('text', {
-      class: 'tag-text' + (variant ? ' tag-text--' + variant : ''),
+      class: 'tag-text' + (variant ? ' tag-text--' + variant : '') + (extra ? ' ' + extra : ''),
       x: cx, y: y + 3.6, 'text-anchor': 'middle'
     });
     t.textContent = text;
     svg.appendChild(t);
     return cx;
+  }
+
+  // 최저→최고를 잇는 대각선 화살표를 놓을 자리를 찾습니다.
+  // 김프 선 위/아래 중 더 적게 밀어내도 되는 쪽으로 평행 이동시켜, 선과 겹치지 않게 합니다.
+  // 자리가 안 나오면 구간을 조금씩 좁혀가며 다시 시도합니다.
+  function placeArrow(g, values, a, b, plotTop, plotBottom) {
+    const x1 = g.px(a), y1 = g.py(values[a]);
+    const dx = g.px(b) - x1, dy = g.py(values[b]) - y1;
+    const len = Math.hypot(dx, dy);
+    if (len < 24) return null;
+
+    const plotW = ZOOM.W - ZOOM.left - ZOOM.right;
+    // 픽셀 x 위치에서의 김프 선 높이(선형 보간).
+    const lineY = function (x) {
+      const c = Math.max(0, Math.min(values.length - 1,
+        (x - ZOOM.left) / plotW * (values.length - 1)));
+      const i = Math.floor(c), j = Math.min(values.length - 1, i + 1);
+      return g.py(values[i] + (values[j] - values[i]) * (c - i));
+    };
+
+    const CLEAR = 12;          // 김프 선과 최소한 이만큼은 떨어뜨립니다.
+    const EDGE = 5;
+    // side +1 = 선 아래, -1 = 선 위 (구간은 항상 왼→오른쪽이라 dx > 0)
+    const fits = function (t0, t1, side, d) {
+      const nx = side * -dy / len * d, ny = side * dx / len * d;
+      for (let k = 0; k <= 32; k++) {
+        const t = t0 + (t1 - t0) * (k / 32);
+        const ax = x1 + dx * t + nx, ay = y1 + dy * t + ny;
+        if (ay < plotTop + EDGE || ay > plotBottom - EDGE) return false;
+        if (ax < ZOOM.left + EDGE || ax > ZOOM.W - ZOOM.right - EDGE) return false;
+        const ly = lineY(ax);
+        if (side < 0 ? ay > ly - CLEAR : ay < ly + CLEAR) return false;
+      }
+      return true;
+    };
+
+    const spans = [[0, 1], [0.12, 0.94], [0.25, 0.85]];
+    for (let s = 0; s < spans.length; s++) {
+      let best = null;
+      [-1, 1].forEach(function (side) {
+        for (let d = 14; d <= 80; d += 3) {
+          if (fits(spans[s][0], spans[s][1], side, d)) {
+            if (!best || d < best.d) best = { side: side, d: d };
+            return;
+          }
+        }
+      });
+      if (best) {
+        const nx = best.side * -dy / len * best.d, ny = best.side * dx / len * best.d;
+        return {
+          sx: x1 + dx * spans[s][0] + nx, sy: y1 + dy * spans[s][0] + ny,
+          ex: x1 + dx * spans[s][1] + nx, ey: y1 + dy * spans[s][1] + ny,
+          ux: dx / len, uy: dy / len
+        };
+      }
+    }
+    return null;
   }
 
   function renderZoom(from, to, markIdx, markText) {
@@ -657,17 +736,19 @@
     const swingFrom = rising ? minI : maxI;
     const swingTo = rising ? maxI : minI;
     const swing = values[swingTo] - values[swingFrom];
+    // 오르면 빨강, 내리면 파랑. 밴드·화살표·최저최고 태그가 이 색을 같이 씁니다.
+    const dirClass = swing >= 0 ? 'dir-up' : 'dir-down';
 
     // ① 가장 크게 움직인 구간을 배경으로 깔아 시선을 먼저 잡습니다.
     if (swingTo > swingFrom) {
       svg.insertBefore(el('rect', {
-        class: 'swing-band',
+        class: 'swing-band ' + dirClass,
         x: g.px(swingFrom), y: plotTop,
         width: g.px(swingTo) - g.px(swingFrom), height: plotBottom - plotTop
       }), svg.firstChild);
       [swingFrom, swingTo].forEach(function (i) {
         svg.appendChild(el('line', {
-          class: 'swing-guide', x1: g.px(i), x2: g.px(i), y1: plotTop, y2: plotBottom
+          class: 'swing-guide ' + dirClass, x1: g.px(i), x2: g.px(i), y1: plotTop, y2: plotBottom
         }));
       });
     }
@@ -687,38 +768,55 @@
       svg.appendChild(t);
     });
 
-    // ② 변화폭을 화살표 길이로도 보여줍니다.
-    //    방향(위/아래)만 화살표로 나타내고 색은 계열 고정 색을 그대로 씁니다.
+    // ② 변화폭을 최저→최고를 잇는 대각선 화살표로 보여줍니다.
+    //    기울기가 곧 움직임의 방향과 속도라서, 길이만 재던 세로 화살표보다 잘 읽힙니다.
     if (swingTo > swingFrom && Math.abs(swing) > 0.5) {
-      const ax = Math.min(g.px(swingTo) + 18, ZOOM.W - ZOOM.right - 8);
-      const y1 = g.py(values[swingFrom]);
-      const y2 = g.py(values[swingTo]);
-      const dir = y2 < y1 ? -1 : 1;
-      svg.appendChild(el('line', {
-        class: 'swing-arrow-halo', x1: ax, x2: ax, y1: y1, y2: y2 - dir * 6
-      }));
-      svg.appendChild(el('line', {
-        class: 'swing-arrow', x1: ax, x2: ax, y1: y1, y2: y2 - dir * 6
-      }));
-      svg.appendChild(el('polygon', {
-        class: 'swing-arrow-head',
-        points: [ax, y2, ax - 4.5, y2 - dir * 9, ax + 4.5, y2 - dir * 9].join(' ')
-      }));
+      const A = placeArrow(g, values, swingFrom, swingTo, plotTop, plotBottom);
+      if (A) {
+        const hx = A.ex - A.ux * 12, hy = A.ey - A.uy * 12;   // 화살촉이 시작되는 지점
+        const nx = -A.uy, ny = A.ux;                          // 진행 방향의 수직
+        svg.appendChild(el('line', {
+          class: 'swing-arrow-halo', x1: A.sx, y1: A.sy, x2: hx, y2: hy
+        }));
+        svg.appendChild(el('line', {
+          class: 'swing-arrow ' + dirClass, x1: A.sx, y1: A.sy, x2: hx, y2: hy
+        }));
+        svg.appendChild(el('polygon', {
+          class: 'swing-arrow-head ' + dirClass,
+          points: [A.ex, A.ey, hx + nx * 6, hy + ny * 6, hx - nx * 6, hy - ny * 6]
+            .map(function (n) { return n.toFixed(1); }).join(' ')
+        }));
+      }
     }
 
     // ③ 최저·최고점은 링을 두른 점 + 값 태그로 강조합니다.
     [[minI, '최저'], [maxI, '최고']].forEach(function (pair) {
       const i = pair[0];
       const cx = g.px(i), cy = g.py(values[i]);
-      svg.appendChild(el('circle', { class: 'peak-halo', cx: cx, cy: cy, r: 8 }));
-      svg.appendChild(el('circle', { class: 'peak-dot', cx: cx, cy: cy, r: 5 }));
-      drawTag(svg, cx, cy + (i === maxI ? -22 : 24), pair[1] + ' ' + fmtPct(values[i]), 'accent');
+      svg.appendChild(el('circle', { class: 'peak-halo ' + dirClass, cx: cx, cy: cy, r: 8 }));
+      svg.appendChild(el('circle', { class: 'peak-dot ' + dirClass, cx: cx, cy: cy, r: 5 }));
+      // 기본은 최고 위 / 최저 아래. 차트 위아래 끝에 붙어 자리가 없으면 점 옆에 세웁니다
+      // (위쪽에는 '가장 큰 변화'·사건일 태그 줄이 이미 있어서 겹치기 쉽습니다).
+      const label = pair[1] + ' ' + fmtPct(values[i]);
+      let tx = cx, ty = cy + (i === maxI ? -22 : 24);
+      if (ty < plotTop + 12 || ty > plotBottom - 12) {
+        const tw = textWidth(label, 10.5) + 16;
+        // 바깥쪽(변화가 시작된 쪽)을 먼저 보고, 잘리면 반대쪽에 붙입니다.
+        const outward = i === swingFrom ? -1 : 1;
+        const fitsOut = outward < 0
+          ? cx - tw - 12 >= ZOOM.left
+          : cx + tw + 12 <= ZOOM.W - ZOOM.right;
+        const side = fitsOut ? outward : -outward;
+        ty = cy;
+        tx = cx + side * (tw / 2 + 12);
+      }
+      drawTag(svg, tx, ty, label, 'dir', dirClass);
     });
 
     // 최대 변화폭은 구간 위쪽에 한 번 더 못박아 둡니다.
     if (swingTo > swingFrom && Math.abs(swing) > 0.5) {
       drawTag(svg, (g.px(swingFrom) + g.px(swingTo)) / 2, plotTop - 14,
-        '가장 큰 변화 ' + fmtPP(swing), 'accent');
+        '가장 큰 변화 ' + fmtPP(swing), 'dir', dirClass);
     }
 
     // ④ 사건이 있었던 날(또는 촉발일)은 amber 세로선 + 태그로 짚어줍니다.
@@ -795,7 +893,10 @@
       kind.className = 'badge badge-neutral';
       document.getElementById('dDate').textContent =
         p.start + ' ~ ' + p.end + (p.triggerDate ? '  ·  촉발일 ' + p.triggerDate : '');
-      document.getElementById('dHeadline').textContent = fmtPP(swing);
+      const head = document.getElementById('dHeadline');
+      head.textContent = fmtPP(swing);
+      // 변화폭이라 방향 색을 씁니다(오름 빨강 / 내림 파랑).
+      head.className = 'value ' + (swing >= 0 ? 'dir-up' : 'dir-down');
       document.getElementById('dHeadlineLabel').textContent = '최대 김프 변화폭';
       document.getElementById('dDesc').textContent = p.desc;
       document.getElementById('zoomTitle').textContent =
@@ -828,7 +929,10 @@
       kind.textContent = ev.milestone ? '⚡ 환율까지 함께 흔든 사건' : '하루 만에 끝난 사건';
       kind.className = 'badge ' + (ev.milestone ? 'badge-amber' : 'badge-neutral');
       document.getElementById('dDate').textContent = ev.date;
-      document.getElementById('dHeadline').textContent = fmtPct(current);
+      const head = document.getElementById('dHeadline');
+      head.textContent = fmtPct(current);
+      // 당일 김프는 변화가 아니라 수준값이라 방향 색을 쓰지 않습니다.
+      head.className = 'value';
       document.getElementById('dHeadlineLabel').textContent = '당일 김프';
       document.getElementById('dDesc').textContent = ev.desc;
       document.getElementById('zoomTitle').textContent =

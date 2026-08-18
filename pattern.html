@@ -474,13 +474,17 @@
   const detail = document.getElementById('detail');
 
   // 이 차트를 보고 있는 시점을 왼쪽에 작게 표시해, 데이터 기준점을 알려줍니다.
-  (function showAsOf() {
+  // 라벨의 뜻은 "이 차트가 어느 시점 데이터인가"이므로 브라우저의 오늘이 아니라
+  // 데이터의 마지막 날짜를 씁니다. new Date()를 쓰면 두 가지가 어긋납니다.
+  //   ① data/history.json이 어제까지만 갱신된 아침에는 표기가 하루 앞서갑니다.
+  //   ② 사용자의 시간대가 KST와 다르면 같은 순간에도 날짜가 하루 어긋납니다.
+  // market.dates는 국내가·해외가·환율이 모두 있는 날만 남긴 배열이라,
+  // 그 마지막 값이 곧 차트가 실제로 그리고 있는 마지막 날입니다.
+  function showAsOf() {
     const el = document.getElementById('chartAsOf');
-    if (!el) return;
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    el.textContent = now.getFullYear() + '.' + pad(now.getMonth() + 1) + '.' + pad(now.getDate()) + ' 기준';
-  })();
+    if (!el || !market || !market.dates.length) return;
+    el.textContent = market.dates[market.dates.length - 1].replace(/-/g, '.') + ' 기준';
+  }
 
   // ---------------------------------------------------------------------
   // 사건 데이터
@@ -1735,6 +1739,7 @@
       overviewBlock.hidden = false;
       detail.hidden = false;
 
+      showAsOf();
       renderOverview();
       // 처음 들어왔을 때는 아무것도 안 고르고, 박스는 빈 상태(#detailEmpty)로 둡니다.
       // 음영 구간이나 점을 실제로 누르면 select()가 빈 상태를 걷어내고 내용을 채웁니다.

@@ -8,9 +8,6 @@
     location.hostname === 'localhost' || location.hostname === '127.0.0.1'
       ? 'http://127.0.0.1:8010'
       : 'https://kimchi-premium.onrender.com';
-  // 백엔드가 아직 배포되지 않아 API_BASE_URL이 위 플레이스홀더 그대로인 동안은
-  // 이상한 네트워크 에러 대신 "아직 준비 중"이라는 명확한 안내만 보여준다.
-  const BACKEND_NOT_READY = API_BASE_URL.indexOf('REPLACE_WITH') !== -1;
 
   const SESSION_KEY = 'kimplog_chat_session_id';
 
@@ -89,11 +86,6 @@
 
     addMessage(message, 'user');
     inputEl.value = '';
-
-    if (BACKEND_NOT_READY) {
-      addMessage('죄송해요, 챗봇 서버가 아직 배포 준비 중이에요. 조금만 기다려 주세요!', 'error');
-      return;
-    }
 
     inputEl.disabled = true;
     sendBtn.disabled = true;

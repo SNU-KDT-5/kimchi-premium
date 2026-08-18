@@ -221,6 +221,20 @@
       font-size: 0.74rem; font-weight: 600; color: var(--dim);
       pointer-events: none; transition: opacity .5s ease;
     }
+    /* 그림(SVG)은 장식이라 스크린리더에서 감춰져 있다. 그래서 '보따리를 누른다'를
+       실제로 할 수 있는 진짜 버튼을 따로 둔다. 평소엔 눈에 안 보이다가 탭으로
+       초점이 오면 나타난다 — 건너뛰기 링크와 같은 방식. */
+    .kf-a11y-press {
+      position: absolute; left: var(--sp-3); bottom: 54px; z-index: 6;
+      font-family: inherit; font-size: 0.78rem; font-weight: 700;
+      color: var(--frog); background: var(--panel);
+      border: 1px solid var(--frog); border-radius: var(--r-pill);
+      padding: var(--sp-2) var(--sp-4); cursor: pointer; white-space: nowrap;
+      clip-path: inset(50%);
+    }
+    .kf-a11y-press:focus-visible { clip-path: none; }
+    .kf-a11y-press.is-hidden { display: none; }
+
     /* 출발을 기다리는 동안에는 '눌러라'가 또렷해야 한다 */
     .kf-tap-hint.is-call { color: var(--frog); font-weight: 700; }
     .kf-skip.is-hidden, .kf-tap-hint.is-hidden { opacity: 0; pointer-events: none; }
@@ -497,13 +511,14 @@
 
           </svg>
 
-          <div class="kf-say is-hidden" id="say"><span id="sayText"></span></div>
-          <div class="kf-say kf-rat-say is-hidden" id="ratSay"><span id="ratSayText"></span></div>
-          <div class="kf-say kf-rat-say is-hidden" id="podoriSay"><span id="podoriSayText"></span></div>
+          <div class="kf-say is-hidden" id="say" role="status" aria-live="polite"><span id="sayText"></span></div>
+          <div class="kf-say kf-rat-say is-hidden" id="ratSay" role="status" aria-live="polite"><span id="ratSayText"></span></div>
+          <div class="kf-say kf-rat-say is-hidden" id="podoriSay" role="status" aria-live="polite"><span id="podoriSayText"></span></div>
 
           <!-- 김프랫 이야기 조작. 이야기가 흐르는 동안에만 보인다 -->
           <div class="kf-tap-hint is-hidden" id="ratTapHint">아무 데나 눌러서 빨리 감기</div>
           <button class="kf-skip is-hidden" id="ratSkip" type="button">건너뛰기 <span aria-hidden="true">&#9656;</span></button>
+          <button class="kf-a11y-press is-hidden" id="bagPress" type="button">김프랫의 보따리 누르기 — 다음으로</button>
         </div>
 
         <div class="kf-foot is-off" id="foot">* 해외 거래소보다 국내 거래소 코인 가격이 50% 더 비싸다는 뜻</div>
@@ -1270,6 +1285,15 @@
       var ratPlaying = false, ratStarted = false, hintTimer = null, ratWaiting = null;
       var skipBtn = document.getElementById('ratSkip');
       var tapHint = document.getElementById('ratTapHint');
+      var pressBtn = document.getElementById('bagPress');   // 보따리의 키보드·스크린리더 짝
+
+      // 키보드를 쓴 적이 있는지. 마우스만 쓰는 사람에게까지 초점을 옮기면
+      // (:focus-visible 이 걸려) 숨겨 둔 버튼이 드러나므로 구분한다.
+      var usedKeyboard = false;
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ' ||
+            e.key.indexOf('Arrow') === 0) usedKeyboard = true;
+      }, true);
 
       function kindOf(state) { return state.replace(/(Stand|Run)(S|M|L|XL)$/, ''); }
 
@@ -1351,6 +1375,13 @@
           ratWaiting = next;
           setSparkle(true);
           bagG.classList.add('is-press');
+          pressBtn.classList.remove('is-hidden');
+          // 여기서 이야기가 사용자를 기다린다. 키보드를 쓰던 사람이면 초점을 옮겨 준다.
+          // 첫 Tab 은 화면 맨 위 네비로 올라가 버려(스크롤이 따라 올라가 장면이 리셋된다)
+          // 스스로 찾아오게 두면 안 된다. preventScroll 로 화면은 그대로 둔다.
+          if (usedKeyboard) {
+            try { pressBtn.focus({ preventScroll: true }); } catch (e) { pressBtn.focus(); }
+          }
           tapHint.textContent = '반짝이는 보따리를 눌러봐';
           tapHint.classList.add('is-call');
           tapHint.classList.remove('is-hidden');
@@ -1453,6 +1484,7 @@
         if (!ratWaiting) return;
         var go = ratWaiting; ratWaiting = null;
         bagG.classList.remove('is-press');
+        pressBtn.classList.add('is-hidden');
         tapHint.textContent = '아무 데나 눌러서 빨리 감기';
         tapHint.classList.remove('is-call');
         clearTimeout(hintTimer);
@@ -1477,6 +1509,7 @@
         if (!ratStarted) return;
         ratStarted = false; ratPlaying = false; ratWaiting = null;
         bagG.classList.remove('is-press');
+        pressBtn.classList.add('is-hidden');
         beatSkip = null; beatGen++; beatIdx = -1;
         clearTimeout(hintTimer);
         hideRatSay(); podoriSay.classList.add('is-hidden');
@@ -1494,9 +1527,10 @@
       // 빨리감기는 화면 어디를 눌러도 된다 — 반짝이는 보따리는 '여기'라는 표시일 뿐
       chartWrap.addEventListener('click', fastForward);
       skipBtn.addEventListener('click', function (e) { e.stopPropagation(); skipToWarning(); });
+      pressBtn.addEventListener('click', function (e) { e.stopPropagation(); pressBag(); });
       // 스크롤이 잠긴 구간이라 키보드만 쓰는 사람도 반드시 빠져나갈 수 있어야 한다
       window.addEventListener('keydown', function (e) {
-        if (e.target === skipBtn) return;
+        if (e.target === skipBtn || e.target === pressBtn) return;
         if (e.key !== ' ' && e.key !== 'Enter' && e.key !== 'ArrowRight') return;
         if (ratWaiting) { e.preventDefault(); pressBag(); }
         else if (ratPlaying) { e.preventDefault(); fastForward(); }

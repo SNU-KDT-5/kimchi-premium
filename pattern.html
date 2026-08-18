@@ -135,16 +135,11 @@
   .zoom-legend .swatch--amber { background: var(--amber-bg); border-color: var(--amber); }
 
   /* 장중 저가 — 종가만으로는 안 보이는 하루 안의 급락을 드러낼 때만 씁니다. */
-  .low-line { fill: none; stroke: var(--down); stroke-width: 1.4; opacity: 0.5; stroke-linejoin: round; }
   .dip-wick { stroke: var(--down); stroke-width: 3; }
   .dip-head { fill: var(--down); }
   .dip-dot { fill: var(--down); stroke: var(--panel); stroke-width: 2; }
-  .dip-close-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
   .tag-box--down { fill: var(--down-bg); stroke: var(--down-line); }
   .tag-text--down { fill: var(--down); }
-  .zoom-legend .swatch--low { background: var(--down-bg); border-color: var(--down); }
-  /* display:inline-block가 hidden 속성을 이겨버리므로 명시적으로 꺼줍니다. */
-  .zoom-legend .swatch[hidden] { display: none; }
 
   /* 종가 아래에 장중 저점을 나란히 두어, 종가만 크게 읽히지 않게 합니다. */
   .headline-sub { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; color: var(--down); margin-top: 2px; }
@@ -266,7 +261,6 @@
             <span class="swatch dir-up"></span>김프가 가장 크게 오른 구간
             <span class="swatch dir-down"></span>가장 크게 내린 구간
             <span class="swatch swatch--amber"></span>사건일·촉발일
-            <span class="swatch swatch--low" id="lowSwatch" hidden></span><span id="lowLegend" hidden>장중 저가 기준 김프</span>
           </p>
         </div>
 
@@ -666,13 +660,18 @@
   const ZOOM = { W: 1000, H: 270, left: 44, right: 16, top: 48, bottom: 30 };
 
   // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
-  function drawTag(svg, x, y, text, variant, extra) {
+  // 태그가 왼쪽으로 갈 수 있는 한계. 기본은 플롯 영역 안이지만, 고점·저점이 차트
+  // 맨 왼쪽에 붙어 있으면 축 라벨 자리까지 빌려 써야 글씨가 점을 안 덮습니다.
+  const TAG_EDGE = 2;
+
+  function drawTag(svg, x, y, text, variant, extra, minX) {
     const suffix = variant ? ' tag-box--' + variant : '';
     const w = textWidth(text, 10.5) + 16;
     const h = 19;
-    const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
-    // 색이 있는 태그는 배경이 반투명이라, 뒤를 지나는 점선이 글씨를 뚫고 보입니다.
-    // 불투명한 판을 먼저 깔아 가려줍니다.
+    const left = (minX == null ? ZOOM.left : minX) + w / 2;
+    const cx = Math.max(left, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
+    // 색이 있는 태그는 배경이 반투명이라, 뒤를 지나는 점선이나 축 라벨이 글씨를
+    // 뚫고 보입니다. 불투명한 판을 먼저 깔아 가려줍니다.
     if (variant) {
       svg.appendChild(el('rect', {
         class: 'tag-base', x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
@@ -779,19 +778,6 @@
     const plotTop = ZOOM.top;
     const plotBottom = ZOOM.H - ZOOM.bottom;
 
-    // 장중 저가 김프를 종가선 아래 옅은 선으로 함께 그립니다. 평소에는 종가선에
-    // 거의 붙어 있다가 급락일에만 뚝 떨어져서, 그날이 얼마나 예외적인지가 대비로
-    // 드러납니다. 값 하나만 찍으면 "원래 이런 날이 흔한가?"에 답하지 못합니다.
-    if (hasDip) {
-      svg.insertBefore(el('path', {
-        class: 'low-line',
-        d: market.lowPremium.slice(from, to + 1).map(function (v, i) {
-          return (i ? 'L' : 'M') + g.px(i).toFixed(1) + ',' + g.py(v).toFixed(1);
-        }).join(' ')
-      }), svg.firstChild.nextSibling);
-    }
-    document.getElementById('lowSwatch').hidden = !hasDip;
-    document.getElementById('lowLegend').hidden = !hasDip;
 
     // 이 기간의 최저·최고와, 그 둘 사이(= 가장 크게 움직인 구간)를 먼저 구합니다.
     let minI = 0, maxI = 0;
@@ -870,18 +856,23 @@
       // (위쪽에는 '가장 큰 변화'·사건일 태그 줄이 이미 있어서 겹치기 쉽습니다).
       const label = pair[1] + ' ' + fmtPct(values[i]);
       let tx = cx, ty = cy + (i === maxI ? -22 : 24);
+      let tminX = null;
       if (ty < plotTop + 12 || ty > plotBottom - 12) {
         const tw = textWidth(label, 10.5) + 16;
-        // 바깥쪽(변화가 시작된 쪽)을 먼저 보고, 잘리면 반대쪽에 붙입니다.
+        const gap = 10;
+        // 바깥쪽(변화가 시작된 쪽)에 붙이는 게 기본입니다. 점이 왼쪽 끝에 있으면
+        // 축 라벨 자리(TAG_EDGE)까지 빌려서라도 왼쪽에 두고, 그래도 점을 덮을
+        // 만큼 좁으면 그때만 반대쪽으로 넘깁니다.
         const outward = i === swingFrom ? -1 : 1;
         const fitsOut = outward < 0
-          ? cx - tw - 12 >= ZOOM.left
-          : cx + tw + 12 <= ZOOM.W - ZOOM.right;
+          ? cx - gap - tw >= TAG_EDGE
+          : cx + gap + tw <= ZOOM.W - ZOOM.right;
         const side = fitsOut ? outward : -outward;
         ty = cy;
-        tx = cx + side * (tw / 2 + 12);
+        tx = cx + side * (tw / 2 + gap);
+        if (side < 0) tminX = TAG_EDGE;
       }
-      drawTag(svg, tx, ty, label, 'dir', dirClass);
+      drawTag(svg, tx, ty, label, 'dir', dirClass, tminX);
     });
 
     // 최대 변화폭은 구간 위쪽에 한 번 더 못박아 둡니다.
@@ -911,8 +902,6 @@
         class: 'dip-head', points: [x, yLow, x - 5, yLow - 10, x + 5, yLow - 10].join(' ')
       }));
       svg.appendChild(el('circle', { class: 'dip-dot', cx: x, cy: yLow, r: 4 }));
-      svg.appendChild(el('circle', { class: 'dip-close-dot', cx: x, cy: yClose, r: 4 }));
-      drawTag(svg, x, yClose - 20, '종가 ' + fmtPct(values[at]), null);
       drawTag(svg, x, Math.min(yLow + 20, plotBottom - 12),
         '장중 저점 ' + fmtPct(market.lowPremium[dipIdx]), 'down');
     }
@@ -964,9 +953,14 @@
       const p = periods[index];
       const s = findIndex(p.start), e = findIndex(p.end);
       // 구간만 딱 자르면 앞뒤 맥락이 사라져서 여유를 조금 둡니다.
-      const pad = Math.max(3, Math.round((e - s) * 0.08));
-      const from = Math.max(0, s - pad);
-      const to = Math.min(market.dates.length - 1, e + pad);
+      // 앞쪽 여유를 더 둡니다. 구간의 고점·저점은 시작 직후에 몰리는 일이 잦은데,
+      // 차트 왼쪽 끝에 붙어버리면 값 태그를 점 왼쪽에 놓을 자리가 안 나옵니다.
+      // (박상기 구간의 최고점이 그런 경우였습니다.)
+      const span = e - s;
+      const padL = Math.max(10, Math.round(span * 0.2));
+      const padR = Math.max(3, Math.round(span * 0.08));
+      const from = Math.max(0, s - padL);
+      const to = Math.min(market.dates.length - 1, e + padR);
 
       // 구간 카드는 여러 주에 걸친 흐름이 본론이라, 하루 안의 급락은 넣지 않습니다
       // (2018년 초처럼 급락일이 여럿인 구간에서는 표시가 뒤엉킵니다).
@@ -1104,8 +1098,7 @@
         premium: premium,
         btcPrice: data.btcPrice,
         btcPriceLow: data.btcPriceLow,
-        // 장중 저가로 계산한 김프. 저가가 없는 날은 종가 김프를 그대로 둬서
-        // 선을 그릴 때 구멍이 생기지 않게 합니다.
+        // 장중 저가로 계산한 김프. 저가가 없는 날은 종가 김프를 그대로 둡니다.
         lowPremium: data.dates.map(function (d, i) {
           const low = data.btcPriceLow && data.btcPriceLow[i];
           if (low == null) return premium[i];

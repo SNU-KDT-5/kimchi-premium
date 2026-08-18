@@ -279,7 +279,7 @@
 <p class="caption" style="margin-top: var(--sp-8);">
   업비트·Frankfurter(ECB 기준)와 해외 거래소 시세를 모아둔 팀 데이터(data/history.json)를 사용합니다.
   주말·공휴일 환율은 직전 영업일 값을 적용하며, 카드의 수치는 모두 이 데이터로 계산한 값입니다.
-  사건명과 설명만 팀이 직접 정리한 내용입니다.
+  사건명과 설명만 팀이 직접 정리한 내용이고, "장중 저가 기준" 김프는 업비트 일봉 저가로 계산한 추정치입니다.
   <span id="sourceNote"></span>
 </p>
 </div>
@@ -950,8 +950,7 @@
 
       // 종가만으로는 하루 안의 급락·되돌림이 가려지므로,
       // 장중 저가로 추정한 당일 저점이 뚜렷이 낮을 때만 덧붙입니다.
-      // data/history.json 에는 아직 장중 저가가 없어 지금은 이 문장이 나오지 않습니다.
-      // 백엔드가 저가 필드를 추가하면 그대로 다시 살아납니다.
+      // 저가(btc_krw_low)가 없는 날도 있어(예: 오늘 갱신 전) 항상 값을 확인합니다.
       if (market.btcPriceLow && market.btcPriceLow[c]) {
         const converted = market.foreignUsd[c] * market.fxRate[c];
         const lowPremium = (market.btcPriceLow[c] - converted) / converted * 100;

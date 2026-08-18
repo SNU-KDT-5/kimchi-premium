@@ -12,13 +12,18 @@
   body { padding-bottom: 80px; }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
   .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
-  .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
+  .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); }
   .header .badge { margin-left: var(--sp-2); vertical-align: middle; font-size: 0.72rem; }
 
   .section-block { margin-top: var(--sp-8); }
+  .section-label-block { margin-bottom: var(--sp-3); }
+  .section-asof {
+    display: block; font-size: 0.68rem; font-weight: 700; color: var(--dim);
+    font-family: var(--font-mono); margin-bottom: var(--sp-1);
+  }
   .section-label {
-    font-size: 0.74rem; font-weight: 700; color: var(--mut);
-    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3);
+    display: block; font-size: 0.74rem; font-weight: 700; color: var(--mut);
+    text-transform: uppercase; letter-spacing: 0.05em;
   }
 
   svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -47,18 +52,32 @@
   .band { fill: var(--amber-bg); cursor: pointer; }
   .band:hover, .band.active { fill: rgba(196, 138, 31, 0.26); }
   .band-edge { stroke: var(--border2); stroke-width: 1; pointer-events: none; }
-  .band-label { fill: var(--text); font-size: 10px; font-weight: 700; pointer-events: none; }
+  .band-label {
+    fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none;
+    transition: font-size 0.12s ease;
+  }
+  .band-label.label-hot { font-size: 15px; }
 
-  .event-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer; }
+  .event-dot {
+    fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer;
+    transition: r 0.12s ease;
+  }
   .event-dot--milestone { fill: var(--amber); }
   .event-dot.active { fill: var(--text); }
+  .event-dot.dot-hot { r: 8.5; }
   .event-hitbox { fill: transparent; cursor: pointer; }
   .event-label {
-    fill: var(--text); font-size: 9.5px; font-weight: 700; pointer-events: none;
+    fill: var(--text); font-size: 11.5px; font-weight: 700; pointer-events: none;
     stroke: var(--panel); stroke-width: 3; paint-order: stroke; stroke-linejoin: round;
+    transition: font-size 0.12s ease;
   }
+  .event-label.label-hot { font-size: 14.5px; }
   /* 라벨을 좌우로 밀어냈을 때 어느 대상의 이름인지 이어주는 선입니다. */
   .leader { fill: none; stroke: var(--dim); stroke-width: 1; opacity: 0.55; pointer-events: none; }
+
+  /* 개요 차트 위에 마우스를 올렸을 때 보여주는 안내선·점입니다. */
+  .hover-guide { stroke: var(--dim); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+  .hover-dot { fill: var(--text); stroke: var(--panel); stroke-width: 2; pointer-events: none; }
 
   .pat-hint {
     font-size: 0.78rem; color: var(--dim); margin-top: var(--sp-3);
@@ -75,17 +94,45 @@
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: var(--sp-4); flex-wrap: wrap; margin-bottom: var(--sp-2);
   }
-  .detail-title-row { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
-  .detail-title { font-size: 1.1rem; font-weight: 800; color: var(--text); }
-  .detail-date { font-size: 0.78rem; color: var(--dim); font-family: var(--font-mono); margin-top: var(--sp-1); }
+  .detail-meta-row {
+    display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+    margin-top: var(--sp-1);
+    /* 알약 모양 배지는 둥근 테두리 때문에 제목·문단과 같은 x=0에 있어도 살짝 더 안쪽에서
+       시작하는 것처럼 보여서, 아주 조금 왼쪽으로 당겨 시각적으로 맞춥니다. */
+    margin-left: -3px;
+  }
+  .detail-meta-row .badge { font-size: 0.68rem; padding: 3px var(--sp-2); }
+  .detail-title {
+    font-size: 1.4rem; font-weight: 800; color: var(--text); line-height: 1.3;
+  }
+  .detail-date { font-size: 0.7rem; color: var(--dim); font-family: var(--font-mono); }
   .detail-headline { text-align: right; }
   .detail-headline .value {
     font-family: var(--font-mono); font-size: 1.7rem; font-weight: 800;
     /* 방향이 있는 값(변화폭)이면 dir-up/dir-down이 붙어 색이 바뀝니다. */
-    color: var(--dir, var(--accent)); white-space: nowrap;
+    color: var(--dir, var(--accent));
+    white-space: nowrap;
+    line-height: 1.15;
   }
-  .detail-headline .label { font-size: 0.72rem; color: var(--dim); }
+  /* 본문 line-height(1.7)를 그대로 물려받으면 라벨·숫자 사이가 실제 여백보다 훨씬 커 보여서,
+     이 블록만 줄간격을 촘촘하게 따로 잡습니다. */
+  .detail-headline .label { font-size: 0.72rem; color: var(--dim); line-height: 1.2; margin-top: 2px; }
   .detail-desc { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin: var(--sp-4) 0 var(--sp-5); }
+  /* 구간 최저/최고/최대 변동 기간처럼 제목을 굵게 강조하고 싶을 때만 붙이는 클래스 (shared.css 기본 라벨은 600). */
+  .stat-card .label.label-strong { font-weight: 800; }
+  /* 통계 카드를 누르면 위쪽 확대 차트에서 해당 지점을 짚어주는 데모용 연동 표시입니다. */
+  .stat-card.linkable {
+    cursor: pointer; transition: border-color .15s, transform .1s;
+  }
+  .stat-card.linkable:hover { border-color: var(--accent-line); }
+  .stat-card.linkable:active { transform: scale(0.98); }
+  .stat-card.linkable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* 최대 변동 기간 값: 두 줄이라 구간 최저/최고(한 줄)보다 커 보이지 않도록 살짝 줄이고,
+     화살표 자리를 고정 폭으로 비워 두 줄의 "월" 위치가 서로 어긋나지 않게 맞춥니다. */
+  .stat-card .value.swing-value { font-size: 1.05rem; line-height: 1.55; }
+  .swing-row { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
+  /* 이름이 확대 차트의 화살표 마커 클래스(.swing-arrow, 아래쪽 SVG 스타일)와 겹치지 않도록 구분합니다. */
+  .swing-date-arrow { display: inline-block; width: 12px; text-align: center; color: var(--dim); }
 
   .zoom-wrap {
     background: var(--panel2); border: 1px solid var(--border);
@@ -110,6 +157,18 @@
   .peak-dot { fill: var(--dir); stroke: var(--panel); stroke-width: 2; }
   .peak-halo { fill: none; stroke: var(--dir); stroke-width: 1.5; opacity: 0.35; }
 
+  /* 통계 카드를 클릭했을 때 확대 차트 위 해당 지점에서 잠깐 번지는 링 효과 (데모). */
+  .zoom-ping {
+    fill: none; stroke: var(--accent); stroke-width: 2.5;
+    transform-box: fill-box; transform-origin: center;
+    animation: zoomPing 0.9s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes zoomPing {
+    from { transform: scale(0.3); opacity: 0.9; }
+    to   { transform: scale(3.4); opacity: 0; }
+  }
+
   /* 사건일·촉발일은 amber로 통일해 "그날"이라는 걸 드러냅니다. */
   .marker-line { stroke: var(--amber); stroke-width: 1.6; stroke-dasharray: 3 3; }
 
@@ -117,12 +176,14 @@
   .tag-box { fill: var(--panel); stroke: var(--border2); stroke-width: 1; }
   .tag-box--dir { fill: var(--dir-bg); stroke: var(--dir-line); }
   .tag-box--amber { fill: var(--amber-bg); stroke: var(--amber); }
+  .tag-box--frog { fill: var(--frog-bg); stroke: var(--frog-line); }
   .tag-text {
     font-size: 10.5px; font-weight: 800; font-family: var(--font-mono);
     fill: var(--text); pointer-events: none;
   }
   .tag-text--dir { fill: var(--dir); }
   .tag-text--amber { fill: var(--amber); }
+  .tag-text--frog { fill: var(--frog); }
 
   .zoom-legend {
     display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px;
@@ -147,22 +208,75 @@
 
   /* 환율·BTC 미니 차트의 끝점 */
   .mini-end-dot { stroke: var(--panel2); stroke-width: 1.5; }
+  /* 선 아래를 옅게 채워서 밋밋해 보이지 않게 합니다. */
+  .mini-area--fx { fill: var(--accent-bg); }
+  .mini-area--btc { fill: var(--frog-bg); }
+  .mini-tag-text {
+    font-size: 9px; font-weight: 800; font-family: var(--font-mono); pointer-events: none;
+  }
 
   /* 환율·BTC는 같은 기간의 실제 움직임을 각자 축으로 그립니다. */
   .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin-top: var(--sp-4); }
+  /* 차트로 보기(김프 움직임 + 환율·BTC)와 그 아래 숫자로 보기를 구분선으로 나눕니다. */
+  .detail-divider { border: none; border-top: 1px solid var(--border); margin: var(--sp-5) 0 var(--sp-3); }
+  .detail-subhead {
+    font-size: 0.72rem; font-weight: 700; color: var(--dim);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-2);
+  }
   .mini {
     background: var(--panel2); border: 1px solid var(--border);
     border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5) var(--sp-3);
   }
   .mini-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); margin-bottom: var(--sp-2); }
   .mini-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); }
+
+  /* 개구리 도움말 — 환율/BTC 박스 옆에서 누르면 설명 말풍선을 엽니다. (대시보드와 같은 컴포넌트) */
+  .frog-slot { position: relative; display: inline-flex; vertical-align: middle; margin-left: var(--sp-2); }
+  .frog-help {
+    width: 20px; height: 20px; padding: 0; border: none; background: none;
+    color: var(--frog); cursor: pointer; flex: none; display: block;
+    animation: frog-bob 3.2s ease-in-out infinite;
+  }
+  .frog-help svg { width: 100%; height: 100%; display: block; }
+  .frog-help:hover { color: var(--frog-light); }
+  .frog-help:focus-visible { outline: 2px solid var(--frog); outline-offset: 2px; border-radius: var(--r-sm); }
+  .frog-help[aria-expanded="true"] { animation: none; color: var(--frog); }
+  @keyframes frog-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3.5px); } }
+  @media (prefers-reduced-motion: reduce) { .frog-help { animation: none; } }
+
+  .frog-bubble {
+    position: absolute; top: calc(100% + 10px); left: -10px; z-index: 60;
+    width: 260px; max-width: min(260px, 76vw);
+    background: var(--panel); border: 1px solid var(--border2); border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg); padding: var(--sp-4) var(--sp-5);
+    font-size: 0.82rem; font-weight: 400; color: var(--mut); line-height: 1.75; text-align: left;
+  }
+  .frog-bubble::before {
+    content: ''; position: absolute; top: -7px; left: 16px; width: 12px; height: 12px;
+    background: var(--panel); border-left: 1px solid var(--border2); border-top: 1px solid var(--border2);
+    transform: rotate(45deg);
+  }
+  .frog-bubble h5 { font-size: 0.86rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
+  .frog-bubble b { color: var(--text); }
+  .frog-bubble .frog-bubble-close {
+    display: block; margin-top: var(--sp-3); padding: 0; border: none; background: none;
+    font-family: var(--font-body); font-size: 0.76rem; color: var(--dim); cursor: pointer;
+  }
+  .frog-bubble .frog-bubble-close:hover { color: var(--text); }
+  @media (max-width: 560px) { .frog-bubble { left: auto; right: -10px; } .frog-bubble::before { left: auto; right: 16px; } }
   .mini-value { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; }
   .mini-value--fx { color: var(--accent); }
   .mini-value--btc { color: var(--frog); }
   .fx-line { fill: none; stroke: var(--accent); stroke-width: 1.8; }
   .btc-line { fill: none; stroke: var(--frog); stroke-width: 1.8; }
 
-  #statRow { margin-top: var(--sp-4); }
+  .stat-date { font-size: 0.72rem; color: var(--dim); font-family: var(--font-mono); margin: var(--sp-1) 0 var(--sp-2); line-height: 1.3; }
+  /* shared.css 기본 스탯 카드는 본문 line-height(1.7)를 그대로 물려받아서, 라벨·숫자처럼
+     한두 줄뿐인 짧은 텍스트에도 위아래 여백이 실제보다 훨씬 크게 잡혀요.
+     이 페이지의 카드(구간 최저/최고/최대 변동 기간 등)만 살짝 촘촘하게 줄입니다. */
+  .stat-card { padding: var(--sp-3) var(--sp-4); }
+  .stat-card .label { line-height: 1.3; }
+  .stat-card .value { line-height: 1.25; }
   .detail-note { font-size: 0.78rem; color: var(--dim); margin-top: var(--sp-4); line-height: 1.7; }
 
   @media (max-width: 640px) {
@@ -180,17 +294,20 @@
 <div class="wrap">
   <div class="header">
     <div class="eyebrow mono">패턴분석</div>
-    <h1>환율조정 BTC 김프 — 언제, 어떻게 크게 움직였나</h1>
+    <h1>김프는 언제 가장 크게 흔들렸을까</h1>
     <p>
-      2017년 09월부터 현재까지의 주간 추이 위에 주요 사건을 표시했습니다.
-      음영 구간(여러 주에 걸친 시기)이나 점(하루 만에 끝난 사건)을 누르면
-      그때의 김프·환율·BTC 움직임을 함께 볼 수 있습니다.
-      <span class="badge badge-neutral">실제 데이터</span>
+      여기서 보는 김프는 <b>환율까지 반영해서 계산한 값</b>이에요.
+      2017년부터 지금까지 어떻게 흘러왔는지, 먼저 큰 흐름부터 보여드려요.<br>
+      그러다 여러 주에 걸친 시기를 보여주는 <b>음영 구간</b>이나, 하루 만에 끝난 사건을 보여주는 <b>점</b>을 누르면,
+      그때 김프·환율·BTC가 어떻게 움직였는지 함께 볼 수 있어요.
     </p>
   </div>
 
   <div class="section-block">
-    <div class="section-label">환율조정 BTC 김프 (%) · 2017.09 ~ 현재</div>
+    <div class="section-label-block">
+      <span class="section-asof" id="chartAsOf"></span>
+      <span class="section-label">환율조정 BTC 김프 (%) · 2017.09 ~ 현재</span>
+    </div>
     <div class="card">
       <div class="chart-legend">
         <span class="chart-legend__item">
@@ -213,16 +330,16 @@
 
       <div id="chartLoading" class="status-box" role="status" aria-live="polite" hidden>
         <div class="spinner" aria-hidden="true"></div>
-        <p>BTC·환율 데이터를 불러오는 중입니다.</p>
+        <p>BTC·환율 데이터를 불러오고 있어요.</p>
       </div>
 
       <div id="chartError" class="error-box" role="alert" hidden>
-        <h4>데이터를 불러오지 못했습니다.</h4>
+        <h4>데이터를 불러오지 못했어요.</h4>
         <p id="chartErrorMessage">잠시 후 페이지를 새로고침해 주세요.</p>
       </div>
 
       <div id="chartEmpty" class="status-box" role="status" hidden>
-        <p>현재 표시할 수 있는 BTC·환율 데이터가 없습니다.</p>
+        <p>지금은 보여드릴 수 있는 BTC·환율 데이터가 없어요.</p>
         <p>잠시 후 다시 확인해 주세요.</p>
       </div>
 
@@ -231,18 +348,18 @@
              aria-label="주간 평균 김프 추이와 주요 사건 위치"></svg>
         <p class="pat-hint">
           <span class="dot-sample"></span>
-          음영 구간이나 점을 누르면 아래에 그 시기의 상세가 열립니다.
+          음영 구간이나 점을 누르면 아래에서 그때 이야기를 자세히 볼 수 있어요.
         </p>
       </div>
 
       <div id="detail" hidden>
         <div class="detail-head">
           <div>
-            <div class="detail-title-row">
-              <div class="detail-title" id="dTitle">-</div>
+            <div class="detail-title" id="dTitle">-</div>
+            <div class="detail-meta-row">
               <span class="badge badge-neutral" id="dKind">-</span>
+              <span class="detail-date" id="dDate">-</span>
             </div>
-            <div class="detail-date" id="dDate">-</div>
           </div>
           <div class="detail-headline">
             <div class="value" id="dHeadline">-</div>
@@ -253,6 +370,7 @@
 
         <p class="detail-desc" id="dDesc">-</p>
 
+        <div class="detail-subhead">차트로 보기</div>
         <div class="zoom-wrap">
           <div class="zoom-title" id="zoomTitle">-</div>
           <svg id="zoom" viewBox="0 0 1000 270" xmlns="http://www.w3.org/2000/svg"
@@ -267,7 +385,7 @@
         <div class="mini-grid">
           <div class="mini">
             <div class="mini-head">
-              <span class="mini-label">원/달러 환율</span>
+              <span class="mini-label">원/달러 환율<span class="frog-slot" data-help="fx"></span></span>
               <span class="mini-value mini-value--fx" id="fxValue">-</span>
             </div>
             <svg id="fxChart" viewBox="0 0 460 110" xmlns="http://www.w3.org/2000/svg"
@@ -275,7 +393,7 @@
           </div>
           <div class="mini">
             <div class="mini-head">
-              <span class="mini-label">BTC 가격 (원화)</span>
+              <span class="mini-label">BTC 가격 (원화)<span class="frog-slot" data-help="btc"></span></span>
               <span class="mini-value mini-value--btc" id="btcValue">-</span>
             </div>
             <svg id="btcChart" viewBox="0 0 460 110" xmlns="http://www.w3.org/2000/svg"
@@ -283,6 +401,9 @@
           </div>
         </div>
 
+        <hr class="detail-divider">
+
+        <div class="detail-subhead">숫자로 보기</div>
         <div class="stat-row" id="statRow"></div>
 
         <p class="detail-note" id="dNote"></p>
@@ -290,11 +411,11 @@
     </div>
   </div>
 
-<p class="caption" style="margin-top: var(--sp-8);">
-  업비트·Frankfurter(ECB 기준)와 해외 거래소 시세를 모아둔 팀 데이터(data/history.json)를 사용합니다.
-  주말·공휴일 환율은 직전 영업일 값을 적용하며, 카드의 수치는 모두 이 데이터로 계산한 값입니다.
+<p class="caption" style="margin-top: var(--sp-8); text-align: center;">
+  업비트·Frankfurter(ECB 기준)와 <span id="foreignSourceLabel">해외 거래소</span> 시세를 모아둔
+  팀 데이터(data/history.json)를 사용합니다.<br>
+  주말·공휴일 환율은 직전 영업일 값을 적용하며, 카드의 수치는 모두 이 데이터로 계산한 값입니다.<br>
   사건명과 설명만 팀이 직접 정리한 내용이고, "장중 저가 기준" 김프는 업비트 일봉 저가로 계산한 추정치입니다.
-  <span id="sourceNote"></span>
 </p>
 </div>
 
@@ -307,6 +428,15 @@
   const overviewBlock = document.getElementById('overviewBlock');
   const overviewSvg = document.getElementById('overview');
   const detail = document.getElementById('detail');
+
+  // 이 차트를 보고 있는 시점을 왼쪽에 작게 표시해, 데이터 기준점을 알려줍니다.
+  (function showAsOf() {
+    const el = document.getElementById('chartAsOf');
+    if (!el) return;
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    el.textContent = now.getFullYear() + '.' + pad(now.getMonth() + 1) + '.' + pad(now.getDate()) + ' 기준';
+  })();
 
   // ---------------------------------------------------------------------
   // 사건 데이터
@@ -327,8 +457,8 @@
       end: '2018-01-10',
       chartLabel: '2017년 말 폭등',
       title: '2017년 말 김프 대폭등',
-      desc: '국내 개인투자자 매수세가 이어지며 김프가 사상 최고 수준까지 상승한 시기입니다. ' +
-            '특정 발표보다 여러 주에 걸친 누적된 매수세로 형성됐습니다.'
+      desc: '국내에서 사려는 사람이 계속 늘어나면서, 김프가 <b>역대 가장 높은 수준</b>까지 올라간 시기예요. ' +
+            '어떤 발표 한 번 때문이 아니라, 여러 주 동안 매수세가 차곡차곡 쌓이면서 만들어진 흐름이에요.'
     },
     {
       id: 'w-park-regulation',
@@ -337,8 +467,8 @@
       triggerDate: '2018-01-11',
       chartLabel: '박상기 규제 충격',
       title: '박상기 거래소 폐쇄 발언과 규제 충격',
-      desc: '법무부장관의 거래소 폐쇄 검토 발언(1/11) 이후 투자심리가 얼어붙으며 김프가 축소된 시기입니다. ' +
-            '발언 이후에도 규제 우려가 이어지며 낙폭이 여러 달에 걸쳐 확대됐습니다.'
+      desc: '법무부장관이 <b>거래소를 닫는 방법도 검토하겠다고 말한 날(1월 11일)</b> 이후로, 투자 심리가 확 얼어붙으면서 김프가 줄어든 시기예요. ' +
+            '그 뒤로도 규제 걱정이 계속 이어지면서, 김프가 줄어드는 흐름이 여러 달 동안 이어졌어요.'
     },
     {
       id: 'w-2021-reversal',
@@ -346,8 +476,8 @@
       end: '2021-04-25',
       chartLabel: '저점→고점 반전',
       title: '역프에서 급등까지, 2021년 상반기 김프 반전',
-      desc: '해외 시세가 국내보다 먼저 크게 움직이는 흐름이 반복되며, ' +
-            '한때 마이너스였던 김프가 두 달여 만에 크게 반전된 시기입니다.'
+      desc: '해외 가격이 국내보다 먼저 크게 움직이는 일이 반복되면서, ' +
+            '한때 <b>마이너스(역프)</b>였던 김프가 두 달 만에 크게 뒤집힌 시기예요.'
     },
     {
       id: 'w-ftx-normalize',
@@ -356,8 +486,8 @@
       triggerDate: '2022-11-08',
       chartLabel: 'FTX 이후 정상화',
       title: 'FTX 거래소 파산 이후 김프 정상화',
-      desc: '대형 거래소 FTX의 인출 중단 사실이 알려지며(11/8) 국내외 가격이 함께 흔들린 시기입니다. ' +
-            '이후 한 달여에 걸쳐 균형을 찾아가는 흐름이 나타났습니다.'
+      desc: '큰 해외 거래소였던 FTX가 <b>출금을 막았다는 사실이 알려지면서(11월 8일)</b>, 국내외 가격이 함께 흔들린 시기예요. ' +
+            '그 뒤로 한 달 정도에 걸쳐 다시 균형을 찾아가는 모습이 나타났어요.'
     },
     {
       id: 'w-2025-ath-cooldown',
@@ -366,8 +496,8 @@
       triggerDate: '2025-10-10',
       chartLabel: 'ATH FOMO→진정',
       title: '비트코인 ATH와 국내 매수세, 그리고 진정',
-      desc: '비트코인이 사상 최고가를 경신하는 시기 국내 매수세가 몰렸다가, ' +
-            '관세발 글로벌 청산 사태(10/10)를 거치며 한 달여에 걸쳐 진정된 시기입니다.'
+      desc: '비트코인이 <b>역대 최고가</b>를 새로 쓰던 시기에 국내에서도 사려는 사람이 몰렸다가, ' +
+            '관세 이슈로 전 세계 시장이 크게 흔들린 날(10월 10일)을 지나면서 한 달 정도에 걸쳐 차분해진 시기예요.'
     }
   ];
 
@@ -377,31 +507,34 @@
       date: '2020-03-12',
       chartLabel: '코로나19 쇼크',
       title: '코로나19 팬데믹 쇼크',
-      desc: '글로벌 금융시장 패닉 속에 BTC가 폭락한 날입니다. ' +
-            '해외 가격이 국내보다 더 크게 빠지며 김프가 급등했습니다.'
+      desc: '전 세계 금융시장이 크게 흔들리던 날, BTC 가격도 함께 폭락했어요. ' +
+            '해외 가격이 국내보다 <b>더 많이</b> 떨어지면서, 김프는 오히려 크게 뛰어올랐어요.'
     },
     {
       id: 'd-eunsungsoo-2021',
       date: '2021-04-22',
       chartLabel: '은성수 발언',
       title: '은성수 거래소 폐쇄 발언',
-      desc: '금융위원장의 거래소 폐쇄 가능성 발언 이후 투자심리가 얼어붙으며, ' +
-            '김프가 하루 만에 크게 축소됐습니다.'
+      desc: '금융위원장이 <b>거래소를 닫을 수도 있다고 말한 뒤</b>, ' +
+            '투자 심리가 확 얼어붙으면서 김프가 하루 만에 크게 줄어들었어요.'
     },
     {
       id: 'd-519-2021',
       date: '2021-05-19',
       chartLabel: '5·19 크래시',
       title: '5·19 크래시와 중국 채굴 전면 금지',
-      desc: '중국의 채굴 단속 발표와 겹쳐 글로벌 시장이 급락한 날입니다. ' +
-            '해외 낙폭이 국내보다 커서 김프가 급등했습니다.'
+      desc: '중국이 <b>채굴을 전면 금지하겠다고 발표</b>한 것과 겹쳐, 전 세계 시장이 크게 떨어진 날이에요. ' +
+            '해외가 국내보다 더 많이 떨어지면서, 김프는 크게 뛰어올랐어요. ' +
+            '이날은 빚을 내서 투자했던 <b>레버리지 포지션이 한꺼번에 강제로 청산</b>되며 낙폭이 더 커진, ' +
+            'BTC 역사에서도 손꼽히는 급락일 중 하루로 알려져 있어요.'
     },
     {
       id: 'd-terra-2022',
       date: '2022-05-11',
       chartLabel: '테라·루나',
       title: '테라·루나 UST 디페깅',
-      desc: '스테이블코인 UST의 디페깅으로 루나 생태계가 무너지며 글로벌 시장이 크게 흔들린 시기입니다.'
+      desc: '1달러 가치를 유지해야 했던 스테이블코인 <b>UST의 가격이 무너지면서</b>, ' +
+            '루나 생태계가 함께 무너지고 전 세계 시장도 크게 흔들린 시기예요.'
     },
     {
       id: 'd-martial-law-2024',
@@ -409,8 +542,8 @@
       chartLabel: '비상계엄',
       title: '비상계엄 선포',
       milestone: true,
-      desc: '비상계엄이 선포된 날입니다. 종가 기준 하루 변화는 크지 않지만, ' +
-            '선포 이후 짧은 시간 안에 급락과 되돌림이 있었던 것으로 보입니다.'
+      desc: '<b>비상계엄이 선포된 날</b>이에요. 하루를 마감한 가격만 보면 크게 변하지 않은 것처럼 보이지만, ' +
+            '선포 직후 짧은 시간 동안 가격이 크게 떨어졌다가 다시 돌아온 것으로 보여요.'
     }
   ];
 
@@ -456,13 +589,13 @@
       const d = new Date(r.date + 'T00:00:00Z');
       d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
       const key = d.toISOString().slice(0, 10);
-      if (!groups.has(key)) groups.set(key, { sum: 0, count: 0, year: r.year });
+      if (!groups.has(key)) groups.set(key, { date: key, sum: 0, count: 0, year: r.year });
       const g = groups.get(key);
       g.sum += r.premium;
       g.count += 1;
     });
     return Array.from(groups.values()).map(function (g) {
-      return { year: g.year, premium: g.sum / g.count };
+      return { date: g.date, year: g.year, premium: g.sum / g.count };
     });
   }
 
@@ -509,6 +642,23 @@
   }
   const fmtPct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
   const fmtPP = v => (v >= 0 ? '▲ ' : '▼ ') + Math.abs(v).toFixed(1) + '%p';
+  // 'YYYY-MM-DD' → '11월 19일' 같은 표기로 바꿉니다.
+  const fmtMonthDay = dateStr => {
+    const parts = dateStr.split('-');
+    return parseInt(parts[1], 10) + '월 ' + parseInt(parts[2], 10) + '일';
+  };
+  // 최대 변동 기간처럼 두 날짜를 화살표로 잇는 값을 만들 때 씁니다.
+  // 월/일 자릿수를 맞추고 화살표 자리를 고정 폭으로 비워 두어, 위·아래 줄의 "월" 위치가 맞게 합니다.
+  const fmtSwingRange = (dateA, dateB) => {
+    const pad2 = n => (n < 10 ? ' ' + n : String(n));
+    const line = (dateStr, arrow) => {
+      const parts = dateStr.split('-');
+      const m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+      return '<span class="swing-row"><span class="swing-date-arrow">' + (arrow ? '→' : '') + '</span>' +
+        '<span>' + pad2(m) + '월 ' + pad2(d) + '일</span></span>';
+    };
+    return line(dateA, false) + line(dateB, true);
+  };
 
   // 값 배열 하나를 선으로 그리고, 좌표 변환 함수를 돌려줍니다.
   function drawLine(svg, values, opts) {
@@ -525,6 +675,9 @@
     }
     const pad = Math.max((hi - lo) * 0.15, 0.3);
     lo -= pad; hi += pad;
+    // 김프가 실제로는 얼마 안 움직인 구간이어도, 10%(흔히 보는 기준점)까지는
+    // 세로축에 여유를 두고 보여줍니다. (확대 차트에서만 씁니다.)
+    if (opts.minTop != null) hi = Math.max(hi, opts.minTop);
 
     const px = i => M.left + (values.length === 1 ? pw / 2 : i / (values.length - 1) * pw);
     const py = v => M.top + ph - (v - lo) / (hi - lo) * ph;
@@ -544,6 +697,30 @@
   // ---------------------------------------------------------------------
   const OV = { W: 1000, H: 320, left: 44, right: 16, top: 46, bottom: 28, minY: -10, maxY: 62 };
 
+  // 마우스오버 값 표시에 쓰는 상태입니다. renderOverview()가 매번 새로 채웁니다.
+  let ovHover = null;
+  let hoverGroup = null;
+  let overviewLabels = [];   // [{ el, cx }] — 구간·사건 이름표. 가까운 것을 마우스오버로 키웁니다.
+
+  // 개요 차트 전용 작은 값 태그(마우스오버용). 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
+  function drawOverviewTag(x, y, text) {
+    const w = textWidth(text, 10.5) + 16;
+    const h = 20;
+    const cx = Math.max(OV.left + w / 2, Math.min(x, OV.W - OV.right - w / 2));
+    const g = el('g', { class: 'hover-tag' });
+    g.appendChild(el('rect', {
+      class: 'tag-box tag-box--accent',
+      x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
+    }));
+    const t = el('text', {
+      class: 'tag-text tag-text--accent',
+      x: cx, y: y + 3.8, 'text-anchor': 'middle'
+    });
+    t.textContent = text;
+    g.appendChild(t);
+    return g;
+  }
+
   function renderOverview() {
     const weekly = market.weekly;
     const plotW = OV.W - OV.left - OV.right;
@@ -554,12 +731,13 @@
     const yearOf = ds => market.year[findIndex(ds)];
 
     overviewSvg.replaceChildren();
+    const newLabels = [];
 
     // 구간 라벨 위치를 먼저 잡습니다(겹치면 좌우로 밀어냄).
     const labelBoxes = periods.map(function (p) {
       return {
         cx: (ox(yearOf(p.start)) + ox(yearOf(p.end))) / 2,
-        w: textWidth(p.chartLabel, 10)
+        w: textWidth(p.chartLabel, 12)
       };
     });
     const labelX = spreadX(labelBoxes, 14, OV.left, OV.W - OV.right);
@@ -592,6 +770,9 @@
       const label = el('text', { class: 'band-label', x: labelX[i], y: labelY, 'text-anchor': 'middle' });
       label.textContent = p.chartLabel;
       overviewSvg.appendChild(label);
+      // 라벨이 겹침 방지로 밀려난 위치(labelX[i])가 아니라, 실제 구간 위치(cx)를 기준으로
+      // 가까운 라벨을 찾아야 그 구간 위에서 마우스오버했을 때 정확히 반응합니다.
+      newLabels.push({ el: label, cx: cx });
     });
 
     overviewSvg.appendChild(el('line', {
@@ -624,7 +805,7 @@
       for (const w of weekly) {
         if (Math.abs(w.year - ey) < Math.abs(near.year - ey)) near = w;
       }
-      return { cx: ox(ey), cy: oy(near.premium), w: textWidth(e.chartLabel, 9.5) };
+      return { cx: ox(ey), cy: oy(near.premium), w: textWidth(e.chartLabel, 11.5) };
     });
     const dotLabelX = spreadX(dotPos, 12, OV.left, OV.W - OV.right);
 
@@ -641,6 +822,8 @@
       const label = el('text', { class: 'event-label', x: lx, y: ly, 'text-anchor': 'middle' });
       label.textContent = e.chartLabel;
       overviewSvg.appendChild(label);
+      // 라벨이 밀려난 위치(lx)가 아니라, 실제 점 위치(cx)를 기준으로 가까운 라벨을 찾습니다.
+      newLabels.push({ el: label, cx: cx });
 
       const dot = el('circle', {
         class: 'event-dot' + (e.milestone ? ' event-dot--milestone' : '') + (active ? ' active' : ''),
@@ -649,10 +832,81 @@
       const hit = el('circle', { class: 'event-hitbox', cx: cx, cy: cy, r: 15, 'aria-hidden': 'true' });
       dot.addEventListener('click', function () { select('event', i); });
       hit.addEventListener('click', function () { select('event', i); });
+      // 점이 작아 누르기 어려우니, 근처에 마우스가 오면 점을 살짝 키워 보이게 합니다.
+      hit.addEventListener('mouseenter', function () { dot.classList.add('dot-hot'); });
+      hit.addEventListener('mouseleave', function () { dot.classList.remove('dot-hot'); });
       overviewSvg.appendChild(dot);
       overviewSvg.appendChild(hit);
     });
+
+    // 마우스오버 안내선·점·태그를 담을 그룹입니다. 아래 mousemove 핸들러가 채웁니다.
+    ovHover = { ox: ox, oy: oy, weekly: weekly, x0: x0, x1: x1, plotTop: OV.top, plotBottom: OV.top + plotH };
+    hoverGroup = el('g', { class: 'ov-hover-group' });
+    hoverGroup.style.display = 'none';
+    overviewSvg.appendChild(hoverGroup);
+    overviewLabels = newLabels;
   }
+
+  // 가장 가까운 구간·사건 이름표만 커지게 하고, 나머지는 원래 크기로 되돌립니다.
+  function updateLabelHover(mx) {
+    let nearest = null;
+    let nearestDist = Infinity;
+    overviewLabels.forEach(function (item) {
+      const dist = Math.abs(item.cx - mx);
+      if (dist < nearestDist) { nearest = item; nearestDist = dist; }
+    });
+    overviewLabels.forEach(function (item) {
+      item.el.classList.toggle('label-hot', item === nearest && nearestDist < 60);
+    });
+  }
+
+  // 차트 위 마우스 위치에 가장 가까운 주간 지점을 찾아 값을 보여줍니다.
+  function updateOverviewHover(clientX) {
+    if (!ovHover || !hoverGroup) return;
+    const rect = overviewSvg.getBoundingClientRect();
+    if (!rect.width) return;
+
+    const mx = (clientX - rect.left) * (OV.W / rect.width);
+    if (mx < OV.left || mx > OV.W - OV.right) {
+      hoverGroup.style.display = 'none';
+      overviewLabels.forEach(function (item) { item.el.classList.remove('label-hot'); });
+      return;
+    }
+
+    updateLabelHover(mx);
+
+    const year = ovHover.x0 +
+      (mx - OV.left) / (OV.W - OV.left - OV.right) * (ovHover.x1 - ovHover.x0);
+
+    let nearest = ovHover.weekly[0];
+    let nearestDist = Math.abs(nearest.year - year);
+    ovHover.weekly.forEach(function (w) {
+      const dist = Math.abs(w.year - year);
+      if (dist < nearestDist) { nearest = w; nearestDist = dist; }
+    });
+
+    const px = ovHover.ox(nearest.year);
+    const py = ovHover.oy(nearest.premium);
+    // 값 태그는 위쪽 사건 이름표와 겹치지 않도록 차트 아래쪽에 고정해 둡니다.
+    // (김프가 낮아 선이 바닥 쪽에 붙는 구간과도 안 겹치도록 살짝 더 아래로 뒀습니다.)
+    const tagY = ovHover.plotBottom - 8;
+
+    hoverGroup.replaceChildren();
+    hoverGroup.appendChild(el('line', {
+      class: 'hover-guide', x1: px, x2: px, y1: ovHover.plotTop, y2: ovHover.plotBottom
+    }));
+    hoverGroup.appendChild(el('circle', { class: 'hover-dot', cx: px, cy: py, r: 4 }));
+    hoverGroup.appendChild(
+      drawOverviewTag(px, tagY, nearest.date + '  ' + fmtPct(nearest.premium))
+    );
+    hoverGroup.style.display = '';
+  }
+
+  overviewSvg.addEventListener('mousemove', function (e) { updateOverviewHover(e.clientX); });
+  overviewSvg.addEventListener('mouseleave', function () {
+    if (hoverGroup) hoverGroup.style.display = 'none';
+    overviewLabels.forEach(function (item) { item.el.classList.remove('label-hot'); });
+  });
 
   // ---------------------------------------------------------------------
   // 상세 — 선택한 기간을 확대해서 김프·환율·BTC를 함께 보여줍니다.
@@ -772,6 +1026,7 @@
       width: ZOOM.W, height: ZOOM.H,
       margin: { left: ZOOM.left, right: ZOOM.right, top: ZOOM.top, bottom: ZOOM.bottom },
       lineClass: 'kimp-line', includeZero: true,
+      minTop: 10,
       // 저점까지 축을 늘려야 급락이 실제 크기로 보입니다.
       domainExtra: hasDip ? market.lowPremium[dipIdx] : null
     });
@@ -811,11 +1066,15 @@
     }
 
     const step = (g.hi - g.lo) > 40 ? 20 : (g.hi - g.lo) > 15 ? 10 : 5;
-    for (let v = Math.ceil(g.lo / step) * step; v <= g.hi; v += step) {
+    const ticks = [];
+    for (let v = Math.ceil(g.lo / step) * step; v <= g.hi; v += step) ticks.push(v);
+    // 10%는 김프가 꽤 붙었다고 흔히 보는 기준선이라, 계산된 간격에 없어도 항상 보여줍니다.
+    if (g.lo <= 10 && 10 <= g.hi && ticks.indexOf(10) === -1) ticks.push(10);
+    ticks.sort(function (a, b) { return a - b; }).forEach(function (v) {
       const t = el('text', { class: 'axis-label', x: 36, y: g.py(v) + 3, 'text-anchor': 'end' });
       t.textContent = v + '%';
       svg.appendChild(t);
-    }
+    });
     [0, Math.floor(values.length / 2), values.length - 1].forEach(function (i) {
       const t = el('text', {
         class: 'axis-label', x: g.px(i), y: plotBottom + 20,
@@ -889,7 +1148,6 @@
       }));
       drawTag(svg, g.px(i), plotTop - 34, markText, 'amber');
     }
-
     // ⑤ 급락일 — 종가에서 장중 저점까지 세로로 내려긋고 양쪽 값을 붙입니다.
     //    사건일 표시(④)보다 뒤에 그려야 amber 점선이 태그를 뚫고 지나가지 않습니다.
     if (hasDip) {
@@ -906,38 +1164,127 @@
         '장중 저점 ' + fmtPct(market.lowPremium[dipIdx]), 'down');
     }
 
-    return { values, minI, maxI };
+    // svg/px/py/plotTop·Bottom을 함께 돌려주면, 호출부(select())가 같은 좌표계로
+    // 통계 카드 클릭 시 확대 차트 위 정확한 지점에 링 효과를 그릴 수 있습니다.
+    return {
+      values, minI, maxI, svg, px: g.px, py: g.py,
+      plotTop: plotTop, plotBottom: plotBottom
+    };
+  }
+
+  // 통계 카드를 클릭했을 때 확대 차트의 (cx, cy) 위치에서 잠깐 번지는 링 효과를 보여줍니다.
+  function pingZoomPoint(svg, cx, cy) {
+    if (!svg) return;
+    const ring = el('circle', { class: 'zoom-ping', cx: cx, cy: cy, r: 6 });
+    svg.appendChild(ring);
+    ring.addEventListener('animationend', function () { ring.remove(); });
   }
 
   // 환율·BTC는 확대 구간 첫날을 0%로 두고 변화율 선으로 그립니다.
   // 절대 금액은 계열마다 단위가 달라 한 축에 겹칠 수 없기 때문입니다.
+  // 미니 차트 전용 작은 값 태그. 좌우로 붙잡아 차트 밖으로 안 나가게 합니다.
+  function drawMiniTag(x, y, text, variant, width, rightMargin) {
+    const w = textWidth(text, 9) + 10;
+    const h = 15;
+    const cx = Math.max(10 + w / 2, Math.min(x, width - rightMargin - w / 2));
+    const g = el('g', { class: 'mini-tag' });
+    // 옅은 배경색 채우기 위라서 색깔 있는 태그 배경(tag-box--variant)을 쓰면 묻혀 보이니,
+    // 불투명한 기본 배경(panel) 위에 글자만 계열 색으로 칠합니다.
+    g.appendChild(el('rect', {
+      class: 'tag-box',
+      x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 4
+    }));
+    const t = el('text', {
+      class: 'mini-tag-text tag-text tag-text--' + variant,
+      x: cx, y: y + 3.2, 'text-anchor': 'middle'
+    });
+    t.textContent = text;
+    g.appendChild(t);
+    return g;
+  }
+
   function renderMini(svgId, valueId, field, from, to, lineClass) {
     const svg = document.getElementById(svgId);
     const base = market[field][from];
     const values = market[field].slice(from, to + 1).map(v => (v - base) / base * 100);
+    const MINI_W = 460, MINI_H = 110, MINI_M = { left: 10, right: 10, top: 12, bottom: 12 };
     const g = drawLine(svg, values, {
-      width: 460, height: 110, margin: { left: 10, right: 10, top: 12, bottom: 12 },
+      width: MINI_W, height: MINI_H, margin: MINI_M,
       lineClass: lineClass, includeZero: true
     });
+    const isFx = lineClass === 'fx-line';
+    const seriesColor = isFx ? 'var(--accent)' : 'var(--frog)';
+    const variant = isFx ? 'accent' : 'frog';
+
+    // 선 아래를 옅게 채워서 밋밋해 보이지 않게 합니다.
+    const zeroY = g.py(0);
+    const linePoints = values.map((v, i) => g.px(i).toFixed(1) + ',' + g.py(v).toFixed(1));
+    const areaPath = el('path', {
+      class: 'mini-area--' + (isFx ? 'fx' : 'btc'),
+      d: 'M' + g.px(0).toFixed(1) + ',' + zeroY.toFixed(1) +
+        ' L' + linePoints.join(' L') +
+        ' L' + g.px(values.length - 1).toFixed(1) + ',' + zeroY.toFixed(1) + ' Z'
+    });
+    svg.insertBefore(areaPath, svg.firstChild);
+
+    // 이 구간 안에서 가장 낮았던 점·높았던 점을 작은 값 태그로 짚어줍니다.
+    let minI = 0, maxI = 0;
+    values.forEach(function (v, i) {
+      if (v < values[minI]) minI = i;
+      if (v > values[maxI]) maxI = i;
+    });
+    if (minI !== maxI) {
+      // 최저점은 바닥 쪽이라 태그를 위로, 최고점은 위쪽이라 태그를 아래로 둡니다.
+      // 숫자만 있으면 최저/최고인지 알 수 없어서 태그 안에 이름표를 함께 적습니다.
+      [[minI, -1, '최저 '], [maxI, 1, '최고 ']].forEach(function (pair) {
+        const i = pair[0], dir = pair[1], tagLabel = pair[2];
+        const cx = g.px(i);
+        const cy = g.py(values[i]);
+        const tagY = Math.max(MINI_M.top + 8, Math.min(MINI_H - MINI_M.bottom - 8, cy + dir * 13));
+        svg.appendChild(el('circle', { cx: cx, cy: cy, r: 2.4, fill: seriesColor }));
+        svg.appendChild(drawMiniTag(cx, tagY, tagLabel + fmtPct(values[i]), variant, MINI_W, MINI_M.right));
+      });
+    }
+
     // 끝점을 찍어 "여기까지 왔다"를 눈에 띄게 합니다.
     svg.appendChild(el('circle', {
       class: 'mini-end-dot', cx: g.px(values.length - 1), cy: g.py(values[values.length - 1]),
-      r: 3.5, fill: lineClass === 'fx-line' ? 'var(--accent)' : 'var(--frog)'
+      r: 3.5, fill: seriesColor
     }));
     const net = values[values.length - 1];
     document.getElementById(valueId).textContent = fmtPct(net);
     return net;
   }
 
+  // item: { label, value, date? } — date가 있으면 라벨 밑, 값 위에 줄바꿈해서 보여줍니다.
   function setStats(items) {
     const row = document.getElementById('statRow');
     row.replaceChildren();
     items.forEach(function (item) {
       const card = document.createElement('div');
       card.className = 'stat-card';
-      card.innerHTML = '<div class="label"></div><div class="value"></div>';
-      card.querySelector('.label').textContent = item[0];
-      card.querySelector('.value').textContent = item[1];
+      card.innerHTML = '<div class="label"></div>' +
+        (item.date ? '<div class="stat-date"></div>' : '') +
+        '<div class="value"></div>';
+      const labelEl = card.querySelector('.label');
+      labelEl.textContent = item.label;
+      if (item.labelBold) labelEl.classList.add('label-strong');
+      if (item.date) card.querySelector('.stat-date').textContent = item.date;
+      const valueEl = card.querySelector('.value');
+      valueEl.innerHTML = item.value;
+      if (item.accent) valueEl.classList.add('accent');
+      if (item.valueClass) valueEl.classList.add(item.valueClass);
+      // onClick이 있는 카드(예: 구간 최저/최고, 최대 변동 기간)는 위 확대 차트의
+      // 해당 지점을 짚어주는 데모용 연동을 붙입니다.
+      if (item.onClick) {
+        card.classList.add('linkable');
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.addEventListener('click', item.onClick);
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onClick(); }
+        });
+      }
       row.appendChild(card);
     });
   }
@@ -984,19 +1331,32 @@
       // 변화폭이라 방향 색을 씁니다(오름 빨강 / 내림 파랑).
       head.className = 'value ' + (swing >= 0 ? 'dir-up' : 'dir-down');
       document.getElementById('dHeadlineLabel').textContent = '최대 김프 변화폭';
-      document.getElementById('dDesc').textContent = p.desc;
+      document.getElementById('dDesc').innerHTML = p.desc;
       document.getElementById('zoomTitle').textContent =
         '이 시기의 김프 움직임 · ' + market.dates[from] + ' ~ ' + market.dates[to] +
         ' (' + (to - from) + '일)';
 
+      // 통계 카드를 누르면 위 확대 차트로 스크롤하고, 해당 지점에서 링 효과가 번지도록 합니다.
+      const jumpToZoom = function (indices) {
+        return function () {
+          // block: 'center'는 지금 스크롤 위치와 상관없이 매번 화면 한가운데로 옮겨버려서,
+          // 출처 문구가 보일 만큼 아래로 내려가 있을 때 누르면 갑자기 위로 확 튀는 느낌이 났습니다.
+          // 'nearest'는 이미 보이면 그대로 두고, 안 보일 때만 딱 필요한 만큼만 스크롤합니다.
+          z.svg.closest('.zoom-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          indices.forEach(function (i) {
+            pingZoomPoint(z.svg, z.px(i), z.py(z.values[i]));
+          });
+        };
+      };
       setStats([
-        ['구간 최저', fmtPct(z.values[z.minI]) + ' (' + market.dates[from + z.minI].slice(5) + ')'],
-        ['구간 최고', fmtPct(z.values[z.maxI]) + ' (' + market.dates[from + z.maxI].slice(5) + ')'],
-        ['최대 변동 기간', market.dates[from + a].slice(5) + ' → ' + market.dates[from + b].slice(5)]
+        { label: '구간 최저', date: fmtMonthDay(market.dates[from + z.minI]), value: fmtPct(z.values[z.minI]), labelBold: true, onClick: jumpToZoom([z.minI]) },
+        { label: '구간 최고', date: fmtMonthDay(market.dates[from + z.maxI]), value: fmtPct(z.values[z.maxI]), labelBold: true, onClick: jumpToZoom([z.maxI]) },
+        { label: '최대 변동 기간', value: fmtSwingRange(market.dates[from + a], market.dates[from + b]), labelBold: true, valueClass: 'swing-value', onClick: jumpToZoom([a, b]) }
       ]);
-      note.textContent =
-        '환율·BTC는 확대 구간 첫날을 0%로 두고 그린 변화율입니다. ' +
-        '같은 기간 환율은 ' + fmtPct(fxNet) + ', BTC(원화)는 ' + fmtPct(btcNet) + ' 움직였습니다.';
+      // 환율·BTC 변화율은 위 미니 차트 값(fxValue/btcValue)에 이미 나와 있어서 다시 문장으로 안 적습니다.
+      // 같은 기간 기준이라는 설명은 개구리 툴팁(HELP.fx/btc)에서 대신 알려줍니다.
+      note.textContent = '';
+      note.hidden = true;
 
     } else {
       const ev = events[index];
@@ -1024,7 +1384,6 @@
       // 당일 김프는 변화가 아니라 수준값이라 방향 색을 쓰지 않습니다.
       head.className = 'value';
       document.getElementById('dHeadlineLabel').textContent = '당일 김프';
-
       // 종가만 크게 띄우면 "아무 일 없던 날"로 읽히므로 장중 저점을 나란히 둡니다.
       const sub = document.getElementById('dHeadlineSub');
       sub.hidden = dipIdx === null;
@@ -1032,36 +1391,37 @@
         sub.innerHTML = '<span class="cap">장중 저점 </span>' + fmtPct(market.lowPremium[c]);
       }
 
-      document.getElementById('dDesc').textContent = ev.desc;
+      document.getElementById('dDesc').innerHTML = ev.desc;
       document.getElementById('zoomTitle').textContent =
         '사건 전후 김프 움직임 · ' + market.dates[from] + ' ~ ' + market.dates[to] + ' (전후 약 2주)';
 
       // 급락일에는 "1·3·7일 전 대비"가 전부 0.1%p라서 오히려 오해를 키웁니다.
       if (dipIdx !== null) {
         setStats([
-          ['당일 종가 김프', fmtPct(current)],
-          ['당일 장중 저점', fmtPct(market.lowPremium[c])],
-          ['종가↔저점 차이', fmtPP(-dipGap)]
+          { label: '당일 종가 김프', value: fmtPct(current) },
+          { label: '당일 장중 저점', value: fmtPct(market.lowPremium[c]) },
+          { label: '종가↔저점 차이', value: fmtPP(-dipGap) }
         ]);
       } else {
         setStats([
-          ['1일 전 대비', diff(1) === null ? '—' : fmtPP(diff(1))],
-          ['3일 전 대비', diff(3) === null ? '—' : fmtPP(diff(3))],
-          ['7일 전 대비', diff(7) === null ? '—' : fmtPP(diff(7))]
+          { label: '1일 전 대비', value: diff(1) === null ? '—' : fmtPP(diff(1)) },
+          { label: '3일 전 대비', value: diff(3) === null ? '—' : fmtPP(diff(3)) },
+          { label: '7일 전 대비', value: diff(7) === null ? '—' : fmtPP(diff(7)) }
         ]);
       }
 
-      let text = '환율·BTC는 확대 구간 첫날을 0%로 두고 그린 변화율입니다. ' +
-        '이 2주 동안 환율은 ' + fmtPct(fxNet) + ', BTC(원화)는 ' + fmtPct(btcNet) + ' 움직였습니다.';
+      // 환율·BTC 변화율은 위 미니 차트와 개구리 도움말에서 설명하므로 반복하지 않습니다.
+      let text = '';
 
       // 종가만으로는 하루 안의 급락·되돌림이 가려지므로,
       // 장중 저가로 추정한 당일 저점이 뚜렷이 낮을 때만 덧붙입니다.
       // 저가(btc_krw_low)가 없는 날도 있어(예: 오늘 갱신 전) 항상 값을 확인합니다.
       if (dipIdx !== null) {
-        text += ' BTC 장중 저가 기준으로 보면 이날 김프가 한때 ' + fmtPct(market.lowPremium[c]) +
-          '까지 내려갔던 것으로 추정됩니다(환율·해외 시세는 종가 기준이라 근사치입니다).';
+        text = 'BTC 장중 저가 기준으로 보면, 이날 김프가 한때 ' + fmtPct(market.lowPremium[c]) +
+            '까지 내려갔던 것으로 보여요.';
       }
       note.textContent = text;
+      note.hidden = !text;
     }
   }
 
@@ -1111,11 +1471,9 @@
         weekly: buildWeekly(records)
       };
 
-      // 2017년처럼 거래소 간 가격 차가 컸던 시기에는 어느 해외 시세를 썼느냐에 따라
-      // 김프 값이 달라지므로, 데이터에 적힌 출처를 그대로 밝혀둡니다.
+      // 정적 데이터에 기록된 실제 해외 거래소 이름을 하단 출처에 반영합니다.
       if (data.foreignSource) {
-        document.getElementById('sourceNote').textContent =
-          '해외 시세 출처는 ' + data.foreignSource + '입니다.';
+        document.getElementById('foreignSourceLabel').textContent = data.foreignSource;
       }
 
       chartLoading.hidden = true;
@@ -1141,6 +1499,84 @@
       }
       console.error('BTC API 오류:', error);
     });
+// 개구리 도움말 — 환율/BTC 박스 옆에서 누르면 설명 말풍선을 엽니다. (대시보드와 같은 컴포넌트)
+  const FROG_HEAD = 'M24 16C23 10 20 6 15 6C10 6 7 10 7 16C7 19 2 21 2 27C2 34 11 40 24 40C37 40 46 34 46 27C46 21 41 19 41 16C41 10 38 6 33 6C28 6 25 10 24 16Z';
+  const FROG_EYES = '<circle cx="15" cy="12" r="2.1" fill="currentColor"/><circle cx="33" cy="12" r="2.1" fill="currentColor"/>';
+  const FROG_CLOSED = `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${FROG_HEAD}"/><path d="M14 29C18 34.5 30 34.5 34 29"/></g>${FROG_EYES}<circle cx="21" cy="21" r="1" fill="currentColor"/><circle cx="27" cy="21" r="1" fill="currentColor"/></svg>`;
+  const FROG_OPEN = `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${FROG_HEAD}"/><path d="M13 29Q18.5 23 24 23Q29.5 23 35 29Q29.5 36 24 36Q18.5 36 13 29Z"/></g>${FROG_EYES}<circle cx="21" cy="19" r="1" fill="currentColor"/><circle cx="27" cy="19" r="1" fill="currentColor"/></svg>`;
+
+  const HELP = {
+    fx: {
+      title: '환율 그래프 읽는 법',
+      body: '<b>이 기간이 시작한 날을 0%</b>로 두고, 그날부터 환율이 얼마나 움직였는지 그래프로 보여드려요. ' +
+            '옆에 적힌 숫자도 같은 기준으로 계산한, 이 기간 전체의 변화율이에요. ' +
+            '주말·공휴일처럼 환율 시세가 쉬는 날엔, <b>바로 전 영업일 환율</b>을 그대로 이어서 써요.'
+    },
+    btc: {
+      title: 'BTC 그래프 읽는 법',
+      body: '<b>이 기간이 시작한 날을 0%</b>로 두고, 그날부터 BTC 가격이 얼마나 움직였는지 그래프로 보여드려요. ' +
+            '옆에 적힌 숫자도 같은 기준으로 계산한, 이 기간 전체의 변화율이에요. ' +
+            '여기서 쓰는 BTC 가격은 <b>업비트 종가</b>(하루를 마감한 가격) 기준이고, ' +
+            '사건 카드에 나오는 <b>"당일 저점"</b>만 그날 가장 낮았던 가격으로 따로 잡은 값이에요.'
+    }
+  };
+
+  let openFrog = null;
+
+  function closeFrogHelp() {
+    if (!openFrog) return;
+    openFrog.btn.setAttribute('aria-expanded', 'false');
+    openFrog.btn.innerHTML = FROG_CLOSED;
+    openFrog.bubble.hidden = true;
+    openFrog = null;
+  }
+
+  function mountFrogHelp() {
+    document.querySelectorAll('.frog-slot[data-help]').forEach(function (slot, i) {
+      const info = HELP[slot.dataset.help];
+      if (!info || slot.dataset.mounted) return;
+      slot.dataset.mounted = '1';
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'frog-help';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', info.title + ' — 설명 열기');
+      btn.style.animationDelay = (i * 0.45).toFixed(2) + 's';
+      btn.innerHTML = FROG_CLOSED;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'frog-bubble';
+      bubble.hidden = true;
+      bubble.setAttribute('role', 'dialog');
+      bubble.innerHTML = '<h5>' + info.title + '</h5>' + info.body + '<button type="button" class="frog-bubble-close">닫기</button>';
+
+      slot.append(btn, bubble);
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = openFrog && openFrog.btn === btn;
+        closeFrogHelp();
+        if (isOpen) return;
+        btn.setAttribute('aria-expanded', 'true');
+        btn.innerHTML = FROG_OPEN;
+        bubble.hidden = false;
+        openFrog = { btn: btn, bubble: bubble };
+      });
+
+      bubble.addEventListener('click', function (e) { e.stopPropagation(); });
+      bubble.querySelector('.frog-bubble-close').addEventListener('click', function () {
+        const focusBack = btn;
+        closeFrogHelp();
+        focusBack.focus();
+      });
+    });
+
+    document.addEventListener('click', closeFrogHelp);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeFrogHelp(); });
+  }
+
+  mountFrogHelp();
 })();
 </script>
 

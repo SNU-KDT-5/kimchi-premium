@@ -7,501 +7,1140 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
 <style>
   body { padding-bottom: 80px; }
   .header { padding: var(--sp-10) 0 var(--sp-2); }
   .header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
   .header p { color: var(--mut); font-size: 0.86rem; margin-top: var(--sp-2); max-width: 560px; }
-  .header .badge { margin-left: var(--sp-2); vertical-align: middle; }
+  .header .badge { margin-left: var(--sp-2); vertical-align: middle; font-size: 0.72rem; }
 
   .section-block { margin-top: var(--sp-8); }
-  .section-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3); }
-  .section-intro { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin-bottom: var(--sp-4); }
+  .section-label {
+    font-size: 0.74rem; font-weight: 700; color: var(--mut);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-3);
+  }
 
   svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .kimp-line { fill: none; stroke: var(--accent); stroke-width: 2.2; }
-  .zero-line { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
-  .axis-line { stroke: var(--border); stroke-width: 1; }
-  .axis-label { fill: var(--mut); font-size: 10px; }
-  .event-dot { cursor: pointer; transition: r .12s ease; fill: var(--accent); }
-  .event-dot:hover { r: 8; }
-  .event-dot.active { fill: var(--text); }
-  .event-dot.milestone { fill: var(--amber); }
-  .event-hitbox { fill: transparent; cursor: pointer; }
-  .connector { stroke: var(--text); stroke-width: 1.4; stroke-dasharray: 2 3; opacity: 0; transition: opacity .15s ease; }
-  .connector.show { opacity: 1; }
 
-  .pat-hint { font-size: 11.5px; color: var(--mut); margin-top: var(--sp-3); display: flex; align-items: center; gap: 6px; }
+  /* ── 개요 차트 (주간 평균 + 사건 위치) ── */
+  .chart-legend {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: var(--sp-4); margin-bottom: var(--sp-4);
+    font-size: 0.74rem; color: var(--mut);
+  }
+  .chart-legend__item { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .chart-legend__line { width: var(--sp-6); border-top: 2px solid var(--accent); }
+  .chart-legend__band {
+    width: 16px; height: 10px; background: var(--amber-bg);
+    border: 1px solid var(--border2); border-radius: 2px;
+  }
+  .chart-legend__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+  .chart-legend__dot--milestone { background: var(--amber); }
+
+  .kimp-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .zero-line { stroke: var(--border2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .axis-line { stroke: var(--border); stroke-width: 1; }
+  .axis-label { fill: var(--dim); font-size: 10px; font-family: var(--font-mono); }
+
+  /* 구간(주간 사건)은 배경 음영으로, 하루(일봉 사건)는 점으로 표시합니다. */
+  .band { fill: var(--amber-bg); cursor: pointer; }
+  .band:hover, .band.active { fill: rgba(196, 138, 31, 0.26); }
+  .band-edge { stroke: var(--border2); stroke-width: 1; pointer-events: none; }
+  .band-label { fill: var(--text); font-size: 10px; font-weight: 700; pointer-events: none; }
+
+  .event-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer; }
+  .event-dot--milestone { fill: var(--amber); }
+  .event-dot.active { fill: var(--text); }
+  .event-hitbox { fill: transparent; cursor: pointer; }
+  .event-label {
+    fill: var(--text); font-size: 9.5px; font-weight: 700; pointer-events: none;
+    stroke: var(--panel); stroke-width: 3; paint-order: stroke; stroke-linejoin: round;
+  }
+  /* 라벨을 좌우로 밀어냈을 때 어느 대상의 이름인지 이어주는 선입니다. */
+  .leader { fill: none; stroke: var(--dim); stroke-width: 1; opacity: 0.55; pointer-events: none; }
+
+  .pat-hint {
+    font-size: 0.78rem; color: var(--dim); margin-top: var(--sp-3);
+    display: flex; align-items: center; gap: 6px;
+  }
   .pat-hint .dot-sample {
     width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
     display: inline-block; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--accent);
   }
 
-  #detail {
-    margin-top: 0; max-height: 0; opacity: 0; overflow: hidden;
-    transition: max-height .28s ease, opacity .22s ease, margin-top .28s ease;
+  /* ── 상세 (구간·하루 공통) ── */
+  #detail { margin-top: var(--sp-6); padding-top: var(--sp-6); border-top: 1px solid var(--border); }
+  .detail-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: var(--sp-4); flex-wrap: wrap; margin-bottom: var(--sp-2);
   }
-  #detail.open { margin-top: var(--sp-6); max-height: 900px; opacity: 1; }
-  .detail-box { background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--sp-8); position: relative; }
-  .detail-box:before {
-    content: ""; position: absolute; top: -8px; left: var(--arrow-x, 40px);
-    width: 14px; height: 14px; background: var(--panel2);
-    border-left: 1px solid var(--border); border-top: 1px solid var(--border);
-    transform: rotate(45deg);
-  }
-  .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-4); margin-bottom: var(--sp-2); flex-wrap: wrap; }
   .detail-title-row { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
-  .detail-title { font-size: 1.15rem; font-weight: 800; color: var(--text); }
-  .detail-milestone-badge { display: none; }
-  .detail-milestone-badge.show { display: inline-flex; }
-  .detail-date { font-size: 0.8rem; color: var(--mut); font-weight: 700; margin-top: var(--sp-1); }
-  .detail-premium { font-family: var(--font-mono); font-size: 1.9rem; font-weight: 800; color: var(--accent); white-space: nowrap; }
-  .detail-desc { font-size: 0.88rem; color: var(--mut); margin: var(--sp-4) 0 var(--sp-6); line-height: 1.7; }
-  .closebtn {
-    border: 1px solid var(--border); background: var(--panel); color: var(--mut);
-    width: 24px; height: 24px; border-radius: 50%; font-size: 13px; cursor: pointer; flex: none; line-height: 1;
+  .detail-title { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+  .detail-date { font-size: 0.78rem; color: var(--dim); font-family: var(--font-mono); margin-top: var(--sp-1); }
+  .detail-headline { text-align: right; }
+  .detail-headline .value {
+    font-family: var(--font-mono); font-size: 1.7rem; font-weight: 800;
+    /* 방향이 있는 값(변화폭)이면 dir-up/dir-down이 붙어 색이 바뀝니다. */
+    color: var(--dir, var(--accent)); white-space: nowrap;
   }
-  .closebtn:hover { color: var(--text); border-color: var(--text); }
+  .detail-headline .label { font-size: 0.72rem; color: var(--dim); }
+  .detail-desc { font-size: 0.86rem; color: var(--mut); line-height: 1.75; margin: var(--sp-4) 0 var(--sp-5); }
 
-  .subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); margin-top: var(--sp-2); align-items: start; }
-  @media (max-width: 640px) { .subgrid { grid-template-columns: 1fr; } }
-  .subcard { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-5); }
-  .subcard-label {
-    font-size: 0.74rem; font-weight: 700; color: var(--mut); text-transform: uppercase;
-    letter-spacing: .05em; margin-bottom: var(--sp-4);
+  .zoom-wrap {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5) var(--sp-3);
   }
+  .zoom-title { font-size: 0.74rem; font-weight: 700; color: var(--mut); letter-spacing: .04em; margin-bottom: var(--sp-1); }
+  /* 확대 차트에서 눈에 먼저 들어와야 하는 것:
+     ① 이 기간에 김프가 가장 크게 움직인 구간 ② 그 최저·최고점 ③ 사건이 있었던 날 */
+  /* 방향 색 — 오름은 빨강, 내림은 파랑(국내 시세 표기 관행)입니다.
+     이 색은 "변화"에만 쓰고, 김프 수준값 같은 방향 없는 숫자에는 쓰지 않습니다. */
+  :root { --down: #2f5d9e; --down-bg: rgba(47, 93, 158, 0.12); --down-line: rgba(47, 93, 158, 0.3); }
+  .dir-up   { --dir: var(--accent); --dir-bg: var(--accent-bg); --dir-line: var(--accent-line); }
+  .dir-down { --dir: var(--down); --dir-bg: var(--down-bg); --dir-line: var(--down-line); }
 
-  .vol-row { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-4); }
-  .vol-track { flex: 1; height: 10px; background: var(--panel2); border-radius: var(--r-sm); position: relative; overflow: hidden; }
-  .vol-fill { position: absolute; top: 0; left: 0; bottom: 0; border-radius: var(--r-sm); background: var(--amber); }
-  .vol-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 800; min-width: 60px; text-align: right; color: var(--text); }
-  .slope-caption { font-size: 0.74rem; color: var(--mut); margin-top: var(--sp-2); }
+  .swing-band { fill: var(--dir-bg); pointer-events: none; }
+  .swing-guide { stroke: var(--dir-line); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+  .swing-arrow { stroke: var(--dir); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+  .swing-arrow-head { fill: var(--dir); stroke: var(--panel2); stroke-width: 1.2; }
+  /* 화살표는 김프 선을 피해 놓지만, 격자·0선 위를 지날 수 있어 뒤를 한 번 지웁니다. */
+  .swing-arrow-halo { stroke: var(--panel2); stroke-width: 7; fill: none; opacity: 0.95; stroke-linecap: round; }
 
-  .detail-narrative {
-    font-size: 0.88rem; color: var(--mut); margin: 0 0 var(--sp-6); line-height: 1.75;
-    padding: var(--sp-4) var(--sp-5); background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md);
+  .peak-dot { fill: var(--dir); stroke: var(--panel); stroke-width: 2; }
+  .peak-halo { fill: none; stroke: var(--dir); stroke-width: 1.5; opacity: 0.35; }
+
+  /* 사건일·촉발일은 amber로 통일해 "그날"이라는 걸 드러냅니다. */
+  .marker-line { stroke: var(--amber); stroke-width: 1.6; stroke-dasharray: 3 3; }
+
+  .tag-base { fill: var(--panel2); }
+  .tag-box { fill: var(--panel); stroke: var(--border2); stroke-width: 1; }
+  .tag-box--dir { fill: var(--dir-bg); stroke: var(--dir-line); }
+  .tag-box--amber { fill: var(--amber-bg); stroke: var(--amber); }
+  .tag-text {
+    font-size: 10.5px; font-weight: 800; font-family: var(--font-mono);
+    fill: var(--text); pointer-events: none;
   }
-  .detail-narrative b { color: var(--text); }
+  .tag-text--dir { fill: var(--dir); }
+  .tag-text--amber { fill: var(--amber); }
 
-  .window-stats { margin-bottom: var(--sp-6); }
+  .zoom-legend {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px;
+    font-size: 0.72rem; color: var(--dim); margin-top: var(--sp-2);
+  }
+  .zoom-legend .swatch {
+    width: 11px; height: 11px; border-radius: 3px; margin-right: -8px;
+    background: var(--dir-bg); border: 1px solid var(--dir); display: inline-block;
+  }
+  .zoom-legend .swatch--amber { background: var(--amber-bg); border-color: var(--amber); }
+
+  /* 장중 저가 — 종가만으로는 안 보이는 하루 안의 급락을 드러낼 때만 씁니다. */
+  .dip-wick { stroke: var(--down); stroke-width: 3; }
+  .dip-head { fill: var(--down); }
+  .dip-dot { fill: var(--down); stroke: var(--panel); stroke-width: 2; }
+  .tag-box--down { fill: var(--down-bg); stroke: var(--down-line); }
+  .tag-text--down { fill: var(--down); }
+
+  /* 종가 아래에 장중 저점을 나란히 두어, 종가만 크게 읽히지 않게 합니다. */
+  .headline-sub { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; color: var(--down); margin-top: 2px; }
+  .headline-sub .cap { font-family: var(--font-body); font-size: 0.72rem; color: var(--dim); font-weight: 600; }
+
+  /* 환율·BTC 미니 차트의 끝점 */
+  .mini-end-dot { stroke: var(--panel2); stroke-width: 1.5; }
+
+  /* 환율·BTC는 같은 기간의 실제 움직임을 각자 축으로 그립니다. */
+  .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin-top: var(--sp-4); }
+  .mini {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5) var(--sp-3);
+  }
+  .mini-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+  .mini-label { font-size: 0.74rem; font-weight: 700; color: var(--mut); }
+  .mini-value { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; }
+  .mini-value--fx { color: var(--accent); }
+  .mini-value--btc { color: var(--frog); }
+  .fx-line { fill: none; stroke: var(--accent); stroke-width: 1.8; }
+  .btc-line { fill: none; stroke: var(--frog); stroke-width: 1.8; }
+
+  #statRow { margin-top: var(--sp-4); }
+  .detail-note { font-size: 0.78rem; color: var(--dim); margin-top: var(--sp-4); line-height: 1.7; }
+
+  @media (max-width: 640px) {
+    .mini-grid { grid-template-columns: 1fr; }
+    .detail-headline { text-align: left; }
+  }
 </style>
 </head>
 <body>
 
 <div id="topnav-root"></div>
 <script src="nav.js"></script>
+<script src="chatbot-widget.js"></script>
 
 <div class="wrap">
   <div class="header">
-    <div class="eyebrow mono">PATTERN · 뷰1 인터랙티브<span class="badge badge-neutral">데모 데이터 · 실제 수치 아님</span></div>
+    <div class="eyebrow mono">패턴분석</div>
     <h1>환율조정 BTC 김프 — 언제, 어떻게 크게 움직였나</h1>
-    <p>2017~2026 장기 라인차트에서 점(이벤트)을 클릭하면, 그 시점의 환율 변화와 BTC 시장 상황을 함께 담은 상세 박스가 열립니다.</p>
+    <p>
+      2017년 09월부터 현재까지의 주간 추이 위에 주요 사건을 표시했습니다.
+      음영 구간(여러 주에 걸친 시기)이나 점(하루 만에 끝난 사건)을 누르면
+      그때의 김프·환율·BTC 움직임을 함께 볼 수 있습니다.
+      <span class="badge badge-neutral">실제 데이터</span>
+    </p>
   </div>
 
   <div class="section-block">
-    <div class="section-label">환율조정 BTC 김프 (%) · 2017 ~ 2026</div>
+    <div class="section-label">환율조정 BTC 김프 (%) · 2017.09 ~ 현재</div>
     <div class="card">
-      <p class="section-intro">점을 클릭하면 해당 시점의 상세 정보가 아래에 펼쳐집니다.</p>
+      <div class="chart-legend">
+        <span class="chart-legend__item">
+          <span class="chart-legend__line"></span>
+          <span>환율조정 BTC 김프 · 주간 평균</span>
+        </span>
+        <span class="chart-legend__item">
+          <span class="chart-legend__band"></span>
+          <span>여러 주에 걸친 시기</span>
+        </span>
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot"></span>
+          <span>하루 만에 끝난 사건</span>
+        </span>
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot chart-legend__dot--milestone"></span>
+          <span>환율까지 함께 흔든 사건</span>
+        </span>
+      </div>
 
-      <svg id="chart" viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" aria-label="환율조정 BTC 김프 장기 추이 차트">
-        <!-- JS가 이 안을 채웁니다 -->
-      </svg>
+      <div id="chartLoading" class="status-box" role="status" aria-live="polite" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p>BTC·환율 데이터를 불러오는 중입니다.</p>
+      </div>
 
-      <div class="pat-hint"><span class="dot-sample"></span> 점을 클릭해서 사건별 상세 보기 (다시 클릭하면 닫힘)</div>
+      <div id="chartError" class="error-box" role="alert" hidden>
+        <h4>데이터를 불러오지 못했습니다.</h4>
+        <p id="chartErrorMessage">잠시 후 페이지를 새로고침해 주세요.</p>
+      </div>
 
-      <div id="detail">
-        <div class="detail-box" id="detailBox">
-          <div class="detail-head">
-            <div>
-              <div class="detail-title-row">
-                <div class="detail-title" id="dTitle">-</div>
-                <span class="badge badge-amber detail-milestone-badge" id="dMilestone">⚡ 환율까지 함께 흔든 사건</span>
-              </div>
-              <div class="detail-date" id="dDate">-</div>
+      <div id="chartEmpty" class="status-box" role="status" hidden>
+        <p>현재 표시할 수 있는 BTC·환율 데이터가 없습니다.</p>
+        <p>잠시 후 다시 확인해 주세요.</p>
+      </div>
+
+      <div id="overviewBlock" hidden>
+        <svg id="overview" viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg"
+             aria-label="주간 평균 김프 추이와 주요 사건 위치"></svg>
+        <p class="pat-hint">
+          <span class="dot-sample"></span>
+          음영 구간이나 점을 누르면 아래에 그 시기의 상세가 열립니다.
+        </p>
+      </div>
+
+      <div id="detail" hidden>
+        <div class="detail-head">
+          <div>
+            <div class="detail-title-row">
+              <div class="detail-title" id="dTitle">-</div>
+              <span class="badge badge-neutral" id="dKind">-</span>
             </div>
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              <div class="detail-premium" id="dPremium">-</div>
-              <button class="closebtn" id="dClose" aria-label="닫기">✕</button>
-            </div>
+            <div class="detail-date" id="dDate">-</div>
           </div>
-          <p class="detail-desc" id="dDesc">-</p>
-          <p class="detail-narrative" id="dNarrative">-</p>
-
-          <div class="window-stats stat-row">
-            <div class="stat-card"><div class="label">1일 전 대비</div><div class="value" id="dW1">-</div></div>
-            <div class="stat-card"><div class="label">3일 전 대비</div><div class="value" id="dW3">-</div></div>
-            <div class="stat-card"><div class="label">7일 전 대비</div><div class="value" id="dW7">-</div></div>
-          </div>
-
-          <div class="subgrid">
-            <div class="subcard">
-              <div class="subcard-label">원/달러 환율 (사건 전 → 후)</div>
-              <svg class="slope-svg" id="dFxSlope" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg"></svg>
-            </div>
-            <div class="subcard">
-              <div class="subcard-label">BTC 가격 (사건 전 → 후)</div>
-              <svg class="bar-svg" id="dBtcBar" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg"></svg>
-              <div class="vol-row">
-                <div class="vol-track"><div class="vol-fill" id="dVolFill"></div></div>
-                <div class="vol-val" id="dVolVal">-</div>
-              </div>
-              <div class="slope-caption">그 시기 변동성 지수</div>
-            </div>
+          <div class="detail-headline">
+            <div class="value" id="dHeadline">-</div>
+            <div class="label" id="dHeadlineLabel">-</div>
+            <div class="headline-sub" id="dHeadlineSub" hidden></div>
           </div>
         </div>
+
+        <p class="detail-desc" id="dDesc">-</p>
+
+        <div class="zoom-wrap">
+          <div class="zoom-title" id="zoomTitle">-</div>
+          <svg id="zoom" viewBox="0 0 1000 270" xmlns="http://www.w3.org/2000/svg"
+               aria-label="선택한 시기의 김프 추이"></svg>
+          <p class="zoom-legend">
+            <span class="swatch dir-up"></span>김프가 가장 크게 오른 구간
+            <span class="swatch dir-down"></span>가장 크게 내린 구간
+            <span class="swatch swatch--amber"></span>사건일·촉발일
+          </p>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini">
+            <div class="mini-head">
+              <span class="mini-label">원/달러 환율</span>
+              <span class="mini-value mini-value--fx" id="fxValue">-</span>
+            </div>
+            <svg id="fxChart" viewBox="0 0 460 110" xmlns="http://www.w3.org/2000/svg"
+                 aria-label="같은 기간 원/달러 환율 변화"></svg>
+          </div>
+          <div class="mini">
+            <div class="mini-head">
+              <span class="mini-label">BTC 가격 (원화)</span>
+              <span class="mini-value mini-value--btc" id="btcValue">-</span>
+            </div>
+            <svg id="btcChart" viewBox="0 0 460 110" xmlns="http://www.w3.org/2000/svg"
+                 aria-label="같은 기간 BTC 원화 가격 변화"></svg>
+          </div>
+        </div>
+
+        <div class="stat-row" id="statRow"></div>
+
+        <p class="detail-note" id="dNote"></p>
       </div>
     </div>
   </div>
 
-  <p class="caption" style="margin-top: var(--sp-8);">뷰1 인터랙티브 프로토타입 · 표시 데이터는 데모 · 실제 API 연동 전 레이아웃·인터랙션 검증용</p>
+<p class="caption" style="margin-top: var(--sp-8);">
+  업비트·Frankfurter(ECB 기준)와 해외 거래소 시세를 모아둔 팀 데이터(data/history.json)를 사용합니다.
+  주말·공휴일 환율은 직전 영업일 값을 적용하며, 카드의 수치는 모두 이 데이터로 계산한 값입니다.
+  사건명과 설명만 팀이 직접 정리한 내용이고, "장중 저가 기준" 김프는 업비트 일봉 저가로 계산한 추정치입니다.
+  <span id="sourceNote"></span>
+</p>
 </div>
 
 <script>
 (function () {
-  // ---------------------------------------------------------------------
-  // 1) 데모 시계열 데이터 생성
-  //    - 실제 API 대신, 알려진 시장 흐름을 참고해 만든 예시 값입니다.
-  //    - 앵커(주요 시점) 사이를 보간 + 약간의 노이즈로 채워 라인 형태를 만듭니다.
-  // ---------------------------------------------------------------------
-  const START_YEAR = 2017.0;
-  const END_YEAR = 2026.6;
+  const chartLoading = document.getElementById('chartLoading');
+  const chartError = document.getElementById('chartError');
+  const chartErrorMessage = document.getElementById('chartErrorMessage');
+  const chartEmpty = document.getElementById('chartEmpty');
+  const overviewBlock = document.getElementById('overviewBlock');
+  const overviewSvg = document.getElementById('overview');
+  const detail = document.getElementById('detail');
 
-  // [연도(소수), 김프%] 앵커 포인트
-  const anchors = [
-    [2017.00, 2], [2017.40, 4], [2017.75, 14], [2017.95, 42], // 2017 말 폭등
-    [2018.08, 36], [2018.14, 4],  // 박상기의 난 급락
-    [2018.50, 8], [2019.00, 3], [2019.50, 2],
-    [2020.00, 3], [2020.20, -3], // 코로나 쇼크(역프)
-    [2020.60, 2], [2021.00, 8],
-    [2021.28, 20], // 2021 상반기 불장
-    [2021.40, 3],  // 중국 채굴 금지
-    [2021.75, 6], [2022.00, 4],
-    [2022.37, -1], // 테라루나
-    [2022.60, 2],
-    [2022.85, -4], // FTX 파산
-    [2023.10, 1], [2023.50, 2],
-    [2024.03, 6],  // 미국 현물 ETF 승인
-    [2024.30, 4], [2024.55, 3],
-    [2024.95, 9],  // 계엄·탄핵 정국
-    [2025.15, 5], [2025.45, 3],
-    [2025.80, 6],  // 트럼프 정부 우호적 정책 기조
-    [2026.10, 4], [2026.60, 3],
+  // ---------------------------------------------------------------------
+  // 사건 데이터
+  //   API로 오지 않는 정성적 정보(사건명·기간·설명)만 여기에 둡니다.
+  //   김프·환율·BTC 수치는 전부 아래에서 실제 데이터로 계산합니다.
+  //
+  //   구분 기준: 발생 시점이 명확하고 며칠 안에 반응이 끝나면 '하루'(점),
+  //   시점이 불명확하거나 영향이 수주~수개월 누적되면 '시기'(음영 구간).
+  //   트리거는 명확하지만 결과가 몇 달 이어지는 경우는 구간으로 두고
+  //   triggerDate만 카드에 표기합니다.
+  // ---------------------------------------------------------------------
+  const periods = [
+    {
+      id: 'w-2017-mania',
+      start: '2017-11-01',
+      // 박상기 규제 구간(1/11 시작)과 겹치지 않도록 전날까지로 끊었습니다.
+      // 이 구간의 최저·최고는 그대로 안에 들어옵니다.
+      end: '2018-01-10',
+      chartLabel: '2017년 말 폭등',
+      title: '2017년 말 김프 대폭등',
+      desc: '국내 개인투자자 매수세가 이어지며 김프가 사상 최고 수준까지 상승한 시기입니다. ' +
+            '특정 발표보다 여러 주에 걸친 누적된 매수세로 형성됐습니다.'
+    },
+    {
+      id: 'w-park-regulation',
+      start: '2018-01-11',
+      end: '2018-04-22',
+      triggerDate: '2018-01-11',
+      chartLabel: '박상기 규제 충격',
+      title: '박상기 거래소 폐쇄 발언과 규제 충격',
+      desc: '법무부장관의 거래소 폐쇄 검토 발언(1/11) 이후 투자심리가 얼어붙으며 김프가 축소된 시기입니다. ' +
+            '발언 이후에도 규제 우려가 이어지며 낙폭이 여러 달에 걸쳐 확대됐습니다.'
+    },
+    {
+      id: 'w-2021-reversal',
+      start: '2021-01-01',
+      end: '2021-04-25',
+      chartLabel: '저점→고점 반전',
+      title: '역프에서 급등까지, 2021년 상반기 김프 반전',
+      desc: '해외 시세가 국내보다 먼저 크게 움직이는 흐름이 반복되며, ' +
+            '한때 마이너스였던 김프가 두 달여 만에 크게 반전된 시기입니다.'
+    },
+    {
+      id: 'w-ftx-normalize',
+      start: '2022-11-06',
+      end: '2022-12-19',
+      triggerDate: '2022-11-08',
+      chartLabel: 'FTX 이후 정상화',
+      title: 'FTX 거래소 파산 이후 김프 정상화',
+      desc: '대형 거래소 FTX의 인출 중단 사실이 알려지며(11/8) 국내외 가격이 함께 흔들린 시기입니다. ' +
+            '이후 한 달여에 걸쳐 균형을 찾아가는 흐름이 나타났습니다.'
+    },
+    {
+      id: 'w-2025-ath-cooldown',
+      start: '2025-10-06',
+      end: '2025-11-30',
+      triggerDate: '2025-10-10',
+      chartLabel: 'ATH FOMO→진정',
+      title: '비트코인 ATH와 국내 매수세, 그리고 진정',
+      desc: '비트코인이 사상 최고가를 경신하는 시기 국내 매수세가 몰렸다가, ' +
+            '관세발 글로벌 청산 사태(10/10)를 거치며 한 달여에 걸쳐 진정된 시기입니다.'
+    }
   ];
 
-  // 이벤트(클릭 가능한 점) — 팀에서 논의한 대표 사례 + 장기 맥락용 주요 변곡점
-  // d1/d3/d7: 사건 시점 기준 1일 전/3일 전/7일 전 대비 김프 변화(%p) — 데모 값
   const events = [
-    { year: 2017.95, premium: 42, date: '2017년 12월', title: '2017년 말 김프 대폭등',
-      desc: '국내 개인투자자 열풍이 정점에 달하며 김프가 사상 최고 수준까지 치솟은 시기입니다.',
-      fx: 0.5, btc: 85, vol: 92, d1: 3.5, d3: 9.2, d7: 18.4 },
-    { year: 2018.14, premium: 4, date: '2018년 2월', title: '정부 규제 발표 (박상기의 난)',
-      desc: '거래소 폐쇄 검토 발언 이후 투자심리가 급격히 얼어붙으며 김프가 단기간에 크게 축소됐습니다.',
-      fx: 1.2, btc: -38, vol: 88, d1: -12.0, d3: -18.5, d7: -22.0 },
-    { year: 2020.20, premium: -3, date: '2020년 3월', title: '코로나19 팬데믹 쇼크',
-      desc: '글로벌 금융시장 패닉 속에 BTC가 폭락하고, 원화 약세까지 겹치며 김프가 일시적으로 역전(역프)됐습니다.',
-      fx: 6.8, btc: -50, vol: 95, d1: -4.2, d3: -6.8, d7: -5.1 },
-    { year: 2021.28, premium: 20, date: '2021년 4월', title: '2021년 상반기 불장',
-      desc: '기관 자금 유입과 개인투자 열풍이 겹치며 김프가 다시 크게 확대된 시기입니다.',
-      fx: 1.1, btc: 95, vol: 78, d1: 1.8, d3: 5.6, d7: 11.3 },
-    { year: 2021.40, premium: 3, date: '2021년 5월', title: '중국 채굴 전면 금지',
-      desc: '중국 정부의 채굴 단속 발표로 글로벌 시장이 급락하며 김프도 빠르게 축소됐습니다.',
-      fx: 0.3, btc: -45, vol: 90, d1: -8.4, d3: -13.2, d7: -15.0 },
-    { year: 2022.85, premium: -4, date: '2022년 11월', title: 'FTX 거래소 파산',
-      desc: '대형 거래소 파산 사태로 신뢰 위기가 확산되며 국내외 가격이 동반 급락했습니다.',
-      fx: 3.5, btc: -25, vol: 85, d1: -3.0, d3: -5.5, d7: -6.2 },
-    { year: 2024.03, premium: 6, date: '2024년 1월', title: '미국 현물 ETF 승인',
-      desc: '미국 SEC의 비트코인 현물 ETF 승인으로 글로벌 자금 유입이 재개된 시기입니다.',
-      fx: 0.8, btc: 18, vol: 55, d1: 2.2, d3: 3.8, d7: 4.5 },
-    { year: 2024.95, premium: 9, date: '2024년 12월', title: '비상계엄·탄핵 정국',
-      desc: '비상계엄 선포와 탄핵 정국으로 원화 가치가 흔들리며, BTC 자체 변동보다 환율 요인이 두드러진 김프 급등이 나타났습니다.',
-      fx: 4.2, btc: 5, vol: 60, d1: 4.1, d3: 6.0, d7: 5.2 },
+    {
+      id: 'd-corona-2020',
+      date: '2020-03-12',
+      chartLabel: '코로나19 쇼크',
+      title: '코로나19 팬데믹 쇼크',
+      desc: '글로벌 금융시장 패닉 속에 BTC가 폭락한 날입니다. ' +
+            '해외 가격이 국내보다 더 크게 빠지며 김프가 급등했습니다.'
+    },
+    {
+      id: 'd-eunsungsoo-2021',
+      date: '2021-04-22',
+      chartLabel: '은성수 발언',
+      title: '은성수 거래소 폐쇄 발언',
+      desc: '금융위원장의 거래소 폐쇄 가능성 발언 이후 투자심리가 얼어붙으며, ' +
+            '김프가 하루 만에 크게 축소됐습니다.'
+    },
+    {
+      id: 'd-519-2021',
+      date: '2021-05-19',
+      chartLabel: '5·19 크래시',
+      title: '5·19 크래시와 중국 채굴 전면 금지',
+      desc: '중국의 채굴 단속 발표와 겹쳐 글로벌 시장이 급락한 날입니다. ' +
+            '해외 낙폭이 국내보다 커서 김프가 급등했습니다.'
+    },
+    {
+      id: 'd-terra-2022',
+      date: '2022-05-11',
+      chartLabel: '테라·루나',
+      title: '테라·루나 UST 디페깅',
+      desc: '스테이블코인 UST의 디페깅으로 루나 생태계가 무너지며 글로벌 시장이 크게 흔들린 시기입니다.'
+    },
+    {
+      id: 'd-martial-law-2024',
+      date: '2024-12-03',
+      chartLabel: '비상계엄',
+      title: '비상계엄 선포',
+      milestone: true,
+      desc: '비상계엄이 선포된 날입니다. 종가 기준 하루 변화는 크지 않지만, ' +
+            '선포 이후 짧은 시간 안에 급락과 되돌림이 있었던 것으로 보입니다.'
+    }
   ];
 
   // ---------------------------------------------------------------------
-  // 2) 보간 + 노이즈로 월별 시계열 만들기 (시드 고정 - 새로고침해도 같은 모양)
+  // 실제 데이터 보관 + 조회
+  //   getBtcPremiumData()를 한 번만 호출해 여기에 담아두고,
+  //   사건을 누를 때마다 재요청 없이 날짜 인덱스로 찾아 씁니다.
   // ---------------------------------------------------------------------
-  function seededRandom(seed) {
-    let s = seed % 2147483647;
-    if (s <= 0) s += 2147483646;
-    return function () {
-      s = (s * 16807) % 2147483647;
-      return (s - 1) / 2147483646;
-    };
-  }
-  const rand = seededRandom(42);
+  let market = null;
+  let selection = null;   // { type: 'period' | 'event', index }
 
-  function interpolate(anchors, x) {
-    for (let i = 0; i < anchors.length - 1; i++) {
-      const [x0, y0] = anchors[i];
-      const [x1, y1] = anchors[i + 1];
-      if (x >= x0 && x <= x1) {
-        const t = (x - x0) / (x1 - x0);
-        return y0 + (y1 - y0) * t;
+  function dateToDecimalYear(dateString) {
+    const date = new Date(dateString + 'T00:00:00Z');
+    const year = date.getUTCFullYear();
+    const yearStart = Date.UTC(year, 0, 1);
+    const nextYearStart = Date.UTC(year + 1, 0, 1);
+    return year + (date.getTime() - yearStart) / (nextYearStart - yearStart);
+  }
+
+  // 해당 날짜가 없으면(주말·휴장) 그 이전 가장 가까운 거래일로 대체합니다.
+  function findIndex(dateString) {
+    if (!market) return -1;
+    const exact = market.indexByDate.get(dateString);
+    if (exact !== undefined) return exact;
+    for (let i = market.dates.length - 1; i >= 0; i--) {
+      if (market.dates[i] <= dateString) return i;
+    }
+    return -1;
+  }
+
+  // 두 인덱스 사이의 변화율(%). field는 'fxRate' 또는 'btcPrice'.
+  function changePct(field, fromIdx, toIdx) {
+    const before = market[field][fromIdx];
+    const after = market[field][toIdx];
+    if (!before || !Number.isFinite(after)) return null;
+    return (after - before) / before * 100;
+  }
+
+  // 일별 김프를 월~일 단위 평균으로 묶습니다(개요 차트용).
+  function buildWeekly(records) {
+    const groups = new Map();
+    records.forEach(function (r) {
+      const d = new Date(r.date + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+      const key = d.toISOString().slice(0, 10);
+      if (!groups.has(key)) groups.set(key, { sum: 0, count: 0, year: r.year });
+      const g = groups.get(key);
+      g.sum += r.premium;
+      g.count += 1;
+    });
+    return Array.from(groups.values()).map(function (g) {
+      return { year: g.year, premium: g.sum / g.count };
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // 라벨 배치
+  //   사건이 몰린 구간(2017년 말/박상기, 은성수/5·19)은 라벨이 겹치므로
+  //   좌우로 밀어 떨어뜨리고, 밀어낸 라벨은 연결선으로 대상을 가리킵니다.
+  // ---------------------------------------------------------------------
+  function textWidth(text, size) {
+    let w = 0;
+    for (const ch of text) w += /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(ch) ? size : size * 0.58;
+    return w;
+  }
+
+  function spreadX(items, gap, lo, hi) {
+    const xs = items.map(function (it) { return it.cx; });
+    for (let i = 1; i < items.length; i++) {
+      const need = xs[i - 1] + items[i - 1].w / 2 + gap + items[i].w / 2;
+      if (xs[i] < need) xs[i] = need;
+    }
+    for (let i = items.length - 1; i >= 0; i--) {
+      const max = hi - items[i].w / 2;
+      if (xs[i] > max) xs[i] = max;
+      if (i > 0) {
+        const need = xs[i] - items[i].w / 2 - gap - items[i - 1].w / 2;
+        if (xs[i - 1] > need) xs[i - 1] = need;
       }
     }
-    return anchors[anchors.length - 1][1];
-  }
-
-  const seriesPoints = [];
-  const stepMonths = 1 / 12;
-  for (let y = START_YEAR; y <= END_YEAR; y += stepMonths) {
-    const base = interpolate(anchors, y);
-    const noise = (rand() - 0.5) * 1.6;
-    seriesPoints.push([y, base + noise]);
+    for (let i = 0; i < items.length; i++) {
+      const min = lo + items[i].w / 2;
+      if (xs[i] < min) xs[i] = min;
+    }
+    return xs;
   }
 
   // ---------------------------------------------------------------------
-  // 3) 좌표 변환 (스케일)
+  // SVG 유틸
   // ---------------------------------------------------------------------
-  const M = { left: 46, right: 20, top: 20, bottom: 34 };
-  const W = 1000, H = 380;
-  const plotW = W - M.left - M.right;
-  const plotH = H - M.top - M.bottom;
-
-  const minY = -8, maxY = 46;
-
-  function xScale(year) {
-    return M.left + ((year - START_YEAR) / (END_YEAR - START_YEAR)) * plotW;
-  }
-  function yScale(val) {
-    return M.top + plotH - ((val - minY) / (maxY - minY)) * plotH;
-  }
-
-  // ---------------------------------------------------------------------
-  // 4) SVG 렌더링
-  // ---------------------------------------------------------------------
-  const svg = document.getElementById('chart');
-  const svgNS = 'http://www.w3.org/2000/svg';
-
+  const SVG_NS = 'http://www.w3.org/2000/svg';
   function el(tag, attrs) {
-    const e = document.createElementNS(svgNS, tag);
+    const e = document.createElementNS(SVG_NS, tag);
     for (const k in attrs) e.setAttribute(k, attrs[k]);
     return e;
   }
+  const fmtPct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+  const fmtPP = v => (v >= 0 ? '▲ ' : '▼ ') + Math.abs(v).toFixed(1) + '%p';
 
-  // 0% 기준선
-  svg.appendChild(el('line', {
-    class: 'zero-line', x1: M.left, x2: W - M.right, y1: yScale(0), y2: yScale(0)
-  }));
+  // 값 배열 하나를 선으로 그리고, 좌표 변환 함수를 돌려줍니다.
+  function drawLine(svg, values, opts) {
+    svg.replaceChildren();
+    const W = opts.width, H = opts.height, M = opts.margin;
+    const pw = W - M.left - M.right, ph = H - M.top - M.bottom;
 
-  // y축 라벨 (0%, 20%, 40%)
-  [0, 20, 40].forEach(v => {
-    const t = el('text', { class: 'axis-label', x: M.left - 8, y: yScale(v) + 3, 'text-anchor': 'end' });
-    t.textContent = v + '%';
-    svg.appendChild(t);
-  });
-
-  // x축 연도 라벨
-  for (let y = 2017; y <= 2026; y += 1) {
-    const t = el('text', { class: 'axis-label', x: xScale(y), y: H - 10, 'text-anchor': 'middle' });
-    t.textContent = y;
-    svg.appendChild(t);
-    svg.appendChild(el('line', {
-      class: 'axis-line', x1: xScale(y), x2: xScale(y), y1: M.top, y2: H - M.bottom, opacity: 0.35
-    }));
-  }
-
-  // 라인
-  const pathD = seriesPoints.map((p, i) => (i === 0 ? 'M' : 'L') + xScale(p[0]).toFixed(1) + ',' + yScale(p[1]).toFixed(1)).join(' ');
-  svg.appendChild(el('path', { class: 'kimp-line', d: pathD }));
-
-  // 연결선 (선택된 점 -> 아래 상세박스 방향으로의 시각적 힌트)
-  const connector = el('line', { class: 'connector', id: 'connector' });
-  svg.appendChild(connector);
-
-  // 이벤트 점 (클릭 가능). 마지막 이벤트(계엄·탄핵)만 환율 변동폭이 유독 커서
-  // 다른 색(amber)으로 강조합니다.
-  const MILESTONE_IDX = events.length - 1;
-  let activeIndex = null;
-  const dotEls = [];
-
-  events.forEach((ev, idx) => {
-    const cx = xScale(ev.year), cy = yScale(ev.premium);
-    const isMilestone = idx === MILESTONE_IDX;
-
-    const dot = el('circle', {
-      class: 'event-dot' + (isMilestone ? ' milestone' : ''),
-      cx, cy, r: 5.5, stroke: 'var(--panel)', 'stroke-width': 2
-    });
-    const hit = el('circle', { class: 'event-hitbox', cx, cy, r: 14 });
-    hit.addEventListener('click', () => toggleEvent(idx));
-    dot.addEventListener('click', () => toggleEvent(idx));
-
-    svg.appendChild(dot);
-    svg.appendChild(hit);
-    dotEls.push(dot);
-  });
-
-  // ---------------------------------------------------------------------
-  // 5) 클릭 → 상세 박스 열기/닫기
-  // ---------------------------------------------------------------------
-  const detailWrap = document.getElementById('detail');
-  const detailBox = document.getElementById('detailBox');
-  const dTitle = document.getElementById('dTitle');
-  const dMilestone = document.getElementById('dMilestone');
-  const dDate = document.getElementById('dDate');
-  const dPremium = document.getElementById('dPremium');
-  const dDesc = document.getElementById('dDesc');
-  const dNarrative = document.getElementById('dNarrative');
-  const dW1 = document.getElementById('dW1');
-  const dW3 = document.getElementById('dW3');
-  const dW7 = document.getElementById('dW7');
-  const dFxSlope = document.getElementById('dFxSlope');
-  const dBtcBar = document.getElementById('dBtcBar');
-  const dVolFill = document.getElementById('dVolFill');
-  const dVolVal = document.getElementById('dVolVal');
-  const dClose = document.getElementById('dClose');
-
-  // "사건 전(0%) -> 사건 후(변화율)"를 점 두 개 + 연결선으로 그리는 미니 슬로프 차트.
-  // 절대 가격 레벨을 지어내지 않고, 이미 갖고 있는 변화율(%) 하나만으로 전/후를 표현합니다.
-  // 상승/하락에 색을 다르게 주는 신호등 프레이밍 대신, 계열마다 고정된 단일 색을 씁니다.
-  function drawSlope(svgEl, afterVal, opts) {
-    const beforeVal = 0;
-    svgEl.innerHTML = '';
-    const w = 220, h = 100;
-    const padTop = 30, padBottom = 22, padX = 40;
-    const lo = Math.min(beforeVal, afterVal), hi = Math.max(beforeVal, afterVal);
-    const range = Math.max(hi - lo, 0.5);
-    const pad = range * 0.7;
-    const yMin = lo - pad, yMax = hi + pad;
-    const y = v => padTop + (1 - (v - yMin) / (yMax - yMin)) * (h - padTop - padBottom);
-    const x1 = padX, x2 = w - padX;
-    const y1 = y(beforeVal), y2 = y(afterVal);
-    const color = opts.color;
-
-    const ns = 'http://www.w3.org/2000/svg';
-    const make = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-
-    svgEl.appendChild(make('line', { x1, y1, x2, y2, stroke: color, 'stroke-width': 2.4 }));
-    svgEl.appendChild(make('circle', { cx: x1, cy: y1, r: 4.5, fill: 'var(--dim)' }));
-    svgEl.appendChild(make('circle', { cx: x2, cy: y2, r: 5, fill: color }));
-
-    const beforeLabel = make('text', { x: x1, y: y1 - 13, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: 'var(--mut)' });
-    beforeLabel.textContent = opts.fmt(beforeVal);
-    svgEl.appendChild(beforeLabel);
-
-    const afterLabel = make('text', { x: x2, y: y2 - 13, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: color });
-    afterLabel.textContent = opts.fmt(afterVal);
-    svgEl.appendChild(afterLabel);
-
-    const t1 = make('text', { x: x1, y: h - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--mut)' });
-    t1.textContent = '사건 전';
-    svgEl.appendChild(t1);
-    const t2 = make('text', { x: x2, y: h - 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--mut)' });
-    t2.textContent = '사건 후';
-    svgEl.appendChild(t2);
-  }
-
-  // ②(슬로프/점-선)와 형태를 다르게 가져가는 두 번째 차트 유형.
-  // 0% 축선에서 위(상승) 또는 아래(하락)로 뻗는 발산형 막대 하나로 "전(0)->후" 변화를 표현합니다.
-  // BTC처럼 변화폭이 큰 값(예: -50%, +85%)은 막대 길이 차이로 보는 게 점-선보다 직관적입니다.
-  // 여기서도 상승/하락 신호등 색 대신 계열 고정 색(frog)을 씁니다.
-  function drawDivergingBar(svgEl, value, opts) {
-    svgEl.innerHTML = '';
-    const w = 220, h = 100;
-    const axisY = h / 2 + 10;
-    const maxHalf = 38;
-    const barLen = maxHalf * 0.88; // 단일 값이라 카드 안에서 항상 여유 있게 꽉 차게 그림
-    const up = value >= 0;
-    const color = opts.color;
-    const barW = 46;
-    const barX = w / 2 - barW / 2;
-    const barY = up ? axisY - barLen : axisY;
-
-    const ns = 'http://www.w3.org/2000/svg';
-    const make = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-
-    svgEl.appendChild(make('line', { x1: 18, x2: w - 18, y1: axisY, y2: axisY, stroke: 'var(--border)', 'stroke-width': 1.3 }));
-    svgEl.appendChild(make('rect', { x: barX, y: barY, width: barW, height: barLen, rx: 4, fill: color }));
-
-    const valY = up ? barY - 10 : barY + barLen + 17;
-    const val = make('text', { x: w / 2, y: valY, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800, fill: color });
-    val.textContent = opts.fmt(value);
-    svgEl.appendChild(val);
-
-    const lbl1 = make('text', { x: 18, y: axisY - 9, 'font-size': 11, fill: 'var(--mut)' });
-    lbl1.textContent = '사건 전 0%';
-    svgEl.appendChild(lbl1);
-
-    const lbl2 = make('text', { x: w - 18, y: axisY - 9, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--mut)' });
-    lbl2.textContent = '사건 후';
-    svgEl.appendChild(lbl2);
-  }
-
-  // 숫자들을 조합한 자동 줄글 요약.
-  // 인과를 단정하지 않고("만들었다"), 함께 나타난 관찰 사실로만 서술합니다.
-  function buildNarrative(ev, fmtPct, fmtPP) {
-    const fxWord = ev.fx >= 0 ? '상승(원화 약세)' : '하락(원화 강세)';
-    const btcWord = ev.btc >= 0 ? '상승' : '하락';
-    return `이 시기 원/달러 환율은 ${fmtPct(ev.fx)} ${fxWord}했고, BTC 가격은 ${fmtPct(ev.btc)} ${btcWord}했습니다. ` +
-           `김프는 사건 7일 전 대비 ${fmtPP(ev.d7)} 움직이며 이 변화와 함께 나타났습니다.`;
-  }
-
-  function toggleEvent(idx) {
-    if (activeIndex === idx) {
-      closeDetail();
-      return;
+    let lo = Math.min.apply(null, values), hi = Math.max.apply(null, values);
+    if (opts.includeZero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+    // 선으로 그리지는 않지만 축에는 들어가야 하는 값(장중 저점)
+    if (opts.domainExtra != null) {
+      lo = Math.min(lo, opts.domainExtra);
+      hi = Math.max(hi, opts.domainExtra);
     }
-    openDetail(idx);
+    const pad = Math.max((hi - lo) * 0.15, 0.3);
+    lo -= pad; hi += pad;
+
+    const px = i => M.left + (values.length === 1 ? pw / 2 : i / (values.length - 1) * pw);
+    const py = v => M.top + ph - (v - lo) / (hi - lo) * ph;
+
+    if (lo <= 0 && hi >= 0) {
+      svg.appendChild(el('line', { class: 'zero-line', x1: M.left, x2: W - M.right, y1: py(0), y2: py(0) }));
+    }
+    svg.appendChild(el('path', {
+      class: opts.lineClass,
+      d: values.map((v, i) => (i ? 'L' : 'M') + px(i).toFixed(1) + ',' + py(v).toFixed(1)).join(' ')
+    }));
+    return { px, py, lo, hi };
   }
 
-  function openDetail(idx) {
-    const ev = events[idx];
-    const isMilestone = idx === MILESTONE_IDX;
+  // ---------------------------------------------------------------------
+  // 개요 차트 — 주간 평균 위에 구간(음영)과 하루(점)를 함께 표시
+  // ---------------------------------------------------------------------
+  const OV = { W: 1000, H: 320, left: 44, right: 16, top: 46, bottom: 28, minY: -10, maxY: 62 };
 
-    dotEls.forEach((d, i) => d.classList.toggle('active', i === idx));
-    activeIndex = idx;
+  function renderOverview() {
+    const weekly = market.weekly;
+    const plotW = OV.W - OV.left - OV.right;
+    const plotH = OV.H - OV.top - OV.bottom;
+    const x0 = weekly[0].year, x1 = weekly[weekly.length - 1].year;
+    const ox = y => OV.left + (y - x0) / (x1 - x0) * plotW;
+    const oy = v => OV.top + plotH - (v - OV.minY) / (OV.maxY - OV.minY) * plotH;
+    const yearOf = ds => market.year[findIndex(ds)];
 
-    dTitle.textContent = ev.title;
-    dMilestone.classList.toggle('show', isMilestone);
-    dDate.textContent = ev.date;
-    dPremium.textContent = (ev.premium > 0 ? '+' : '') + ev.premium.toFixed(1) + '%';
-    dDesc.textContent = ev.desc;
+    overviewSvg.replaceChildren();
 
-    const fmtPct = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
-    const fmtPP = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%p';
+    // 구간 라벨 위치를 먼저 잡습니다(겹치면 좌우로 밀어냄).
+    const labelBoxes = periods.map(function (p) {
+      return {
+        cx: (ox(yearOf(p.start)) + ox(yearOf(p.end))) / 2,
+        w: textWidth(p.chartLabel, 10)
+      };
+    });
+    const labelX = spreadX(labelBoxes, 14, OV.left, OV.W - OV.right);
+    const labelY = OV.top - 22;
 
-    dNarrative.innerHTML = buildNarrative(ev, fmtPct, fmtPP);
+    periods.forEach(function (p, i) {
+      const bx1 = ox(yearOf(p.start)), bx2 = ox(yearOf(p.end));
+      const active = selection && selection.type === 'period' && selection.index === i;
+      // 이웃한 구간이 한 덩어리로 보이지 않도록 양옆을 띄웁니다.
+      const inset = 3;
 
-    // 1일 / 3일 / 7일 전 대비 김프 변화 표 (방향은 화살표로만 표시, 색으로 신호등 프레이밍하지 않음)
-    [[dW1, ev.d1], [dW3, ev.d3], [dW7, ev.d7]].forEach(([elm, v]) => {
-      elm.textContent = (v >= 0 ? '▲ ' : '▼ ') + Math.abs(v).toFixed(1) + '%p';
+      const rect = el('rect', {
+        class: 'band' + (active ? ' active' : ''),
+        x: bx1 + inset, y: OV.top,
+        width: Math.max(bx2 - bx1 - inset * 2, 2), height: plotH
+      });
+      rect.addEventListener('click', function () { select('period', i); });
+      overviewSvg.appendChild(rect);
+
+      overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx1, x2: bx1, y1: OV.top, y2: OV.top + plotH }));
+      overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx2, x2: bx2, y1: OV.top, y2: OV.top + plotH }));
+
+      const cx = (bx1 + bx2) / 2;
+      if (Math.abs(labelX[i] - cx) > 2) {
+        overviewSvg.appendChild(el('polyline', {
+          class: 'leader',
+          points: [labelX[i], labelY + 5, labelX[i], OV.top - 10, cx, OV.top - 3].join(' ')
+        }));
+      }
+      const label = el('text', { class: 'band-label', x: labelX[i], y: labelY, 'text-anchor': 'middle' });
+      label.textContent = p.chartLabel;
+      overviewSvg.appendChild(label);
     });
 
-    // ② 환율 전/후 — 점-선 슬로프 차트 (변화폭이 작아 0기준 막대보다 이 방식이 잘 보임)
-    drawSlope(dFxSlope, ev.fx, { fmt: fmtPct, color: 'var(--accent)' });
+    overviewSvg.appendChild(el('line', {
+      class: 'zero-line', x1: OV.left, x2: OV.W - OV.right, y1: oy(0), y2: oy(0)
+    }));
+    [0, 20, 40, 60].forEach(function (v) {
+      const t = el('text', { class: 'axis-label', x: OV.left - 8, y: oy(v) + 3, 'text-anchor': 'end' });
+      t.textContent = v + '%';
+      overviewSvg.appendChild(t);
+    });
+    for (let y = 2018; y <= Math.floor(x1); y++) {
+      overviewSvg.appendChild(el('line', {
+        class: 'axis-line', x1: ox(y), x2: ox(y), y1: OV.top, y2: OV.top + plotH, opacity: 0.35
+      }));
+      const t = el('text', { class: 'axis-label', x: ox(y), y: OV.H - 8, 'text-anchor': 'middle' });
+      t.textContent = y;
+      overviewSvg.appendChild(t);
+    }
 
-    // ③ BTC 가격 전/후 — 발산형 막대 차트 (②와 다른 형태) + 변동성 미니바
-    drawDivergingBar(dBtcBar, ev.btc, { fmt: fmtPct, color: 'var(--frog)' });
-    dVolFill.style.width = ev.vol + '%';
-    dVolVal.textContent = ev.vol + '/100';
+    overviewSvg.appendChild(el('path', {
+      class: 'kimp-line',
+      d: weekly.map((p, i) => (i ? 'L' : 'M') + ox(p.year).toFixed(1) + ',' + oy(p.premium).toFixed(1)).join(' ')
+    }));
 
-    // 말풍선 화살표를 선택된 점의 x좌표(퍼센트)에 맞춤
-    const cx = xScale(ev.year);
-    const pct = (cx / W) * 100;
-    detailBox.style.setProperty('--arrow-x', 'calc(' + pct.toFixed(2) + '% - 7px)');
+    // 일봉 사건 점은 주간 평균선 위에 얹어 선과 붙게 합니다.
+    // (그날 실제 김프는 상세 카드에서 보여줍니다.)
+    const dotPos = events.map(function (e) {
+      const ey = yearOf(e.date);
+      let near = weekly[0];
+      for (const w of weekly) {
+        if (Math.abs(w.year - ey) < Math.abs(near.year - ey)) near = w;
+      }
+      return { cx: ox(ey), cy: oy(near.premium), w: textWidth(e.chartLabel, 9.5) };
+    });
+    const dotLabelX = spreadX(dotPos, 12, OV.left, OV.W - OV.right);
 
-    // 연결선 표시
-    connector.setAttribute('x1', cx);
-    connector.setAttribute('x2', cx);
-    connector.setAttribute('y1', yScale(ev.premium));
-    connector.setAttribute('y2', H - M.bottom);
-    connector.classList.add('show');
+    events.forEach(function (e, i) {
+      const { cx, cy } = dotPos[i];
+      const active = selection && selection.type === 'event' && selection.index === i;
+      const lx = dotLabelX[i], ly = cy - 18;
 
-    detailWrap.classList.add('open');
+      if (Math.abs(lx - cx) > 2) {
+        overviewSvg.appendChild(el('polyline', {
+          class: 'leader', points: [lx, ly + 5, lx, ly + 9, cx, cy - 8].join(' ')
+        }));
+      }
+      const label = el('text', { class: 'event-label', x: lx, y: ly, 'text-anchor': 'middle' });
+      label.textContent = e.chartLabel;
+      overviewSvg.appendChild(label);
+
+      const dot = el('circle', {
+        class: 'event-dot' + (e.milestone ? ' event-dot--milestone' : '') + (active ? ' active' : ''),
+        cx: cx, cy: cy, r: 5.5
+      });
+      const hit = el('circle', { class: 'event-hitbox', cx: cx, cy: cy, r: 15, 'aria-hidden': 'true' });
+      dot.addEventListener('click', function () { select('event', i); });
+      hit.addEventListener('click', function () { select('event', i); });
+      overviewSvg.appendChild(dot);
+      overviewSvg.appendChild(hit);
+    });
   }
 
-  function closeDetail() {
-    activeIndex = null;
-    dotEls.forEach(d => d.classList.remove('active'));
-    connector.classList.remove('show');
-    detailWrap.classList.remove('open');
+  // ---------------------------------------------------------------------
+  // 상세 — 선택한 기간을 확대해서 김프·환율·BTC를 함께 보여줍니다.
+  // ---------------------------------------------------------------------
+  const ZOOM = { W: 1000, H: 270, left: 44, right: 16, top: 48, bottom: 30 };
+
+  // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
+  // 태그가 왼쪽으로 갈 수 있는 한계. 기본은 플롯 영역 안이지만, 고점·저점이 차트
+  // 맨 왼쪽에 붙어 있으면 축 라벨 자리까지 빌려 써야 글씨가 점을 안 덮습니다.
+  const TAG_EDGE = 2;
+
+  function drawTag(svg, x, y, text, variant, extra, minX) {
+    const suffix = variant ? ' tag-box--' + variant : '';
+    const w = textWidth(text, 10.5) + 16;
+    const h = 19;
+    const left = (minX == null ? ZOOM.left : minX) + w / 2;
+    const cx = Math.max(left, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
+    // 색이 있는 태그는 배경이 반투명이라, 뒤를 지나는 점선이나 축 라벨이 글씨를
+    // 뚫고 보입니다. 불투명한 판을 먼저 깔아 가려줍니다.
+    if (variant) {
+      svg.appendChild(el('rect', {
+        class: 'tag-base', x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
+      }));
+    }
+    svg.appendChild(el('rect', {
+      class: 'tag-box' + suffix + (extra ? ' ' + extra : ''),
+      x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
+    }));
+    const t = el('text', {
+      class: 'tag-text' + (variant ? ' tag-text--' + variant : '') + (extra ? ' ' + extra : ''),
+      x: cx, y: y + 3.6, 'text-anchor': 'middle'
+    });
+    t.textContent = text;
+    svg.appendChild(t);
+    return cx;
   }
 
-  dClose.addEventListener('click', closeDetail);
+  // 최저→최고를 잇는 대각선 화살표를 놓을 자리를 찾습니다.
+  // 김프 선 위/아래 중 더 적게 밀어내도 되는 쪽으로 평행 이동시켜, 선과 겹치지 않게 합니다.
+  // 자리가 안 나오면 구간을 조금씩 좁혀가며 다시 시도합니다.
+  function placeArrow(g, values, a, b, plotTop, plotBottom) {
+    const x1 = g.px(a), y1 = g.py(values[a]);
+    const dx = g.px(b) - x1, dy = g.py(values[b]) - y1;
+    const len = Math.hypot(dx, dy);
+    if (len < 24) return null;
 
-  // 초기 상태: 가장 최근 대표 사례(계엄) 한번 열어서 보여주기
-  openDetail(events.length - 1);
+    const plotW = ZOOM.W - ZOOM.left - ZOOM.right;
+    // 픽셀 x 위치에서의 김프 선 높이(선형 보간).
+    const lineY = function (x) {
+      const c = Math.max(0, Math.min(values.length - 1,
+        (x - ZOOM.left) / plotW * (values.length - 1)));
+      const i = Math.floor(c), j = Math.min(values.length - 1, i + 1);
+      return g.py(values[i] + (values[j] - values[i]) * (c - i));
+    };
+
+    const CLEAR = 12;          // 김프 선과 최소한 이만큼은 떨어뜨립니다.
+    const EDGE = 5;
+    // side +1 = 선 아래, -1 = 선 위 (구간은 항상 왼→오른쪽이라 dx > 0)
+    const fits = function (t0, t1, side, d) {
+      const nx = side * -dy / len * d, ny = side * dx / len * d;
+      for (let k = 0; k <= 32; k++) {
+        const t = t0 + (t1 - t0) * (k / 32);
+        const ax = x1 + dx * t + nx, ay = y1 + dy * t + ny;
+        if (ay < plotTop + EDGE || ay > plotBottom - EDGE) return false;
+        if (ax < ZOOM.left + EDGE || ax > ZOOM.W - ZOOM.right - EDGE) return false;
+        const ly = lineY(ax);
+        if (side < 0 ? ay > ly - CLEAR : ay < ly + CLEAR) return false;
+      }
+      return true;
+    };
+
+    const spans = [[0, 1], [0.12, 0.94], [0.25, 0.85]];
+    for (let s = 0; s < spans.length; s++) {
+      let best = null;
+      [-1, 1].forEach(function (side) {
+        for (let d = 14; d <= 80; d += 3) {
+          if (fits(spans[s][0], spans[s][1], side, d)) {
+            if (!best || d < best.d) best = { side: side, d: d };
+            return;
+          }
+        }
+      });
+      if (best) {
+        const nx = best.side * -dy / len * best.d, ny = best.side * dx / len * best.d;
+        return {
+          sx: x1 + dx * spans[s][0] + nx, sy: y1 + dy * spans[s][0] + ny,
+          ex: x1 + dx * spans[s][1] + nx, ey: y1 + dy * spans[s][1] + ny,
+          ux: dx / len, uy: dy / len
+        };
+      }
+    }
+    return null;
+  }
+
+  // 종가와 장중 저가의 김프 차이가 이만큼(%p) 넘게 벌어진 날은, 종가선만 봐서는
+  // "아무 일 없던 날"로 읽힙니다. 비상계엄(2024-12-03, 33.8%p)이 그런 날입니다.
+  // 이 정도로 큰 날에만 저가를 함께 그립니다 — 낮게 잡으면 평범한 변동성까지
+  // 걸려서 오히려 그날이 안 도드라집니다.
+  //
+  // 전체 기간에서 이 선을 넘는 날은 13일인데, 12일은 2017-12~2018-02에 몰려
+  // 있어 모두 구간(주봉) 카드 영역입니다. 사건 카드 당일이 걸리는 건 비상계엄
+  // 하나뿐입니다. 10으로 낮추면 5·19 크래시(18.7%p)가 함께 걸립니다.
+  const LOW_GAP = 20;
+
+  // i일의 종가↔장중 저점 차이(%p). 저가가 없으면 null.
+  function lowGapAt(i) {
+    if (!market.lowPremium || !market.btcPriceLow || market.btcPriceLow[i] == null) return null;
+    return market.premium[i] - market.lowPremium[i];
+  }
+
+  function renderZoom(from, to, markIdx, markText, dipIdx) {
+    const svg = document.getElementById('zoom');
+    const values = market.premium.slice(from, to + 1);
+    const hasDip = dipIdx != null;
+
+    const g = drawLine(svg, values, {
+      width: ZOOM.W, height: ZOOM.H,
+      margin: { left: ZOOM.left, right: ZOOM.right, top: ZOOM.top, bottom: ZOOM.bottom },
+      lineClass: 'kimp-line', includeZero: true,
+      // 저점까지 축을 늘려야 급락이 실제 크기로 보입니다.
+      domainExtra: hasDip ? market.lowPremium[dipIdx] : null
+    });
+    const plotTop = ZOOM.top;
+    const plotBottom = ZOOM.H - ZOOM.bottom;
+
+
+    // 이 기간의 최저·최고와, 그 둘 사이(= 가장 크게 움직인 구간)를 먼저 구합니다.
+    let minI = 0, maxI = 0;
+    values.forEach(function (v, i) {
+      if (v < values[minI]) minI = i;
+      if (v > values[maxI]) maxI = i;
+    });
+    const rising = minI <= maxI;
+    const swingFrom = rising ? minI : maxI;
+    const swingTo = rising ? maxI : minI;
+    const swing = values[swingTo] - values[swingFrom];
+    // 오르면 빨강, 내리면 파랑. 밴드·화살표·최저최고 태그가 이 색을 같이 씁니다.
+    const dirClass = swing >= 0 ? 'dir-up' : 'dir-down';
+
+    // 급락일이 있으면 그날이 이 카드의 본론이므로, 종가 기준 "가장 큰 변화" 강조는
+    // 접어둡니다. 둘을 같이 켜면 서로 시선을 뺏습니다.
+    const showSwing = !hasDip;
+
+    // ① 가장 크게 움직인 구간을 배경으로 깔아 시선을 먼저 잡습니다.
+    if (showSwing && swingTo > swingFrom) {
+      svg.insertBefore(el('rect', {
+        class: 'swing-band ' + dirClass,
+        x: g.px(swingFrom), y: plotTop,
+        width: g.px(swingTo) - g.px(swingFrom), height: plotBottom - plotTop
+      }), svg.firstChild);
+      [swingFrom, swingTo].forEach(function (i) {
+        svg.appendChild(el('line', {
+          class: 'swing-guide ' + dirClass, x1: g.px(i), x2: g.px(i), y1: plotTop, y2: plotBottom
+        }));
+      });
+    }
+
+    const step = (g.hi - g.lo) > 40 ? 20 : (g.hi - g.lo) > 15 ? 10 : 5;
+    for (let v = Math.ceil(g.lo / step) * step; v <= g.hi; v += step) {
+      const t = el('text', { class: 'axis-label', x: 36, y: g.py(v) + 3, 'text-anchor': 'end' });
+      t.textContent = v + '%';
+      svg.appendChild(t);
+    }
+    [0, Math.floor(values.length / 2), values.length - 1].forEach(function (i) {
+      const t = el('text', {
+        class: 'axis-label', x: g.px(i), y: plotBottom + 20,
+        'text-anchor': i === 0 ? 'start' : i === values.length - 1 ? 'end' : 'middle'
+      });
+      t.textContent = market.dates[from + i].slice(2);
+      svg.appendChild(t);
+    });
+
+    // ② 변화폭을 최저→최고를 잇는 대각선 화살표로 보여줍니다.
+    //    기울기가 곧 움직임의 방향과 속도라서, 길이만 재던 세로 화살표보다 잘 읽힙니다.
+    if (showSwing && swingTo > swingFrom && Math.abs(swing) > 0.5) {
+      const A = placeArrow(g, values, swingFrom, swingTo, plotTop, plotBottom);
+      if (A) {
+        const hx = A.ex - A.ux * 12, hy = A.ey - A.uy * 12;   // 화살촉이 시작되는 지점
+        const nx = -A.uy, ny = A.ux;                          // 진행 방향의 수직
+        svg.appendChild(el('line', {
+          class: 'swing-arrow-halo', x1: A.sx, y1: A.sy, x2: hx, y2: hy
+        }));
+        svg.appendChild(el('line', {
+          class: 'swing-arrow ' + dirClass, x1: A.sx, y1: A.sy, x2: hx, y2: hy
+        }));
+        svg.appendChild(el('polygon', {
+          class: 'swing-arrow-head ' + dirClass,
+          points: [A.ex, A.ey, hx + nx * 6, hy + ny * 6, hx - nx * 6, hy - ny * 6]
+            .map(function (n) { return n.toFixed(1); }).join(' ')
+        }));
+      }
+    }
+
+    // ③ 최저·최고점은 링을 두른 점 + 값 태그로 강조합니다.
+    if (showSwing) [[minI, '최저'], [maxI, '최고']].forEach(function (pair) {
+      const i = pair[0];
+      const cx = g.px(i), cy = g.py(values[i]);
+      svg.appendChild(el('circle', { class: 'peak-halo ' + dirClass, cx: cx, cy: cy, r: 8 }));
+      svg.appendChild(el('circle', { class: 'peak-dot ' + dirClass, cx: cx, cy: cy, r: 5 }));
+      // 기본은 최고 위 / 최저 아래. 차트 위아래 끝에 붙어 자리가 없으면 점 옆에 세웁니다
+      // (위쪽에는 '가장 큰 변화'·사건일 태그 줄이 이미 있어서 겹치기 쉽습니다).
+      const label = pair[1] + ' ' + fmtPct(values[i]);
+      let tx = cx, ty = cy + (i === maxI ? -22 : 24);
+      let tminX = null;
+      if (ty < plotTop + 12 || ty > plotBottom - 12) {
+        const tw = textWidth(label, 10.5) + 16;
+        const gap = 10;
+        // 바깥쪽(변화가 시작된 쪽)에 붙이는 게 기본입니다. 점이 왼쪽 끝에 있으면
+        // 축 라벨 자리(TAG_EDGE)까지 빌려서라도 왼쪽에 두고, 그래도 점을 덮을
+        // 만큼 좁으면 그때만 반대쪽으로 넘깁니다.
+        const outward = i === swingFrom ? -1 : 1;
+        const fitsOut = outward < 0
+          ? cx - gap - tw >= TAG_EDGE
+          : cx + gap + tw <= ZOOM.W - ZOOM.right;
+        const side = fitsOut ? outward : -outward;
+        ty = cy;
+        tx = cx + side * (tw / 2 + gap);
+        if (side < 0) tminX = TAG_EDGE;
+      }
+      drawTag(svg, tx, ty, label, 'dir', dirClass, tminX);
+    });
+
+    // 최대 변화폭은 구간 위쪽에 한 번 더 못박아 둡니다.
+    if (showSwing && swingTo > swingFrom && Math.abs(swing) > 0.5) {
+      drawTag(svg, (g.px(swingFrom) + g.px(swingTo)) / 2, plotTop - 14,
+        '가장 큰 변화 ' + fmtPP(swing), 'dir', dirClass);
+    }
+
+    // ④ 사건이 있었던 날(또는 촉발일)은 amber 세로선 + 태그로 짚어줍니다.
+    if (markIdx !== null) {
+      const i = markIdx - from;
+      svg.appendChild(el('line', {
+        class: 'marker-line', x1: g.px(i), x2: g.px(i), y1: plotTop, y2: plotBottom
+      }));
+      drawTag(svg, g.px(i), plotTop - 34, markText, 'amber');
+    }
+
+    // ⑤ 급락일 — 종가에서 장중 저점까지 세로로 내려긋고 양쪽 값을 붙입니다.
+    //    사건일 표시(④)보다 뒤에 그려야 amber 점선이 태그를 뚫고 지나가지 않습니다.
+    if (hasDip) {
+      const at = dipIdx - from;
+      const x = g.px(at);
+      const yClose = g.py(values[at]);
+      const yLow = g.py(market.lowPremium[dipIdx]);
+      svg.appendChild(el('line', { class: 'dip-wick', x1: x, x2: x, y1: yClose, y2: yLow }));
+      svg.appendChild(el('polygon', {
+        class: 'dip-head', points: [x, yLow, x - 5, yLow - 10, x + 5, yLow - 10].join(' ')
+      }));
+      svg.appendChild(el('circle', { class: 'dip-dot', cx: x, cy: yLow, r: 4 }));
+      drawTag(svg, x, Math.min(yLow + 20, plotBottom - 12),
+        '장중 저점 ' + fmtPct(market.lowPremium[dipIdx]), 'down');
+    }
+
+    return { values, minI, maxI };
+  }
+
+  // 환율·BTC는 확대 구간 첫날을 0%로 두고 변화율 선으로 그립니다.
+  // 절대 금액은 계열마다 단위가 달라 한 축에 겹칠 수 없기 때문입니다.
+  function renderMini(svgId, valueId, field, from, to, lineClass) {
+    const svg = document.getElementById(svgId);
+    const base = market[field][from];
+    const values = market[field].slice(from, to + 1).map(v => (v - base) / base * 100);
+    const g = drawLine(svg, values, {
+      width: 460, height: 110, margin: { left: 10, right: 10, top: 12, bottom: 12 },
+      lineClass: lineClass, includeZero: true
+    });
+    // 끝점을 찍어 "여기까지 왔다"를 눈에 띄게 합니다.
+    svg.appendChild(el('circle', {
+      class: 'mini-end-dot', cx: g.px(values.length - 1), cy: g.py(values[values.length - 1]),
+      r: 3.5, fill: lineClass === 'fx-line' ? 'var(--accent)' : 'var(--frog)'
+    }));
+    const net = values[values.length - 1];
+    document.getElementById(valueId).textContent = fmtPct(net);
+    return net;
+  }
+
+  function setStats(items) {
+    const row = document.getElementById('statRow');
+    row.replaceChildren();
+    items.forEach(function (item) {
+      const card = document.createElement('div');
+      card.className = 'stat-card';
+      card.innerHTML = '<div class="label"></div><div class="value"></div>';
+      card.querySelector('.label').textContent = item[0];
+      card.querySelector('.value').textContent = item[1];
+      row.appendChild(card);
+    });
+  }
+
+  function select(type, index) {
+    selection = { type: type, index: index };
+    renderOverview();
+
+    const kind = document.getElementById('dKind');
+    const note = document.getElementById('dNote');
+
+    if (type === 'period') {
+      const p = periods[index];
+      const s = findIndex(p.start), e = findIndex(p.end);
+      // 구간만 딱 자르면 앞뒤 맥락이 사라져서 여유를 조금 둡니다.
+      // 앞쪽 여유를 더 둡니다. 구간의 고점·저점은 시작 직후에 몰리는 일이 잦은데,
+      // 차트 왼쪽 끝에 붙어버리면 값 태그를 점 왼쪽에 놓을 자리가 안 나옵니다.
+      // (박상기 구간의 최고점이 그런 경우였습니다.)
+      const span = e - s;
+      const padL = Math.max(10, Math.round(span * 0.2));
+      const padR = Math.max(3, Math.round(span * 0.08));
+      const from = Math.max(0, s - padL);
+      const to = Math.min(market.dates.length - 1, e + padR);
+
+      // 구간 카드는 여러 주에 걸친 흐름이 본론이라, 하루 안의 급락은 넣지 않습니다
+      // (2018년 초처럼 급락일이 여럿인 구간에서는 표시가 뒤엉킵니다).
+      const z = renderZoom(from, to, p.triggerDate ? findIndex(p.triggerDate) : null, '촉발일', null);
+      const fxNet = renderMini('fxChart', 'fxValue', 'fxRate', from, to, 'fx-line');
+      const btcNet = renderMini('btcChart', 'btcValue', 'btcPrice', from, to, 'btc-line');
+
+      // 이 구간에서 김프가 가장 크게 움직인 구간 = 최저점과 최고점 사이입니다.
+      const rising = z.minI <= z.maxI;
+      const a = rising ? z.minI : z.maxI;
+      const b = rising ? z.maxI : z.minI;
+      const swing = z.values[b] - z.values[a];
+
+      document.getElementById('dTitle').textContent = p.title;
+      kind.textContent = '여러 주에 걸친 시기';
+      kind.className = 'badge badge-neutral';
+      document.getElementById('dDate').textContent =
+        p.start + ' ~ ' + p.end + (p.triggerDate ? '  ·  촉발일 ' + p.triggerDate : '');
+      const head = document.getElementById('dHeadline');
+      head.textContent = fmtPP(swing);
+      // 변화폭이라 방향 색을 씁니다(오름 빨강 / 내림 파랑).
+      head.className = 'value ' + (swing >= 0 ? 'dir-up' : 'dir-down');
+      document.getElementById('dHeadlineLabel').textContent = '최대 김프 변화폭';
+      document.getElementById('dDesc').textContent = p.desc;
+      document.getElementById('zoomTitle').textContent =
+        '이 시기의 김프 움직임 · ' + market.dates[from] + ' ~ ' + market.dates[to] +
+        ' (' + (to - from) + '일)';
+
+      setStats([
+        ['구간 최저', fmtPct(z.values[z.minI]) + ' (' + market.dates[from + z.minI].slice(5) + ')'],
+        ['구간 최고', fmtPct(z.values[z.maxI]) + ' (' + market.dates[from + z.maxI].slice(5) + ')'],
+        ['최대 변동 기간', market.dates[from + a].slice(5) + ' → ' + market.dates[from + b].slice(5)]
+      ]);
+      note.textContent =
+        '환율·BTC는 확대 구간 첫날을 0%로 두고 그린 변화율입니다. ' +
+        '같은 기간 환율은 ' + fmtPct(fxNet) + ', BTC(원화)는 ' + fmtPct(btcNet) + ' 움직였습니다.';
+
+    } else {
+      const ev = events[index];
+      const c = findIndex(ev.date);
+      const from = Math.max(0, c - 14);
+      const to = Math.min(market.dates.length - 1, c + 14);
+
+      // 사건 당일이 종가로는 멀쩡해 보이는데 장중에 크게 빠진 날이면, 그 하루를
+      // 드러내는 게 이 카드의 본론입니다.
+      const dipGap = lowGapAt(c);
+      const dipIdx = dipGap !== null && dipGap > LOW_GAP ? c : null;
+      renderZoom(from, to, c, ev.date.slice(5), dipIdx);
+      const fxNet = renderMini('fxChart', 'fxValue', 'fxRate', from, to, 'fx-line');
+      const btcNet = renderMini('btcChart', 'btcValue', 'btcPrice', from, to, 'btc-line');
+
+      const current = market.premium[c];
+      const diff = n => (c >= n ? current - market.premium[c - n] : null);
+
+      document.getElementById('dTitle').textContent = ev.title;
+      kind.textContent = ev.milestone ? '⚡ 환율까지 함께 흔든 사건' : '하루 만에 끝난 사건';
+      kind.className = 'badge ' + (ev.milestone ? 'badge-amber' : 'badge-neutral');
+      document.getElementById('dDate').textContent = ev.date;
+      const head = document.getElementById('dHeadline');
+      head.textContent = fmtPct(current);
+      // 당일 김프는 변화가 아니라 수준값이라 방향 색을 쓰지 않습니다.
+      head.className = 'value';
+      document.getElementById('dHeadlineLabel').textContent = '당일 김프';
+
+      // 종가만 크게 띄우면 "아무 일 없던 날"로 읽히므로 장중 저점을 나란히 둡니다.
+      const sub = document.getElementById('dHeadlineSub');
+      sub.hidden = dipIdx === null;
+      if (dipIdx !== null) {
+        sub.innerHTML = '<span class="cap">장중 저점 </span>' + fmtPct(market.lowPremium[c]);
+      }
+
+      document.getElementById('dDesc').textContent = ev.desc;
+      document.getElementById('zoomTitle').textContent =
+        '사건 전후 김프 움직임 · ' + market.dates[from] + ' ~ ' + market.dates[to] + ' (전후 약 2주)';
+
+      // 급락일에는 "1·3·7일 전 대비"가 전부 0.1%p라서 오히려 오해를 키웁니다.
+      if (dipIdx !== null) {
+        setStats([
+          ['당일 종가 김프', fmtPct(current)],
+          ['당일 장중 저점', fmtPct(market.lowPremium[c])],
+          ['종가↔저점 차이', fmtPP(-dipGap)]
+        ]);
+      } else {
+        setStats([
+          ['1일 전 대비', diff(1) === null ? '—' : fmtPP(diff(1))],
+          ['3일 전 대비', diff(3) === null ? '—' : fmtPP(diff(3))],
+          ['7일 전 대비', diff(7) === null ? '—' : fmtPP(diff(7))]
+        ]);
+      }
+
+      let text = '환율·BTC는 확대 구간 첫날을 0%로 두고 그린 변화율입니다. ' +
+        '이 2주 동안 환율은 ' + fmtPct(fxNet) + ', BTC(원화)는 ' + fmtPct(btcNet) + ' 움직였습니다.';
+
+      // 종가만으로는 하루 안의 급락·되돌림이 가려지므로,
+      // 장중 저가로 추정한 당일 저점이 뚜렷이 낮을 때만 덧붙입니다.
+      // 저가(btc_krw_low)가 없는 날도 있어(예: 오늘 갱신 전) 항상 값을 확인합니다.
+      if (dipIdx !== null) {
+        text += ' BTC 장중 저가 기준으로 보면 이날 김프가 한때 ' + fmtPct(market.lowPremium[c]) +
+          '까지 내려갔던 것으로 추정됩니다(환율·해외 시세는 종가 기준이라 근사치입니다).';
+      }
+      note.textContent = text;
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // 데이터 로드
+  // ---------------------------------------------------------------------
+  chartLoading.hidden = false;
+  chartError.hidden = true;
+  chartEmpty.hidden = true;
+
+  getBtcPremiumData()
+    .then(function (data) {
+      const premium = [];
+      const year = [];
+      const records = [];
+
+      data.dates.forEach(function (date, i) {
+        const converted = data.foreignUsd[i] * data.fxRate[i];
+        const value = ((data.btcPrice[i] - converted) / converted) * 100;
+        const decimalYear = dateToDecimalYear(date);
+
+        premium.push(value);
+        year.push(decimalYear);
+        if (Number.isFinite(value)) {
+          records.push({ date: date, year: decimalYear, premium: value });
+        }
+      });
+
+      if (records.length === 0) throw new Error('no-overlap:KRW-BTC');
+
+      market = {
+        dates: data.dates,
+        year: year,
+        premium: premium,
+        btcPrice: data.btcPrice,
+        btcPriceLow: data.btcPriceLow,
+        // 장중 저가로 계산한 김프. 저가가 없는 날은 종가 김프를 그대로 둡니다.
+        lowPremium: data.dates.map(function (d, i) {
+          const low = data.btcPriceLow && data.btcPriceLow[i];
+          if (low == null) return premium[i];
+          const conv = data.foreignUsd[i] * data.fxRate[i];
+          return (low - conv) / conv * 100;
+        }),
+        foreignUsd: data.foreignUsd,
+        fxRate: data.fxRate,
+        indexByDate: new Map(data.dates.map((d, i) => [d, i])),
+        weekly: buildWeekly(records)
+      };
+
+      // 2017년처럼 거래소 간 가격 차가 컸던 시기에는 어느 해외 시세를 썼느냐에 따라
+      // 김프 값이 달라지므로, 데이터에 적힌 출처를 그대로 밝혀둡니다.
+      if (data.foreignSource) {
+        document.getElementById('sourceNote').textContent =
+          '해외 시세 출처는 ' + data.foreignSource + '입니다.';
+      }
+
+      chartLoading.hidden = true;
+      overviewBlock.hidden = false;
+      detail.hidden = false;
+
+      renderOverview();
+      // 첫 화면은 가장 큰 사건(2017년 말 폭등)을 펼쳐 사용법을 함께 보여줍니다.
+      select('period', 0);
+    })
+    .catch(function (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const hasNoData = message.startsWith('no-upbit-data:') || message.startsWith('no-overlap:');
+
+      chartLoading.hidden = true;
+      chartError.hidden = hasNoData;
+      chartEmpty.hidden = !hasNoData;
+      overviewBlock.hidden = true;
+      detail.hidden = true;
+
+      if (!hasNoData) {
+        chartErrorMessage.textContent = '네트워크 상태를 확인한 뒤 페이지를 새로고침해 주세요.';
+      }
+      console.error('BTC API 오류:', error);
+    });
 })();
 </script>
 

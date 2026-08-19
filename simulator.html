@@ -141,6 +141,16 @@
   .pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); align-items: start; }
   @media (max-width: 620px) { .pick-grid { grid-template-columns: 1fr; } }
 
+  /* 달력 하나. min-width:0 이라야 프리셋 줄(nowrap)이 칸을 밀어 넓히지 않고 제 안에서 스크롤된다. */
+  .cal-single { max-width: 420px; margin: 0 auto; min-width: 0; }
+
+  .cal-status {
+    display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: var(--sp-2);
+    padding-bottom: var(--sp-2); margin-bottom: var(--sp-2);
+  }
+  .cal-status-line { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 800; color: var(--text); }
+  .cal-actions { display: flex; justify-content: center; margin-top: var(--sp-3); }
+
   .cal-picked-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
   .cal-picked-label { font-size: 0.76rem; color: var(--mut); }
   /* 오늘로 이동 — 있는지도 모르게 작고 옅게, 라벨 옆에 붙여둔다 */
@@ -183,9 +193,30 @@
   .cal-cell.nodata { background: transparent; border-style: dashed; border-color: var(--border2); color: var(--dim); cursor: not-allowed; }
   .cal-cell:hover:not(.empty):not(.future):not(.nodata) { border-color: var(--frog); }
   .cal-cell.selected { background: var(--frog); border-color: var(--frog); color: #fff; font-weight: 800; }
+  /* 매수일과 매도일 사이 — 범위에 든다는 것만 알리면 되므로 옅게 */
+  .cal-cell.in-range { background: var(--frog-bg); border-color: var(--frog-bg); color: var(--frog); font-weight: 700; }
+  .cal-cell.in-range:hover { border-color: var(--frog); }
+  /* 양 끝은 어느 쪽인지 읽히게 안쪽 모서리만 각지게 둔다 */
+  .cal-cell.range-start { border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
+  .cal-cell.range-end { border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
+  .cal-cell.range-start.range-end { border-radius: 5px; }
 
-  /* 항상 3개가 한 줄 — 줄바꿈도, 글자 줄임도 하지 않는다. 폭이 모자라면 줄 자체가 가로 스크롤된다 */
-  .cal-presets { display: flex; flex-wrap: nowrap; gap: var(--sp-2); margin-top: var(--sp-3); overflow-x: auto; }
+  .cal-hold {
+    display: inline-block; margin-left: var(--sp-2); padding: 1px var(--sp-2); border-radius: var(--r-pill);
+    background: var(--frog-bg); color: var(--frog); font-family: var(--font-mono); font-size: 0.68rem; font-weight: 800;
+  }
+  .cal-hint { margin: 0 0 var(--sp-3); font-size: 0.72rem; color: var(--dim); line-height: 1.6; text-align: center; }
+  .cal-hint.awaiting { color: var(--frog); font-weight: 700; }
+
+  .pick-inputs {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-5);
+    margin-top: var(--sp-6); padding-top: var(--sp-5); border-top: 1px solid var(--border);
+  }
+  @media (max-width: 620px) { .pick-inputs { grid-template-columns: 1fr; gap: var(--sp-4); } }
+
+  /* 글자는 줄이지 않는다. 폭이 모자라면 가로로 밀어내 감추는 대신 다음 줄로 넘긴다
+     — 좁은 화면에서도 프리셋 세 개가 모두 보이게. */
+  .cal-presets { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
   .cal-preset {
     flex: none;
     background: var(--panel2); border: 1px solid var(--border2); border-radius: var(--r-pill);
@@ -235,9 +266,66 @@
   .stat-row .value { font-size: 1rem; }
   .stat-row .label { font-size: 0.68rem; }
 
-  /* 결과 상단 고정 안내 (투자조언 아님 + 계산 가정) */
-  .calc-disclaim { margin-bottom: var(--sp-3); }
-  .calc-assume { font-size: 0.78rem; color: var(--mut); line-height: 1.65; margin-bottom: var(--sp-5); }
+  /* 면책 문구는 카드 맨 아래로 내려가 회색 한 줄로만 남는다.
+     법적 고지는 빼놓을 수 없지만, 결과를 보러 온 사람의 눈을 먼저 가로막을 이유는 없다. */
+  .calc-disclaim {
+    margin: var(--sp-5) 0 0; font-size: 0.72rem; color: var(--dim);
+    line-height: 1.65; text-align: center; word-break: keep-all;
+  }
+  .calc-disclaim b { font-weight: 700; color: var(--mut); }
+
+  /* ── 섹션 소제목 (dashboard.html 의 .sub-label 과 같은 모양) ── */
+  .sub-label {
+    font-size: 0.78rem; font-weight: 700; color: var(--mut); margin-bottom: var(--sp-2);
+    display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+  }
+
+  /* ── 개구리 도움말 ──
+     dashboard.html 에 로컬로 있는 패턴을 그대로 옮겨왔다(shared 로 빼지 않는다).
+     설명을 늘 펼쳐두는 대신 개구리를 두고, 누르면 입을 벌리며 말풍선으로 설명한다. */
+  .frog-slot { position: relative; display: inline-flex; vertical-align: middle; }
+  .frog-help {
+    width: 24px; height: 24px; padding: 0; border: none; background: none;
+    color: var(--frog); cursor: pointer; flex: none; display: block;
+    animation: frog-bob 3.2s ease-in-out infinite;
+  }
+  .frog-help svg { width: 100%; height: 100%; display: block; }
+  .frog-help:hover { color: var(--frog-light); }
+  .frog-help:focus-visible { outline: 2px solid var(--frog); outline-offset: 2px; border-radius: var(--r-sm); }
+  .frog-help[aria-expanded="true"] { animation: none; color: var(--frog); }
+
+  @keyframes frog-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3.5px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frog-help { animation: none; }
+  }
+
+  /* 말풍선은 아래 내용 위로 겹쳐서 뜬다 (레이아웃이 밀리지 않도록) */
+  .frog-bubble {
+    position: absolute; top: calc(100% + 10px); left: -10px; z-index: 60;
+    width: 300px; max-width: min(300px, 76vw);
+    background: var(--panel); border: 1px solid var(--border2); border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg); padding: var(--sp-4) var(--sp-5);
+    font-size: 0.82rem; font-weight: 400; color: var(--mut); line-height: 1.75; text-align: left;
+    text-transform: none; letter-spacing: 0;
+  }
+  .frog-bubble::before {
+    content: ''; position: absolute; top: -7px; left: var(--arrow-x, 16px); width: 12px; height: 12px;
+    background: var(--panel); border-left: 1px solid var(--border2); border-top: 1px solid var(--border2);
+    transform: rotate(45deg);
+  }
+  .frog-bubble b { font-weight: 600; color: var(--text); }
+  .frog-bubble .frog-bubble-close {
+    display: block; margin-top: var(--sp-3); padding: 0; border: none; background: none;
+    font-family: var(--font-body); font-size: 0.76rem; color: var(--dim); cursor: pointer;
+  }
+  .frog-bubble .frog-bubble-close:hover { color: var(--text); }
+  @media (max-width: 560px) {
+    .frog-bubble { left: auto; right: -10px; }
+    .frog-bubble::before { left: var(--arrow-x, calc(100% - 28px)); }
+  }
 
   /* 데이터 로딩 / 실패 / 없음 상태 */
   .data-state { margin-top: var(--sp-8); }
@@ -267,11 +355,42 @@
   .breakeven-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--dim); font-family: var(--font-mono); }
 
   /* ⑥ 결과 차트 — SVG 색은 표현속성 대신 클래스로 준다(표현속성은 var() 지원이 들쭉날쭉) */
-  .decomp-svg { width: 100%; height: 200px; display: block; }
+  .decomp-svg { width: 100%; height: 200px; display: block; touch-action: pan-y; }
+  /* display 를 지정한 뒤라 UA 의 [hidden]{display:none} 이 밀린다. 명시적으로 되돌린다. */
+  .decomp-svg[hidden] { display: none; }
   .decomp-grid { stroke: var(--border); }
-  .decomp-fill { fill: var(--accent); fill-opacity: 0.14; }
+  .decomp-zero { stroke: var(--mut); stroke-width: 1.4; stroke-opacity: 0.85; }
   .decomp-line-premium { fill: none; stroke: var(--frog); stroke-width: 2; }
+  /* 파선 여부는 구간 길이에 따라 달라져 drawDecompChart 가 stroke-dasharray 를 직접 붙인다.
+     여기서 정해두면 CSS 가 표현속성을 이겨버려 실선으로 못 돌아온다. */
   .decomp-line-real { fill: none; stroke: var(--accent); stroke-width: 2.2; }
+  .decomp-ytick, .decomp-xtick { fill: var(--dim); font-family: var(--font-mono); font-size: 10px; }
+  .decomp-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 1.5; }
+  /* 매수일 = 매도일이면 점이 하나뿐이라 polyline 이 아무것도 그리지 않는다.
+     두 계열이 정확히 같은 자리라 초록 위에 빨강을 겹쳐 찍어 둘 다 보이게 한다. */
+  .decomp-point-premium { fill: var(--frog); }
+  .decomp-point-real { fill: var(--accent); }
+  .decomp-dot-label { fill: var(--mut); font-family: var(--font-mono); font-size: 9.5px; }
+  .decomp-arrow { stroke: var(--mut); stroke-width: 1.2; }
+  .decomp-arrow-head { fill: var(--mut); }
+  .decomp-arrow-label { fill: var(--text); font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
+
+  /* 호버 — 세로 가이드와 확대 마커. 툴팁은 SVG 밖 HTML 이라 줄바꿈·그림자를 그냥 쓸 수 있다. */
+  .decomp-wrap { position: relative; }
+  .decomp-hit { fill: transparent; }
+  .decomp-hover-line { stroke: var(--mut); stroke-width: 1; stroke-opacity: 0.45; stroke-dasharray: 3 3; }
+  .decomp-hover-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
+  .decomp-tip {
+    position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none;
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-sm);
+    box-shadow: var(--shadow-lg); padding: var(--sp-2) var(--sp-3);
+    font-size: 0.72rem; line-height: 1.5; white-space: nowrap;
+  }
+  .decomp-tip[hidden] { display: none; }
+  .decomp-tip .tip-date { font-family: var(--font-mono); font-weight: 800; color: var(--text); margin-bottom: 3px; }
+  .decomp-tip .tip-row { display: flex; justify-content: space-between; gap: var(--sp-4); color: var(--mut); }
+  .decomp-tip .tip-row b { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+  .decomp-tip .tip-row.a b { color: var(--accent); }
   .decomp-legend-row { display: flex; gap: var(--sp-4); font-size: 0.76rem; color: var(--mut); margin-bottom: var(--sp-3); flex-wrap: wrap; }
   .legend-line { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
   /* .caption 은 shared.css(0.76rem) 를 그대로 쓴다. 여기서 크기를 덮어쓰지 않는다. */
@@ -298,7 +417,7 @@
   <!-- ① 헤더 -->
   <div class="header">
     <div class="eyebrow mono">시뮬레이터</div>
-    <h1>당신이 그때 샀다면, 지금은 어떨까</h1>
+    <h1>그때 사서 그때 팔았다면, 얼마가 남았을까</h1>
     <p>먼저 김프를 제대로 이해했는지 간단히 확인해요. <br> 그 다음 아래 달력에서 과거 시점을 골라 직접 계산해 볼 수 있습니다.</p>
   </div>
 
@@ -336,34 +455,38 @@
 
   <!-- ③ 매수 시점 선택 + 투입 정보 (퀴즈 통과 전 잠김) -->
   <div class="section-block sim-lock" id="pickSection" hidden>
-    <div class="section-label">③ 매수 시점 선택</div>
+    <div class="section-label">③ 매수·매도 시점 선택</div>
     <div class="card">
-      <div class="pick-grid">
-        <!-- 왼쪽: 달력 -->
-        <div>
-          <div class="cal-picked-row">
-            <span class="cal-picked-label">선택한 날짜 <button class="cal-today-btn" id="calToday" type="button" title="오늘로 이동">오늘</button></span>
-            <span class="cal-picked-value" id="pickedDate">-</span>
-          </div>
-          <div class="cal-nav">
-            <button class="cal-nav-btn" id="calPrev" aria-label="이전 달">←</button>
-            <div class="cal-nav-center">
-              <select class="cal-year-select" id="calYearSelect" aria-label="연도 선택"></select>
-              <span class="cal-nav-label" id="calMonthLabel">-</span>
-            </div>
-            <button class="cal-nav-btn" id="calNext" aria-label="다음 달">→</button>
-          </div>
-          <div class="cal-day-labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
-          <div id="calGrid"></div>
-          <div class="cal-presets" id="calPresets"></div>
+      <!-- 달력 하나. 첫 클릭이 매수일, 두 번째 클릭이 매도일. -->
+      <div class="cal-single">
+        <!-- 선택 상태는 어느 달을 보고 있든 항상 여기 남는다 -->
+        <div class="cal-status" id="calStatus" role="status" aria-live="polite">
+          <span class="cal-status-line" id="calStatusLine">-</span>
+          <span class="cal-hold" id="holdDays">-</span>
         </div>
+        <p class="cal-hint" id="calHint">-</p>
 
-        <!-- 오른쪽: 투입 정보 -->
-        <div>
-          <div class="calc-amt-field" style="margin-bottom: var(--sp-4);"><label>투입 금액 (원)</label><input type="number" id="calcAmt" value="1000000" step="100000" min="0"></div>
-          <div class="calc-fee-field" style="margin-bottom: var(--sp-3);"><label>매수 수수료 <b><span id="calcBuyV">0.10</span>%</b></label><input type="range" id="calcBuy" min="0" max="1" step="0.05" value="0.1"></div>
-          <div class="calc-fee-field" style="margin-bottom: var(--sp-3);"><label>매도 수수료 <b><span id="calcSellV">0.10</span>%</b></label><input type="range" id="calcSell" min="0" max="1" step="0.05" value="0.1"></div>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" id="calPrev" aria-label="이전 달">←</button>
+          <div class="cal-nav-center">
+            <select class="cal-year-select" id="calYearSelect" aria-label="연도 선택"></select>
+            <span class="cal-nav-label" id="calMonthLabel">-</span>
+          </div>
+          <button class="cal-nav-btn" id="calNext" aria-label="다음 달">→</button>
         </div>
+        <div class="cal-day-labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+        <div id="calGrid"></div>
+        <div class="cal-actions">
+          <button class="cal-today-btn" id="calToday" type="button" title="가장 최근 매수 가능일로 이동">최근 시점</button>
+        </div>
+        <div class="cal-presets" id="calPresets"></div>
+      </div>
+
+      <!-- 투입 정보는 달력 아래 한 줄로 -->
+      <div class="pick-inputs">
+        <div class="calc-amt-field"><label>투입 금액 (원)</label><input type="number" id="calcAmt" value="1000000" step="100000" min="0"></div>
+        <div class="calc-fee-field"><label>매수 수수료 <b><span id="calcBuyV">0.10</span>%</b></label><input type="range" id="calcBuy" min="0" max="1" step="0.05" value="0.1"></div>
+        <div class="calc-fee-field"><label>매도 수수료 <b><span id="calcSellV">0.10</span>%</b></label><input type="range" id="calcSell" min="0" max="1" step="0.05" value="0.1"></div>
       </div>
     </div>
   </div>
@@ -372,13 +495,12 @@
   <div class="section-block sim-lock" id="resultSection" hidden>
     <div class="section-label">④ 결과</div>
     <div class="card">
-      <p class="disclaim calc-disclaim">이 결과는 특정 시점을 가정해 계산한 것이며, <b>투자 조언이 아닙니다.</b></p>
-      <p class="calc-assume">이 수익률은 국내에서 사서 지금까지 들고 있었다고 가정하며, BTC의 달러 가격 변동은 상쇄된다고 본 값입니다. BTC 자체의 등락은 포함되지 않습니다.</p>
+      <div class="sub-label">이 수치가 뜻하는 것<span class="frog-slot" data-help="basis"></span></div>
 
       <div class="stat-row">
         <div class="stat-card"><div class="label">매수 시점 프리미엄</div><div class="value" id="calcPremAt">-</div></div>
         <div class="stat-card"><div class="label">매수 시점 환율</div><div class="value" id="calcFxAt">-</div></div>
-        <div class="stat-card"><div class="label">오늘 환율</div><div class="value" id="calcFxNow">-</div></div>
+        <div class="stat-card"><div class="label">매도 시점 환율</div><div class="value" id="calcFxSell">-</div></div>
       </div>
 
       <div class="calc-hero">
@@ -395,6 +517,8 @@
         <p class="calc-footnote">Upbit·Binance 시세와 한국은행 매매기준율로 계산한 옥현민(2023)은 2017년 11월~2022년 9월 일평균 2.20%, 최대 59.40%를 보고했습니다.
           어느 거래소와 어느 환율을 쓰느냐에 따라 수치는 조금씩 달라집니다.</p>
       </details>
+
+      <p class="calc-disclaim">이 결과는 특정 시점을 가정해 계산한 것이며, <b>투자 조언이나 권유가 아닙니다.</b></p>
     </div>
   </div>
 
@@ -404,7 +528,7 @@
     <div class="card">
       <p class="section-intro">이 사이트가 보여주는 수치는 <b>과거 데이터를 가정한 참고용 계산 결과</b>이며, 예측이나 투자 권유가 아닙니다.
         게다가 위 계산은 <b>사고파는 순간이 동시에 이뤄지고 그 사이에 아무 마찰도 없다</b>고 본 값입니다.
-        실제로는 아래 다섯 가지가 결과를 갉아먹습니다. 하나씩 읽고 눌러서 확인해보세요.</p>
+        실제로는 아래 여섯 가지가 결과를 갉아먹습니다. 하나씩 읽고 눌러서 확인해보세요.</p>
       <div class="risk-list" id="riskList"></div>
       <p class="risk-progress" id="riskProgress" role="status" aria-live="polite">-</p>
 
@@ -415,17 +539,20 @@
 
   <!-- ⑥ 결과 차트 (잠김) -->
   <div class="section-block sim-lock" id="chartSection" hidden>
-    <div class="section-label">⑥ 그 시점부터 지금까지</div>
+    <div class="section-label">⑥ 그때 사서 그때 팔았다면</div>
     <div class="card">
       <p class="section-intro"><b class="frog-text">초록색 선</b>은 프리미엄만으로 쌓였을 누적 수익, <b class="accent-text">빨간색 선</b>은 환율까지 반영한 실제 누적 수익입니다.</p>
       <div class="decomp-legend-row">
         <span><span class="legend-line" style="background:var(--frog);"></span>프리미엄 기준 누적수익</span>
         <span><span class="legend-line" style="background:var(--accent);"></span>환율 반영 실질 누적수익</span>
       </div>
-      <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200" preserveAspectRatio="none"></svg>
-      <div class="caption">두 선 사이 옅은 음영이 그 시점부터 지금까지 환율이 누적으로 갉아먹거나 더해준 몫입니다.</div>
+      <div class="decomp-wrap">
+        <svg class="decomp-svg" id="decompChart" viewBox="0 0 760 200"></svg>
+        <div class="decomp-tip" id="decompTip" hidden aria-hidden="true"></div>
+      </div>
+      <div class="caption" id="decompCaption">오른쪽 끝 화살표가 매수 시점부터 매도 시점까지 환율이 누적으로 갉아먹거나 더해준 몫입니다.<span class="frog-slot" data-help="chart"></span></div>
 
-      <div class="result-summary">
+      <div class="result-summary" id="resultSummary">
         <div class="headline" id="resultHeadline">-</div>
         <div class="sub" id="resultSub">-</div>
       </div>
@@ -627,7 +754,7 @@ function updateLockNotice(){
     box.classList.add('unlocked');
     icon.src = 'assets/face-happy.svg';
     title.textContent = '자, 이제 진짜로 계산해볼 시간이에요!';
-    text.textContent = '아래 달력에서 날짜 하나만 골라보세요. 그날 샀다고 치고 지금까지 들고 있었다면 실제로 얼마가 남았을지 계산해드릴게요. 프리미엄이 뭔지 환율이 어땠는지 몰라도 괜찮아요! 숫자는 저희가 다 채워드립니다, 개굴!';
+    text.textContent = '아래 달력에서 살 날과 팔 날을 골라보세요. 그때 사서 그때 팔았다면 실제로 얼마가 남았을지 계산해드릴게요. 프리미엄이 뭔지 환율이 어땠는지 몰라도 괜찮아요! 숫자는 저희가 다 채워드립니다, 개굴!';
     return;
   }
   box.classList.remove('unlocked');
@@ -654,7 +781,7 @@ function updateLockNotice(){
   if (!quizPassed) {
     title.textContent = '아래 계산기는 아직 잠겨 있어요';
     // 잠기는 섹션 넷(③~⑥)을 전부 부른다. 하나라도 빠지면 안내가 실제와 어긋난다.
-    text.textContent = `위 퀴즈 ${QUIZ.length}문항을 모두 맞히면 매수 시점 달력·결과·리스크 체크리스트·누적 수익 차트가 열립니다. (${n}/${QUIZ.length} 완료)`;
+    text.textContent = `위 퀴즈 ${QUIZ.length}문항을 모두 맞히면 매수·매도 시점 달력·결과·리스크 체크리스트·누적 수익 차트가 열립니다. (${n}/${QUIZ.length} 완료)`;
   } else {
     title.textContent = '퀴즈 통과! 데이터를 기다리는 중이에요';
     text.textContent = 'BTC·환율 데이터를 다 받으면 바로 열립니다.';
@@ -699,6 +826,10 @@ const RISKS = [
   {
     t: '세금',
     d: '계산기 숫자는 세전입니다. 가상자산 소득의 과세 여부·시기·세율은 제도 변화에 따라 달라집니다. 해외 거래소를 이용하는 경우에는 요건에 따라 해외금융계좌 신고 대상이 될 수도 있습니다. 실제로 손에 남는 금액은 이보다 적을 수 있습니다.'
+  },
+  {
+    t: '김프는 몇 시간 만에 좁혀지기도 합니다',
+    d: '벌어진 프리미엄이 며칠씩 유지된다는 보장이 없습니다. 내가 그 속도로 대응할 수 있는지, 밤사이에 좁혀졌을 때 무엇을 할 수 있는지 미리 생각해두어야 합니다.'
   },
 ];
 const riskChecked = new Array(RISKS.length).fill(false);
@@ -749,10 +880,16 @@ function renderRiskProgress(){
   else el.textContent = `${total}가지 모두 확인했습니다. 위 계산기 숫자는 이 마찰들을 빼기 전 값입니다.`;
 }
 
-// ③ 달력
+// ③ 달력 — 하나로 매수일·매도일을 순서대로 고른다(예약 사이트와 같은 방식).
 // 보고 있는 달을 절대값(연/월)으로 들고 있는다. 선택 가능 범위는 데이터의 첫 날 ~ 마지막 날.
 let calYear = 0, calMonth = 0;
-let selectedIdx = -1; // 데이터 도착 후 결정
+
+let selectedIdx = -1;   // 매수 시점. 데이터 도착 후 결정
+let sellIdx = -1;       // 매도 시점
+// 다음 클릭이 매도일인지 여부. true 면 매수일만 확정된 중간 상태다.
+let awaitingSell = false;
+
+const HOLD_DEFAULT_DAYS = 7;   // 매수일만 고른 중간 상태에서 매도일을 임시로 놓는 간격
 
 // 데이터 시작/끝이 속한 달. 이 범위 밖으로는 넘어가지 않는다.
 function firstMonthNo(){ const d = parseYmd(DATES[0]); return d.getFullYear() * 12 + d.getMonth(); }
@@ -765,6 +902,40 @@ function goToMonthNo(no){
   calMonth = clamped % 12;
 }
 
+// 그 인덱스가 있는 달을 펼쳐 보여준다
+function focusMonth(idx){
+  const d = dateFromIdx(idx);
+  calYear = d.getFullYear();
+  calMonth = d.getMonth();
+}
+
+// 매수일 + 7일. 데이터가 그 날 없으면 그 이전의 가장 가까운 날, 범위를 넘으면 마지막 날로 클램프한다.
+function defaultSellIdx(buyIdx){
+  const want = dateFromIdx(buyIdx);
+  want.setDate(want.getDate() + HOLD_DEFAULT_DAYS);
+  if (ymd(want) >= DATES[DATES.length - 1]) return DATES.length - 1;
+  for (let off = 0; off <= HOLD_DEFAULT_DAYS; off++) {
+    const d = new Date(want);
+    d.setDate(d.getDate() - off);
+    const i = idxFromDate(d);
+    if (i >= buyIdx) return i;
+  }
+  return Math.min(buyIdx + 1, DATES.length - 1);
+}
+
+// 보유 일수는 인덱스 차이가 아니라 실제 날짜 차이로 센다(데이터에 빠진 날이 있어도 맞게).
+function holdDays(){
+  return Math.round((dateFromIdx(sellIdx) - dateFromIdx(selectedIdx)) / 86400000);
+}
+
+// 매수일을 새로 잡는다. 매도일은 곧바로 고를 예정이지만, 그 사이에도 차트와 결과가
+// 성립해야 하므로 매수 + 7일을 임시로 채워둔다(빈 상태로 두면 계산이 무너진다).
+function setBuyIdx(idx){
+  selectedIdx = idx;
+  sellIdx = defaultSellIdx(selectedIdx);
+  awaitingSell = true;
+}
+
 function renderYearSelect(){
   const sel = document.getElementById('calYearSelect');
   const from = parseYmd(DATES[0]).getFullYear(), to = TODAY.getFullYear();
@@ -772,6 +943,19 @@ function renderYearSelect(){
   for (let y = from; y <= to; y++) html += `<option value="${y}">${y}년</option>`;
   sel.innerHTML = html;
   sel.value = String(calYear);
+}
+
+// 어느 달을 보고 있든 선택 상태는 여기 남는다. 매수일과 매도일이 다른 달일 때 특히 필요하다.
+function renderCalStatus(){
+  document.getElementById('calStatusLine').textContent =
+    `${dateLabel(dateFromIdx(selectedIdx))} 매수 → ${dateLabel(dateFromIdx(sellIdx))} 매도`;
+  document.getElementById('holdDays').textContent = `${holdDays()}일 보유`;
+
+  const hint = document.getElementById('calHint');
+  hint.classList.toggle('awaiting', awaitingSell);
+  hint.textContent = awaitingSell
+    ? '이제 매도일을 골라주세요. (매수일보다 앞을 고르면 그 날이 새 매수일이 됩니다)'
+    : '날짜를 다시 누르면 매수일부터 새로 고릅니다.';
 }
 
 function renderCalendar(){
@@ -796,7 +980,7 @@ function renderCalendar(){
     html += '<div class="cal-week">';
     week.forEach(d => {
       if (!d) { html += '<div class="cal-cell empty"></div>'; return; }
-      // 고를 수 없는 날은 네 가지다. 왜 못 고르는지가 서로 다르므로 표시도 나눈다.
+      // 고를 수 없는 날은 저마다 이유가 다르다. 이유별로 표시를 나눈다.
       const idx = idxFromDate(d);
       if (d > TODAY) {
         html += `<div class="cal-cell future">${d.getDate()}</div>`;
@@ -810,26 +994,39 @@ function renderCalendar(){
         html += `<div class="cal-cell nodata" title="데이터 없음">${d.getDate()}</div>`;
         return;
       }
-      if (idx >= DATES.length - 1) {   // 마지막 인덱스 = 오늘. 매도 시점이라 매수로는 못 고른다
-        html += `<div class="cal-cell future" title="오늘은 매수 시점으로 고를 수 없습니다">${d.getDate()}</div>`;
-        return;
-      }
-      const sel = idx === selectedIdx ? ' selected' : '';
-      html += `<div class="cal-cell${sel}" data-idx="${idx}">${d.getDate()}</div>`;
+      // 인덱스로 비교하므로 매수일·매도일이 다른 달에 걸쳐 있어도 범위가 그대로 이어진다.
+      let cls = '';
+      if (idx === selectedIdx) cls += ' selected range-start';
+      if (idx === sellIdx) cls += ' selected range-end';
+      if (idx > selectedIdx && idx < sellIdx) cls += ' in-range';
+      html += `<div class="cal-cell${cls}" data-idx="${idx}">${d.getDate()}</div>`;
     });
     html += '</div>';
   });
   document.getElementById('calGrid').innerHTML = html;
 
-  document.querySelectorAll('.cal-cell[data-idx]').forEach(cell => {
-    cell.addEventListener('click', () => {
-      selectedIdx = parseInt(cell.dataset.idx);
-      renderCalendar();
-      renderAll();
-    });
+  document.querySelectorAll('#calGrid .cal-cell[data-idx]').forEach(cell => {
+    cell.addEventListener('click', () => pickDate(parseInt(cell.dataset.idx)));
   });
 
+  renderCalStatus();
   renderPresets();
+}
+
+// 예약 사이트와 같은 규칙:
+//   대기 중이 아니면  → 새 매수일 (매도일은 임시로 +7일)
+//   대기 중이고 뒤쪽  → 매도일 확정
+//   대기 중이고 앞쪽  → 그 날을 새 매수일로 잡고 다시 대기
+function pickDate(idx){
+  if (!awaitingSell || idx < selectedIdx) {
+    // 마지막 날은 매수로 고를 수 없다. 사서 팔 날이 없으면 시뮬레이션이 성립하지 않는다.
+    setBuyIdx(Math.min(idx, DATES.length - 2));
+  } else {
+    sellIdx = idx;
+    awaitingSell = false;
+  }
+  renderCalendar();
+  renderAll();
 }
 
 // 눈에 띄는 시점 바로가기. 김프 수치는 실제 데이터에서 읽어 붙이므로 값이 굳지 않는다.
@@ -864,30 +1061,34 @@ function renderPresets(){
 
   box.querySelectorAll('.cal-preset').forEach(btn => {
     btn.addEventListener('click', () => {
-      selectedIdx = parseInt(btn.dataset.idx);
-      const d = dateFromIdx(selectedIdx);
-      calYear = d.getFullYear();
-      calMonth = d.getMonth();
+      // 프리셋은 매수·매도를 한 번에 정한다. 눌러놓고 매도일을 또 고르게 하지 않는다.
+      setBuyIdx(parseInt(btn.dataset.idx));
+      awaitingSell = false;
+      focusMonth(selectedIdx);
       renderCalendar();
       renderAll();
     });
   });
 }
 
-document.getElementById('calPrev').addEventListener('click', () => { if (!dataReady) return; goToMonthNo(curMonthNo() - 1); renderCalendar(); });
-document.getElementById('calNext').addEventListener('click', () => { if (!dataReady) return; goToMonthNo(curMonthNo() + 1); renderCalendar(); });
+document.getElementById('calPrev').addEventListener('click', () => {
+  if (!dataReady) return; goToMonthNo(curMonthNo() - 1); renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', () => {
+  if (!dataReady) return; goToMonthNo(curMonthNo() + 1); renderCalendar();
+});
 document.getElementById('calYearSelect').addEventListener('change', (e) => {
   if (!dataReady) return;
   goToMonthNo(parseInt(e.target.value) * 12 + calMonth);
   renderCalendar();
 });
-// 오늘로 이동 — 고를 수 있는 가장 최근 날(마지막 인덱스 = 오늘은 매도 시점이라 그 하나 앞)로 점프한다
+
+// 고를 수 있는 가장 최근 매수일(마지막 인덱스 하나 앞)로 점프한다
 document.getElementById('calToday').addEventListener('click', () => {
   if (!dataReady) return;
-  selectedIdx = Math.max(0, DATES.length - 2);
-  const picked = dateFromIdx(selectedIdx);
-  calYear = picked.getFullYear();
-  calMonth = picked.getMonth();
+  setBuyIdx(Math.max(0, DATES.length - 2));
+  awaitingSell = false;
+  focusMonth(selectedIdx);
   renderCalendar();
   renderAll();
 });
@@ -896,112 +1097,384 @@ document.getElementById('calToday').addEventListener('click', () => {
 function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
 function commas(n){ return Math.round(n).toLocaleString('ko-KR'); }
 
-// 매수 시점(buyIdx)부터 오늘까지의 누적수익(%)
+// 매수 시점(buyIdx)부터 매도 시점(sellIdx)까지의 누적수익(%)
 //   프리미엄만 : 김프 배수         (1 + p[t]) / (1 + p[buy])
 //   환율까지   : 김프 배수 × 환율 배수 (fx[t] / fx[buy])
 // 두 수익률을 더하면 교차항(김프변화 × 환율변화)이 빠져 근사가 된다.
 // 김프와 환율이 둘 다 크게 움직인 구간(예: 2018-01)에서는 10%p 넘게 어긋나므로
 // 배수끼리 곱한 뒤 1을 뺀다. BTC 달러 가격은 상쇄된다고 본다.
-function computeSeriesFromIdx(buyIdx){
+// 여기서 끊는 건 기간을 잘라 보는 게 아니라 거래를 닫는 것이다. 마지막 원소가 곧 청산 시점이다.
+// 수수료는 선에 반영하지 않는다. 두 선은 시장이 준 몫이고, 수수료는 결과에서 따로 뺀다.
+function computeSeriesFromIdx(buyIdx, sellIdx){
   const pBuy = PREMIUM[buyIdx];
   const fxBuy = FX[buyIdx];
   const arr = [];
-  for (let i = buyIdx; i < DATES.length; i++) {
+  for (let i = buyIdx; i <= sellIdx; i++) {
     const premMul = (1 + PREMIUM[i]) / (1 + pBuy);
     const fxMul = FX[i] / fxBuy;
     const premium = (premMul - 1) * 100;
     const real = (premMul * fxMul - 1) * 100;
-    arr.push({ premium, real });
+    // 날짜를 같이 들고 나온다. 차트의 x축 라벨과 고점/저점 마커가 이걸 쓴다.
+    arr.push({ date: DATES[i], premium, real });
   }
   return arr;
 }
 
-function drawDecompChart(data){
-  const svg = document.getElementById('decompChart');
-  svg.innerHTML = '';
-  const W=760,H=200,PL=44,PR=14,PT=14,PB=20;
-  const pw=W-PL-PR, ph=H-PT-PB;
-  const allVals = data.flatMap(d=>[d.premium, d.real]);
-  const minY = Math.min(...allVals, 0) - 0.5, maxY = Math.max(...allVals, 0) + 0.5;
-  const n = data.length;
-  const xAt = i => n <= 1 ? PL : PL + (i/(n-1))*pw;
-  const yAt = v => PT + ph - ((v-minY)/(maxY-minY))*ph;
-
-  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-  for(let s=0;s<=3;s++){
-    const y = PT + ph - (s/3)*ph;
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',PL); line.setAttribute('x2',W-PR); line.setAttribute('y1',y); line.setAttribute('y2',y);
-    line.setAttribute('class','decomp-grid');
-    g.appendChild(line);
-  }
-  svg.appendChild(g);
-
-  const premiumLine = data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' L');
-  const realLineRev = data.slice().reverse().map((d,i)=>`${xAt(n-1-i)},${yAt(d.real)}`).join(' L');
-  const fillPath = `M${premiumLine} L${realLineRev} Z`;
-
-  const fill = document.createElementNS('http://www.w3.org/2000/svg','path');
-  fill.setAttribute('d', fillPath);
-  fill.setAttribute('class', 'decomp-fill');
-  svg.appendChild(fill);
-
-  const premPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
-  premPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.premium)}`).join(' '));
-  premPoly.setAttribute('class','decomp-line-premium');
-  svg.appendChild(premPoly);
-
-  const realPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
-  realPoly.setAttribute('points', data.map((d,i)=>`${xAt(i)},${yAt(d.real)}`).join(' '));
-  realPoly.setAttribute('class','decomp-line-real');
-  svg.appendChild(realPoly);
+// SVG 노드 만들기 헬퍼. 속성이 많아 매번 setAttribute 를 늘어놓으면 읽기 어렵다.
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(name, attrs, text){
+  const el = document.createElementNS(SVG_NS, name);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  if (text != null) el.textContent = text;
+  return el;
 }
+
+// 마커 반지름. 호버가 걸리면 고점/저점 마커도 이 크기로 커지므로 한곳에서 관리한다.
+const DOT_R = 3.5, HOVER_R = 5;
+
+// 창 크기가 바뀌면 폭이 달라져 다시 그려야 한다. 마지막 계열을 들고 있는다.
+let lastDecompSeries = null;
+
+function drawDecompChart(data){
+  lastDecompSeries = data;
+  const svg = document.getElementById('decompChart');
+  const caption = document.getElementById('decompCaption');
+  svg.innerHTML = '';
+  // 다시 그리면 호버 상태는 무효다. 그릴 게 없어 빠져나갈 때도 마찬가지.
+  document.getElementById('decompTip').hidden = true;
+
+  // 짧은 구간도 그대로 그린다. 하루 보유도 실제로 가능한 시나리오이고,
+  // 포인트가 적은 건 짧은 구간의 당연한 모습이다. 값이 과장돼 보이지 않게
+  // 막는 건 아래 y축 최소 범위(MIN_SPAN)와 ④·⑥의 참고용 표시가 맡는다.
+  // 정말 그릴 게 없는 건 데이터가 아예 비었을 때뿐이다.
+  // hidden 은 HTMLElement 의 속성이라 <svg> 에 el.hidden = true 를 쓰면 그냥 무시된다.
+  // 속성 자체를 켜고 끈다.
+  const nothing = !data || data.length === 0;
+  svg.toggleAttribute('hidden', nothing);
+  caption.toggleAttribute('hidden', nothing);
+  if (nothing) return;
+
+  // viewBox 를 실제 픽셀 폭에 맞춘다. preserveAspectRatio="none" 으로 늘이면 글자가 찌그러진다.
+  const H = 200;
+  const W = Math.max(320, Math.round(svg.clientWidth || 760));
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const PL = 52, PR = 16, PT = 16, PB = 26;
+  const pw = W - PL - PR, ph = H - PT - PB;
+  const n = data.length;
+
+  // y축 범위. 실제 변동이 2%p 미만이면 중앙값 기준 ±1%p 로 벌려서
+  // 0.37%p 차이가 화면 절반을 차지하는 착시를 막는다. 변동이 크면 10% 여백만 준다.
+  const allVals = data.flatMap(d => [d.premium, d.real]);
+  let lo = Math.min(...allVals), hi = Math.max(...allVals);
+  const MIN_SPAN = 2;
+  if (hi - lo < MIN_SPAN) {
+    const mid = (hi + lo) / 2;
+    lo = mid - MIN_SPAN / 2;
+    hi = mid + MIN_SPAN / 2;
+  } else {
+    const pad = (hi - lo) * 0.10;
+    lo -= pad; hi += pad;
+  }
+  const span = hi - lo;
+  const dec = span < 20 ? 1 : 0;   // 범위가 좁으면 소수 한 자리까지 보여야 눈금이 구분된다
+
+  const xAt = i => n <= 1 ? PL + pw / 2 : PL + (i / (n - 1)) * pw;
+  const yAt = v => PT + ph - ((v - lo) / span) * ph;
+  const clampY = y => Math.max(PT + 9, Math.min(PT + ph - 3, y));
+
+  // ── y축: 눈금 5개 + % 라벨
+  const TICKS = 4;
+  for (let s = 0; s <= TICKS; s++) {
+    const v = lo + (s / TICKS) * span;
+    const y = yAt(v);
+    svg.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y, y2: y, class: 'decomp-grid' }));
+    svg.appendChild(svgEl('text',
+      { x: PL - 8, y: y + 3.5, class: 'decomp-ytick', 'text-anchor': 'end' },
+      (v >= 0 ? '+' : '') + v.toFixed(dec) + '%'));
+  }
+  // 0% 기준선만 따로 진하게. 범위 밖이면 그리지 않는다.
+  if (lo <= 0 && hi >= 0) {
+    const yz = yAt(0);
+    svg.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: yz, y2: yz, class: 'decomp-zero' }));
+  }
+
+  // ── x축: 시작 / 중간 / 종료 세 개만. 기본은 YYYY.MM 이지만
+  // 구간이 짧아 세 라벨 중 겹치는 글자가 나오면 그때만 일까지 붙인다.
+  // 구간이 아주 짧으면 세 슬롯이 같은 인덱스를 가리켜 같은 자리에 글자가 겹친다.
+  // 중복 인덱스는 먼저 나온 것만 남긴다(2포인트 → 시작·종료, 1포인트 → 하나만).
+  let xSlots = n === 1
+    ? [[0, 'middle']]
+    : [[0, 'start'], [Math.floor((n - 1) / 2), 'middle'], [n - 1, 'end']]
+        .filter(([i], k, arr) => arr.findIndex(([j]) => j === i) === k);
+  const asMonth = str => str.slice(0, 4) + '.' + str.slice(5, 7);
+  const needDay = new Set(xSlots.map(([i]) => asMonth(data[i].date))).size < 3;
+  const xLabel = str => needDay ? str.replace(/-/g, '.') : asMonth(str);
+  xSlots.forEach(([i, anchor]) => {
+    svg.appendChild(svgEl('text',
+      { x: xAt(i), y: H - 8, class: 'decomp-xtick', 'text-anchor': anchor },
+      xLabel(data[i].date)));
+  });
+
+  // ── 두 계열
+  // 매수일 = 매도일이면 점이 하나뿐이라 polyline 은 아무것도 그리지 않는다.
+  // 그 자리에 점을 찍어 "여기 한 시점이 있다"는 것만 보여준다.
+  // (두 계열 값이 정확히 같은 자리라 초록 위에 빨강을 겹쳐 찍는다)
+  if (n === 1) {
+    const x0 = xAt(0);
+    svg.appendChild(svgEl('circle',
+      { cx: x0, cy: yAt(data[0].premium), r: DOT_R + 2.5, class: 'decomp-point-premium' }));
+    svg.appendChild(svgEl('circle',
+      { cx: x0, cy: yAt(data[0].real), r: DOT_R, class: 'decomp-point-real' }));
+  }
+
+  svg.appendChild(svgEl('polyline', {
+    points: data.map((d, i) => `${xAt(i)},${yAt(d.premium)}`).join(' '),
+    class: 'decomp-line-premium' }));
+  // 빨간 선의 파선은 두 계열 좌표가 완전히 같아질 때 초록 선이 가려지지 않게 하려는 것이다.
+  // 구간이 길면 그렇게 겹칠 일이 거의 없는 반면, 파선 패턴이 데이터 변동과 뒤엉켜
+  // 선이 아니라 점을 찍어놓은 것처럼 보인다. 그래서 짧은 구간에서만 파선으로 둔다.
+  const DASH_MAX_POINTS = 60;
+  const realPoly = svgEl('polyline', {
+    points: data.map((d, i) => `${xAt(i)},${yAt(d.real)}`).join(' '),
+    class: 'decomp-line-real' });
+  realPoly.setAttribute('stroke-dasharray', n <= DASH_MAX_POINTS ? '6 4' : 'none');
+  svg.appendChild(realPoly);
+
+  // 한글은 폭이 영문의 두 배쯤 된다. 라벨이 서로 겹치는지 보려면 이 정도 어림이면 충분하다.
+  const textW = (t, size) => [...t].reduce((a, c) => a + (c.charCodeAt(0) > 0x2e80 ? size : size * 0.6), 0);
+  // 겹친 넓이. 0 이면 안 겹친다. 어느 후보도 못 피할 때 그나마 덜 겹치는 쪽을 고르는 데 쓴다.
+  const overlapArea = (a, b) => {
+    if (!a || !b) return 0;
+    const w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+    const h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+    return w > 0 && h > 0 ? w * h : 0;
+  };
+  // 실제 글자 상자보다 조금 넉넉하게 잡는다. 딱 맞게 재면 판정은 통과해도 눈으로는 붙어 보인다.
+  const boxOf = (x, y, w, anchor) => {
+    const x0 = (anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x) - 2;
+    return { x0, x1: x0 + w + 4, y0: y - 12, y1: y + 6 };
+  };
+
+  // ── 마지막 시점에서 두 선을 잇는 세로 화살표 + 라벨. 음영 대신 이 하나로 몫을 읽힌다.
+  // 자리부터 먼저 잡아둔다. 아래 고점/저점 라벨이 이걸 피해 가야 하기 때문이다.
+  const dl = data[n - 1];
+  const diff = dl.real - dl.premium;
+  const showArrow = Math.abs(diff) >= 0.01;   // 사실상 차이가 없으면 화살표도 라벨도 그리지 않는다
+  const ax = xAt(n - 1) - 5;
+  const ay0 = yAt(dl.premium), ay1 = yAt(dl.real);
+  const arrowText = `환율 영향 ${(diff >= 0 ? '+' : '') + diff.toFixed(2)}%p`;
+  const arrowY = clampY((ay0 + ay1) / 2 + 3.5);
+  const arrowBox = showArrow ? boxOf(ax - 8, arrowY, textW(arrowText, 10), 'end') : null;
+
+  // ── 실질 누적수익의 고점/저점 마커. 점이 3개 이하면 최대/최소를 따질 게 없다.
+  const staticDots = [];   // 호버 마커가 같은 자리에 오면 잠깐 숨기려고 들고 있는다
+  if (n > 3) {
+    let maxI = 0, minI = 0;
+    data.forEach((d, i) => {
+      if (d.real > data[maxI].real) maxI = i;
+      if (d.real < data[minI].real) minI = i;
+    });
+    if (maxI !== minI) {
+      [[maxI, -1], [minI, 1]].forEach(([i, dir]) => {
+        const x = xAt(i), y = yAt(data[i].real);
+        const dot = svgEl('circle', { cx: x, cy: y, r: DOT_R, class: 'decomp-dot' });
+        svg.appendChild(dot);
+        staticDots.push({ i, el: dot });
+
+        const text = data[i].date.replace(/-/g, '.') + ' ' + fmtPct(data[i].real);
+        const w = textW(text, 9.5);
+        // 가운데 정렬이 기본이지만 그대로 두면 양 끝 점에서 라벨이 그림 밖으로 나간다.
+        // 실제로 들어가는지 재보고 넘칠 때만 기준을 왼쪽/오른쪽 끝으로 바꾼다.
+        let anchor = 'middle', lx = x;
+        if (x - w / 2 < PL) { anchor = 'start'; lx = Math.max(PL, x - 4); }
+        else if (x + w / 2 > W - PR) { anchor = 'end'; lx = Math.min(W - PR, x + 4); }
+        // 화살표 라벨을 피해 자리를 고른다. 기본 → 한 줄 더 밀기 → 반대쪽 순으로 시도한다.
+        // 짧은 구간에서는 저점이 마지막 점이라 아래로 미는 게 clampY 에 걸려 제자리로
+        // 돌아온다. 그때는 반대쪽으로 넘겨야 겹치지 않는다.
+        const tries = [y + dir * 10, y + dir * 24, y - dir * 12, y - dir * 26, y + dir * 38];
+        let ly = clampY(tries[0]), best = Infinity;
+        for (const cand of tries) {
+          const cy = clampY(cand);
+          const area = overlapArea(boxOf(lx, cy, w, anchor), arrowBox);
+          if (area < best) { best = area; ly = cy; }
+          if (area === 0) break;   // 완전히 피했으면 더 볼 것 없다
+        }
+        svg.appendChild(svgEl('text',
+          { x: lx, y: ly, class: 'decomp-dot-label', 'text-anchor': anchor }, text));
+      });
+    }
+  }
+
+  // 화살표는 마커 위에 얹는다
+  if (showArrow) {
+    const dir = ay1 >= ay0 ? 1 : -1;                      // 아래로 향하면 +1
+    const head = Math.max(2, Math.min(5, Math.abs(ay1 - ay0) * 0.6));
+    svg.appendChild(svgEl('line', { x1: ax, x2: ax, y1: ay0, y2: ay1 - dir * head, class: 'decomp-arrow' }));
+    svg.appendChild(svgEl('polygon', {
+      points: `${ax},${ay1} ${ax - 3.2},${ay1 - dir * head} ${ax + 3.2},${ay1 - dir * head}`,
+      class: 'decomp-arrow-head' }));
+    svg.appendChild(svgEl('text',
+      { x: ax - 8, y: arrowY, class: 'decomp-arrow-label', 'text-anchor': 'end' }, arrowText));
+  }
+
+  drawHoverLayer(svg, data, { W, H, PL, PR, PT, ph, pw, n, xAt, yAt, staticDots });
+}
+
+
+// 포인트마다 <circle> 을 미리 깔면 3000개짜리 구간에서 DOM 이 감당하지 못한다.
+// 투명한 rect 하나로 좌표만 받아 인덱스를 계산하고, 마커 두 개를 옮겨 쓴다.
+function drawHoverLayer(svg, data, geo){
+  const { W, H, PL, PT, ph, pw, n, xAt, yAt, staticDots } = geo;
+  const tip = document.getElementById('decompTip');
+
+  const hover = svgEl('g', { class: 'decomp-hover', visibility: 'hidden' });
+  const hLine = svgEl('line', { y1: PT, y2: PT + ph, class: 'decomp-hover-line' });
+  // 마커는 환율 반영 실질 누적수익(빨강) 하나만. 두 계열 다 찍으면 시선이 갈린다.
+  const hDot = svgEl('circle', { r: HOVER_R, class: 'decomp-hover-dot' });
+  hover.appendChild(hLine); hover.appendChild(hDot);
+  svg.appendChild(hover);
+
+  // 맨 위에 깔아야 선·라벨 위에서도 좌표를 받는다
+  const hit = svgEl('rect', { x: 0, y: 0, width: W, height: H, class: 'decomp-hit' });
+  svg.appendChild(hit);
+
+  let shownIdx = -1;
+
+  function idxFromClientX(clientX){
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return -1;
+    // 화면 좌표 → viewBox 좌표. 모바일에서 SVG 가 축소돼 그려져도 이 변환이면 어긋나지 않고,
+    // 창 크기를 바꿔도 getScreenCTM 이 그때그때 맞는 값을 준다.
+    const ux = new DOMPoint(clientX, 0).matrixTransform(ctm.inverse()).x;
+    // 선형 탐색 대신 비율로 바로 구한다. 포인트가 몇 개든 상수 시간이다.
+    return Math.max(0, Math.min(n - 1, Math.round((ux - PL) / pw * (n - 1))));
+  }
+
+  function placeTip(clientX, ymid){
+    const r = svg.getBoundingClientRect();
+    const relX = clientX - r.left;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    let left = relX + 14;
+    if (left + tw > r.width) left = relX - 14 - tw;   // 오른쪽 끝에서는 커서 왼쪽으로 뒤집는다
+    tip.style.left = Math.max(0, Math.min(Math.max(0, r.width - tw), left)) + 'px';
+    // 가리키는 점이 위쪽에 있으면 툴팁은 아래로 내려 보낸다
+    const top = ymid < H / 2 ? r.height - th - 6 : 6;
+    tip.style.top = Math.max(0, Math.min(Math.max(0, r.height - th), top)) + 'px';
+  }
+
+  function showHover(clientX){
+    const i = idxFromClientX(clientX);
+    if (i < 0) return;
+    const d = data[i], x = xAt(i), yr = yAt(d.real);
+
+    if (i !== shownIdx) {
+      shownIdx = i;
+      hLine.setAttribute('x1', x); hLine.setAttribute('x2', x);
+      hDot.setAttribute('cx', x); hDot.setAttribute('cy', yr);
+
+      // 고점/저점 마커 자리에 왔다면 점을 하나 더 얹지 않고 원래 마커를 키운다.
+      // 인덱스 일치만 보면 놓친다. 긴 구간은 1px 에 인덱스가 몇 개씩 들어가 있어
+      // 눈으로는 같은 점인데 인덱스는 어긋나기 때문이다. 화면 거리로 판단한다.
+      let onStatic = false;
+      staticDots.forEach(sd => {
+        const dx = xAt(sd.i) - x, dy = yAt(data[sd.i].real) - yr;
+        const same = dx * dx + dy * dy < 30;
+        if (same) onStatic = true;
+        sd.el.setAttribute('r', same ? HOVER_R : DOT_R);
+      });
+      hDot.setAttribute('visibility', onStatic ? 'hidden' : 'visible');
+
+      tip.innerHTML =
+        `<div class="tip-date">${d.date.replace(/-/g, '.')}</div>` +
+        `<div class="tip-row a"><span>실질 누적수익</span><b>${fmtPct(d.real)}</b></div>`;
+    }
+    hover.setAttribute('visibility', 'visible');
+    tip.hidden = false;              // 크기를 재려면 먼저 보이게 해야 한다
+    placeTip(clientX, yr);
+  }
+
+  function hideHover(){
+    shownIdx = -1;
+    hover.setAttribute('visibility', 'hidden');
+    tip.hidden = true;
+    staticDots.forEach(sd => sd.el.setAttribute('r', DOT_R));
+  }
+
+  hit.addEventListener('mousemove', e => showHover(e.clientX));
+  hit.addEventListener('mouseleave', hideHover);
+  // 모바일. 세로 스크롤은 CSS touch-action: pan-y 가 그대로 넘겨주므로 여기서 막지 않는다.
+  const onTouch = e => { const t = e.touches[0]; if (t) showHover(t.clientX); };
+  hit.addEventListener('touchstart', onTouch, { passive: true });
+  hit.addEventListener('touchmove', onTouch, { passive: true });
+  hit.addEventListener('touchend', hideHover);
+  hit.addEventListener('touchcancel', hideHover);
+}
+
+// 폭이 바뀌면 눈금 간격과 라벨 위치가 어긋난다. 잦은 resize 는 묶어서 한 번만 다시 그린다.
+let decompResizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!lastDecompSeries) return;
+  clearTimeout(decompResizeTimer);
+  decompResizeTimer = setTimeout(() => drawDecompChart(lastDecompSeries), 150);
+});
 
 function renderAll(){
   const buyIdx = selectedIdx;
-  const todayIdx = DATES.length - 1;
-  document.getElementById('pickedDate').textContent = dateLabel(dateFromIdx(buyIdx));
+  const days = holdDays();
+  renderCalStatus();   // 매수 → 매도 · 보유일수. 달력을 넘겨도 항상 남는다
 
-  // ③ 차트
-  const series = computeSeriesFromIdx(buyIdx);
+  // 수수료는 차트 아래 결과와 ④ 계산기가 같은 값을 써야 한다. 한 번만 읽는다.
+  const buyFee = +document.getElementById('calcBuy').value;
+  const sellFee = +document.getElementById('calcSell').value;
+  const totalFee = buyFee + sellFee;
+  document.getElementById('calcBuyV').textContent = buyFee.toFixed(2);
+  document.getElementById('calcSellV').textContent = sellFee.toFixed(2);
+
+  // ③ 차트 — 두 선은 수수료 없이 그린다. 수수료는 아래 결과 문구에서만 뺀다.
+  const series = computeSeriesFromIdx(buyIdx, sellIdx);
   drawDecompChart(series);
   const last = series[series.length - 1];
   const diff = last.real - last.premium;
+  const afterFee = last.real - totalFee;   // 실제로 손에 쥐는 몫
   const headline = document.getElementById('resultHeadline');
   const sub = document.getElementById('resultSub');
+
   if (Math.abs(diff) < 0.05) {
-    headline.innerHTML = `이 시점은 환율 영향이 거의 없었어요`;
+    headline.innerHTML = `이 거래는 환율 영향이 거의 없었어요`;
   } else if (diff > 0) {
-    headline.innerHTML = `이 시점은 환율이 실질 수익을 <b class="frog-text">늘렸어요</b>`;
+    headline.innerHTML = `이 거래는 환율이 실질 수익을 <b class="frog-text">늘렸어요</b>`;
   } else {
-    headline.innerHTML = `이 시점은 환율이 실질 수익을 <b class="accent-text">줄였어요</b>`;
+    headline.innerHTML = `이 거래는 환율이 실질 수익을 <b class="accent-text">줄였어요</b>`;
   }
-  sub.textContent = `프리미엄 기준 누적수익 ${fmtPct(last.premium)} · 환율 반영 실질 누적수익 ${fmtPct(last.real)} (차이 ${fmtPct(diff)})`;
+  const feeCls = afterFee >= 0 ? 'frog-text' : 'accent-text';
+  sub.innerHTML =
+    `${dateLabel(dateFromIdx(buyIdx))} 매수 → ${dateLabel(dateFromIdx(sellIdx))} 매도 · ${days}일 보유<br>` +
+    `수수료 전 ${fmtPct(last.real)} · 수수료 후 <b class="${feeCls}">${fmtPct(afterFee)}</b> ` +
+    `(왕복 수수료 ${totalFee.toFixed(2)}%p)<br>` +
+    `프리미엄 기준 ${fmtPct(last.premium)} · 환율 반영 실질 ${fmtPct(last.real)} (차이 ${fmtPct(diff)})`;
 
   // ④ 계산기
   const premAt = PREMIUM[buyIdx] * 100;   // 비율 → 표시용 %
   const fxAt = FX[buyIdx];
-  const fxNow = FX[todayIdx];
+  // 거래를 매도 시점에 닫으므로 비교 대상도 그날 환율이다. 오늘 환율을 쓰면
+  // 2018년에 사서 2018년에 판 시나리오인데 게이지만 2026년을 가리키게 된다.
+  const fxSell = FX[sellIdx];
   document.getElementById('calcPremAt').textContent = fmtPct(premAt);
   document.getElementById('calcFxAt').textContent = commas(fxAt) + '원';
-  document.getElementById('calcFxNow').textContent = commas(fxNow) + '원';
+  document.getElementById('calcFxSell').textContent = commas(fxSell) + '원';
 
   const amt = +document.getElementById('calcAmt').value || 0;
-  const buyFee = +document.getElementById('calcBuy').value;
-  const sellFee = +document.getElementById('calcSell').value;
-  document.getElementById('calcBuyV').textContent = buyFee.toFixed(2);
-  document.getElementById('calcSellV').textContent = sellFee.toFixed(2);
-
-  const totalFee = buyFee + sellFee;
-  const netReturn = last.real - totalFee;
+  const netReturn = last.real - totalFee;   // buyFee/sellFee/totalFee 는 위에서 한 번만 읽는다
   const profit = amt * netReturn / 100;
   const finalAmt = amt + profit;
   const fxEffect = last.real - last.premium; // 환율이 더해주거나 깎은 몫
 
   document.getElementById('calcAmtFrom').textContent = commas(amt) + '원';
   document.getElementById('calcAmtTo').textContent = commas(finalAmt) + '원';
+
   const badge = document.getElementById('calcHeroBadge');
-  badge.className = 'calc-hero-badge ' + (profit >= 0 ? 'up' : 'down');
+  badge.className = 'calc-hero-badge' + (profit >= 0 ? ' up' : ' down');
   badge.textContent = `${profit>=0?'+':''}${commas(profit)}원 · ${fmtPct(netReturn)}`;
 
   // 워터폴: 프리미엄 스프레드 → 환율 효과 → 수수료 → 순수익
@@ -1034,20 +1507,20 @@ function renderAll(){
 
   // 여백을 폭에 비례시킨다. 고정 15원이면 김프가 큰 시점(세 값이 수백 원씩 벌어짐)에서
   // 점들이 게이지 양 끝에 붙어버리고, 반대로 세 값이 거의 같을 땐 15원이 화면을 다 차지한다.
-  const rawLo = Math.min(fxAt, breakEvenFx, fxNow);
-  const rawHi = Math.max(fxAt, breakEvenFx, fxNow);
+  const rawLo = Math.min(fxAt, breakEvenFx, fxSell);
+  const rawHi = Math.max(fxAt, breakEvenFx, fxSell);
   const pad = Math.max(15, (rawHi - rawLo) * 0.12);
   const lo = rawLo - pad;
   const hi = rawHi + pad;
   const pctOf = v => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
   const fillPct = pctOf(breakEvenFx);
-  const markerPct = pctOf(fxNow);
+  const markerPct = pctOf(fxSell);
 
   let desc;
   if (netPremiumEdge >= 0) {
     const dropPct = (1 - breakEvenFx / fxAt) * 100;   // 손익분기까지 남은 환율 하락폭
-    const gapPct = (fxNow - breakEvenFx) / breakEvenFx * 100;
-    desc = `매수 시점(${commas(fxAt)}원)보다 환율이 ${dropPct.toFixed(2)}% 넘게 떨어지면 손실로 바뀌는데, 오늘 환율(${commas(fxNow)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
+    const gapPct = (fxSell - breakEvenFx) / breakEvenFx * 100;
+    desc = `매수 시점(${commas(fxAt)}원)보다 환율이 ${dropPct.toFixed(2)}% 넘게 떨어지면 손실로 바뀌는데, 매도 시점 환율(${commas(fxSell)}원)은 손익분기점보다 ${Math.abs(gapPct).toFixed(1)}% ${gapPct >= 0 ? '위' : '밑'}에 있습니다.`;
   } else {
     desc = `프리미엄과 수수료만 놓고 보면 이미 ${Math.abs(netPremiumEdge).toFixed(2)}%p 손해인 상태라, 환율이 매수 시점(${commas(fxAt)}원)보다 ${((breakEvenFx / fxAt - 1) * 100).toFixed(2)}% 더 올라야 본전이 됩니다.`;
   }
@@ -1113,13 +1586,14 @@ function loadData(){
       if (DATES.length < 2) throw new Error('no-overlap:KRW-BTC');
 
       TODAY = parseYmd(DATES[DATES.length - 1]);
-      // 기본값: 그래프에 프리미엄·환율 변화가 보일 만큼은 지난 시점 (마지막 날에서 60칸 앞).
-      // 달력을 열자마자 "오늘"이 보고 싶으면 옆의 오늘 버튼으로 바로 이동할 수 있다.
-      selectedIdx = Math.max(0, DATES.length - 1 - 60);
-
-      const picked = dateFromIdx(selectedIdx);
-      calYear = picked.getFullYear();
-      calMonth = picked.getMonth();
+      // 기본값: 김프가 가장 극적이었던 2017년 말 광풍. 프리셋 버튼과 같은 날을 쓴다.
+      // 데이터가 그 시점까지 닿지 않으면 예전처럼 마지막 날에서 60칸 앞으로 물러난다.
+      // 프리셋 정의를 그대로 참조한다. 버튼과 디폴트가 따로 놀지 않게.
+      const presetIdx = nearestIdx(PRESETS[0].date);
+      // setBuyIdx 가 매도 시점(매수 + 7일)과 매도 달력이 펼칠 달까지 같이 맞춘다.
+      setBuyIdx(presetIdx >= 0 ? presetIdx : Math.max(0, DATES.length - 1 - 60));
+      awaitingSell = false;          // 처음 화면은 매수·매도가 이미 정해진 상태로 연다
+      focusMonth(selectedIdx);       // 기본으로 펼칠 달은 매수일이 있는 달
 
       dataReady = true;
       elLoading.hidden = true;
@@ -1145,6 +1619,116 @@ function loadData(){
       console.error('BTC 데이터 로드 실패:', err);
     });
 }
+
+// ══════════ 개구리 도움말 ══════════
+// dashboard.html 에 로컬로 있는 패턴을 그대로 옮겨왔다. 설명을 늘 펼쳐두는 대신
+// 개구리를 두고, 누르면 입을 벌리며 말풍선으로 설명한다.
+// (대시보드의 SPOT 스포트라이트는 옮기지 않았다 — 여기 두 개구리는 화면의 특정
+//  요소가 아니라 계산 전제를 설명해서, 가리킬 대상이 없는 쪽에 해당한다.)
+const FROG_HEAD = 'M24 16C23 10 20 6 15 6C10 6 7 10 7 16C7 19 2 21 2 27C2 34 11 40 24 40C37 40 46 34 46 27C46 21 41 19 41 16C41 10 38 6 33 6C28 6 25 10 24 16Z';
+const FROG_EYES = '<circle cx="15" cy="12" r="2.1" fill="currentColor"/><circle cx="33" cy="12" r="2.1" fill="currentColor"/>';
+
+const FROG_CLOSED =
+  `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="${FROG_HEAD}"/><path d="M14 29C18 34.5 30 34.5 34 29"/></g>${FROG_EYES}` +
+  `<circle cx="21" cy="21" r="1" fill="currentColor"/><circle cx="27" cy="21" r="1" fill="currentColor"/></svg>`;
+
+const FROG_OPEN =
+  `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="${FROG_HEAD}"/><path d="M13 29Q18.5 23 24 23Q29.5 23 35 29Q29.5 36 24 36Q18.5 36 13 29Z"/></g>${FROG_EYES}` +
+  `<circle cx="21" cy="19" r="1" fill="currentColor"/><circle cx="27" cy="19" r="1" fill="currentColor"/></svg>`;
+
+// label 은 스크린리더용 이름. 본문은 화면에 있던 문구를 그대로 옮긴 것이라
+// 대시보드와 달리 말풍선 안에 제목(h5)을 따로 두지 않는다.
+const HELP = {
+  basis: {
+    label: '이 수치가 뜻하는 것',
+    body: '이 수치는 <b>김프 스프레드만</b> 계산한 값입니다. <b>BTC 가격이 오르내린 것은 포함되지 않습니다.</b> ' +
+          '매수일과 매도일의 <b>종가</b>(하루 한 번 기록되는 마감 가격)로 계산했으며, BTC의 달러 가격 변동은 상쇄된다고 보았습니다.'
+  },
+  chart: {
+    label: '차트를 읽을 때',
+    body: '하루 한 번 종가 기준이라, 하루 안의 가격 변동은 반영되지 않습니다.<br><br>' +
+          '실제 김프 차익거래는 보통 며칠 안에 사고팝니다. 매도 시점을 바꿔보면 결과가 어떻게 달라지는지 확인해보세요.'
+  }
+};
+
+let openFrog = null;
+
+// 개구리가 화면 가장자리 가까이 있으면 말풍선이 잘려 나간다(420px 에서 특히).
+// 열린 뒤 실제 위치를 재서 안쪽으로 밀어 넣고, 꼬리는 개구리를 계속 가리키게 되돌린다.
+const BUBBLE_EDGE = 8;
+function fitBubble(btn, bubble) {
+  bubble.style.transform = '';
+  bubble.style.removeProperty('--arrow-x');
+
+  const r = bubble.getBoundingClientRect();
+  let dx = 0;
+  if (r.left < BUBBLE_EDGE) dx = BUBBLE_EDGE - r.left;
+  else if (r.right > window.innerWidth - BUBBLE_EDGE) dx = (window.innerWidth - BUBBLE_EDGE) - r.right;
+  if (dx) bubble.style.transform = `translateX(${dx}px)`;
+
+  const br = btn.getBoundingClientRect();
+  const ax = br.left + br.width / 2 - (r.left + dx) - 6;   // 6 = 꼬리 반폭
+  bubble.style.setProperty('--arrow-x', `${Math.max(10, Math.min(r.width - 22, ax))}px`);
+}
+
+function closeFrogHelp() {
+  if (!openFrog) return;
+  openFrog.btn.setAttribute('aria-expanded', 'false');
+  openFrog.btn.innerHTML = FROG_CLOSED;
+  openFrog.bubble.hidden = true;
+  openFrog = null;
+}
+
+function mountFrogHelp() {
+  document.querySelectorAll('.frog-slot[data-help]').forEach((slot, i) => {
+    const info = HELP[slot.dataset.help];
+    if (!info || slot.dataset.mounted) return;
+    slot.dataset.mounted = '1';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'frog-help';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', `${info.label} — 설명 열기`);
+    btn.style.animationDelay = `${(i * 0.45).toFixed(2)}s`;   // 다 같이 움직이면 어색해서 시차를 준다
+    btn.innerHTML = FROG_CLOSED;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'frog-bubble';
+    bubble.hidden = true;
+    bubble.setAttribute('role', 'dialog');
+    bubble.setAttribute('aria-label', info.label);
+    bubble.innerHTML = `${info.body}<button type="button" class="frog-bubble-close">닫기</button>`;
+
+    slot.append(btn, bubble);
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = openFrog && openFrog.btn === btn;
+      closeFrogHelp();
+      if (isOpen) return;
+      btn.setAttribute('aria-expanded', 'true');
+      btn.innerHTML = FROG_OPEN;
+      bubble.hidden = false;
+      fitBubble(btn, bubble);
+      openFrog = { btn, bubble };
+    });
+
+    bubble.addEventListener('click', (e) => e.stopPropagation());
+    bubble.querySelector('.frog-bubble-close').addEventListener('click', () => {
+      const focusBack = btn;
+      closeFrogHelp();
+      focusBack.focus();
+    });
+  });
+
+  document.addEventListener('click', closeFrogHelp);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFrogHelp(); });
+}
+
+mountFrogHelp();
 
 renderQuiz();   // 퀴즈는 데이터 없이 바로 풀 수 있다
 renderRisks();

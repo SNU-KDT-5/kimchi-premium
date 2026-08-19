@@ -59,6 +59,18 @@
   .quiz-hint { font-size: 0.76rem; color: var(--mut); line-height: 1.65; margin: 0; padding: 0 var(--sp-4); }
   .quiz-msg { font-size: 0.78rem; font-weight: 600; margin-top: var(--sp-2); min-height: 1.2em; }
   .quiz-msg.ok { color: var(--frog); }
+  /* 정답을 맞힌 뒤 '정답이에요!' 아래에 붙는 해설.
+     오답 힌트(.quiz-hint)는 여백만 두른 맨 글자라 "다시 생각해보자"에 가깝고,
+     이건 정답 색(--frog)을 옅게 두른 상자라 "이래서 그렇다"로 읽힌다.
+     굵기·색은 .quiz-msg 를 물려받지 않도록 여기서 다시 정한다. */
+  .quiz-why {
+    display: block; margin-top: var(--sp-2);
+    background: var(--frog-bg); border-left: 2px solid var(--frog);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    padding: var(--sp-3) var(--sp-4);
+    font-size: 0.76rem; font-weight: 400; color: var(--mut); line-height: 1.65;
+    word-break: keep-all;
+  }
 
   /* ── 퀴즈 통과 전 잠금 ────────────────────────────────────────────
      블러는 눈에만 걸리는 장치라, 그것만으로는 Tab 으로 잠긴 섹션에
@@ -696,7 +708,10 @@ function renderQuiz(){
       if (oi === it.ans) {
         btn.classList.add('correct');
         quizDone[qi] = true;
+        // 오답에만 힌트가 붙고 정답에는 아무 설명이 없으면, 다 맞힌 사람은
+        // 배우는 것 없이 지나간다. 정답 자리에도 왜 그런지를 남긴다.
         msg.textContent = '정답이에요!';
+        if (it.why) msg.appendChild(whyNode(it.why));
         msg.className = 'quiz-msg ok';
         document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.disabled = true);
         checkUnlock();
@@ -716,6 +731,14 @@ function renderQuiz(){
 }
 
 // 이전에 고른 오답의 표시와 힌트를 지운다.
+// 해설 상자. renderQuiz 와 reserveHintSpace 가 같은 모양을 써야 예약한 높이가 맞는다.
+function whyNode(text){
+  const el = document.createElement('span');
+  el.className = 'quiz-why';
+  el.textContent = text;
+  return el;
+}
+
 function clearHints(qi){
   document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.classList.remove('wrong'));
   QUIZ[qi].hints.forEach((h, oi) => {
@@ -744,6 +767,15 @@ function reserveHintSpace(){
       max = Math.max(max, q.offsetHeight);
       el.hidden = wasHidden; el.innerHTML = prev;
     });
+    // 정답 해설도 같은 카드 안에서 자리를 차지한다. 같이 재두지 않으면
+    // 정답을 맞히는 순간 카드가 늘어나 아래 내용이 밀린다.
+    if (it.why) {
+      const msg = q.querySelector('.quiz-msg');
+      msg.textContent = '정답이에요!';
+      msg.appendChild(whyNode(it.why));
+      max = Math.max(max, q.offsetHeight);
+      msg.textContent = '';   // 예약 시점의 msg 는 항상 비어 있다
+    }
     if (max > 0) q.style.minHeight = max + 'px';   // 레이아웃을 못 재는 환경(테스트 등)에서는 건너뛴다
   });
 }

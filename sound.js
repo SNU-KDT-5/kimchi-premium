@@ -31,7 +31,8 @@
   var ctx = null, master = null, noise = null, btn = null;
   var enabled = false;
   var chosen = false;      // 사용자가 켜든 끄든 한 번이라도 정한 적이 있는가
-  var lastAt = {};         // 소리 이름별 마지막 재생 시각
+  var lastAt = {};         // 소리 이름별 마지막 '요청' 시각
+  var playedAt = {};       // 소리 이름별 마지막 '실제로 울린' 시각
 
   // ══════════════════════════════════════════════════════════
   // 소리를 만드는 도구
@@ -174,6 +175,7 @@
   function loadAll() { if (ready()) Object.keys(FILES).forEach(load); }
 
   function playFile(name, t, rate) {
+    playedAt[name] = Date.now();
     var s = ctx.createBufferSource();
     s.buffer = buffers[name];
     // 배속은 음 높이도 같이 바꾼다. 부를 때 준 값에 매번 조금씩 흔들림을 더한다.
@@ -210,6 +212,9 @@
         load(name, function () {
           if (!enabled || !buffers[name]) return;
           if (Date.now() - asked > 1500) return;
+          // 받아오는 동안 쌓인 요청이 한꺼번에 터지지 않게, 울리기 직전에 한 번 더 잰다.
+          // 위에서 잰 간격은 '요청' 기준이라 대기열이 동시에 풀리는 걸 막지 못한다.
+          if (Date.now() - (playedAt[name] || 0) < gap) return;
           playFile(name, ctx.currentTime + 0.005, rate);
         });
         return;

@@ -58,6 +58,12 @@
     .topnav { background: transparent; border-bottom-color: transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
     .topnav.scrolled { background: var(--panel); border-bottom-color: var(--border); box-shadow: var(--shadow-sm); }
 
+    /* 인트로(스크롤 전) 배경이 투명해서, 이때만 탭 글자를 옅게 눌러 존재감을 줄인다.
+       스크롤해서 nav가 배경을 되찾으면 다른 페이지와 같은 톤으로 돌아온다 */
+    .topnav:not(.scrolled) .topnav-tab { color: var(--dim); transition: color .25s ease, background-color .25s ease; }
+    .topnav:not(.scrolled) .topnav-tab:hover { color: var(--mut); }
+    .topnav:not(.scrolled) .topnav-tab.active { color: var(--mut); background: transparent; font-weight: 600; }
+
     .kf-scrolly { position: relative; height: 980vh; }
     .kf-scrolly2 { height: 520vh; }
     .kf-scrolly3 { height: 820vh; }
@@ -1660,7 +1666,7 @@
           axisGroup.setAttribute('opacity', 0);
           priceLine.setAttribute('opacity', 0);
           kimpLine.setAttribute('d', '');
-          x = 480; y = 420; frogScale = 2.0; kScale = kimchiScaleAt(0);
+          x = 540; y = 420; frogScale = 2.0; kScale = kimchiScaleAt(0);
 
         } else if (p < P_TALK) {
           // 좌표축과 시세선이 함께 뜨고, 김프로그가 시세선 시작점으로 내려간다
@@ -1669,7 +1675,7 @@
           axisGroup.setAttribute('opacity', fade);
           priceLine.setAttribute('opacity', fade);
           kimpLine.setAttribute('d', '');
-          x = lerp(480, startPt.x, m);
+          x = lerp(540, startPt.x, m);
           y = lerp(420, startPt.y, m);
           frogScale = lerp(2.0, 1, m);
           kScale = kimchiScaleAt(0);

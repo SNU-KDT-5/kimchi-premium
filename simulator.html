@@ -59,6 +59,18 @@
   .quiz-hint { font-size: 0.76rem; color: var(--mut); line-height: 1.65; margin: 0; padding: 0 var(--sp-4); }
   .quiz-msg { font-size: 0.78rem; font-weight: 600; margin-top: var(--sp-2); min-height: 1.2em; }
   .quiz-msg.ok { color: var(--frog); }
+  /* 정답을 맞힌 뒤 '정답이에요!' 아래에 붙는 해설.
+     오답 힌트(.quiz-hint)는 여백만 두른 맨 글자라 "다시 생각해보자"에 가깝고,
+     이건 정답 색(--frog)을 옅게 두른 상자라 "이래서 그렇다"로 읽힌다.
+     굵기·색은 .quiz-msg 를 물려받지 않도록 여기서 다시 정한다. */
+  .quiz-why {
+    display: block; margin-top: var(--sp-2);
+    background: var(--frog-bg); border-left: 2px solid var(--frog);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    padding: var(--sp-3) var(--sp-4);
+    font-size: 0.76rem; font-weight: 400; color: var(--mut); line-height: 1.65;
+    word-break: keep-all;
+  }
 
   /* ── 퀴즈 통과 전 잠금 ────────────────────────────────────────────
      블러는 눈에만 걸리는 장치라, 그것만으로는 Tab 으로 잠긴 섹션에
@@ -610,26 +622,29 @@ function dateFromIdx(idx) {
 // ② 퀴즈
 const QUIZ = [
   // hints 는 opts 와 인덱스가 1:1 로 맞물린다. 정답 자리는 null.
-  // 세 문항은 가격 → 시간 → 마찰 순으로, 계산기에 들어가기 전에 알아야 할
-  // 리스크를 하나씩 짚는다. 정답 자리는 문항마다 다르게 둔다(1 / 2 / 3).
+  // 홈 탭이 "김프가 낮을 때 사서 높을 때 팔면 수익이 나지 않을까"로 시작하므로,
+  // 퀴즈도 그 기대를 먼저 인정하고(Q1) → 기회가 오래 열려 있지 않다는 조건을 붙이고(Q2)
+  // → 손에 남는 몫을 깎는 것들을 짚는(Q3) 순서로 간다. 환율은 Q3 의 여러 요인 중 하나로
+  // 다룬다 — 김프 차익 자체를 무효로 만드는 것이 아니다.
+  // 정답 자리는 문항마다 다르게 둔다(0 / 2 / 3).
   // why 는 정답을 맞힌 뒤 보여줄 해설인데, 지금 renderQuiz 는 '정답이에요!'만
   // 띄우고 이 값을 읽지 않는다. 문구만 먼저 넣어 두고 표시는 아직 붙이지 않았다.
   {
-    q: '김프가 3%일 때, 국내에서 사서 해외에서 팔면 3%를 벌 수 있을까요?',
+    q: '김프로 수익을 내려면 언제 사고 언제 팔아야 할까요?',
     opts: [
-      '네, 김프가 곧 수익률입니다',
-      '아니요, 환율이 어떻게 움직였는지에 따라 달라집니다',
-      '네, 다만 수수료만 빼면 됩니다',
-      '아니요, 김프는 항상 손해입니다',
+      '김프가 낮을 때 사서, 높을 때 판다',
+      '김프가 높을 때 사서, 더 높을 때 판다',
+      '김프와 상관없이 오래 들고 있는다',
+      '김프가 0일 때 사고 판다',
     ],
-    ans: 1,
+    ans: 0,
     hints: [
-      '김프는 두 나라의 가격 차이일 뿐이에요. 해외에서 받은 달러를 원화로 바꾸는 과정이 남아 있습니다.',
       null,
-      '수수료도 맞지만 그게 전부는 아니에요. 사고파는 사이에 원/달러 환율이 움직이면 손에 남는 몫이 달라집니다.',
-      '김프가 항상 손해인 건 아니에요. 환율이 유리하게 움직이면 오히려 수익이 늘어난 구간도 있습니다.',
+      '김프가 높다는 건 국내가 이미 비싸다는 뜻이에요. 비싸게 사서 더 비싸게 팔기를 기대하는 셈입니다.',
+      '그건 김프 차익거래가 아니라 그냥 코인 장기 보유예요. 김프는 사고파는 시점의 차이에서 나옵니다.',
+      '김프가 0이면 국내와 해외 가격이 같아서 벌어들일 차이가 없습니다.',
     ],
-    why: '김프는 국내와 해외의 가격 차이일 뿐, 그 사이 환율이 움직이면 실제로 손에 남는 몫이 달라집니다. 아래 계산기에서 두 선이 갈라지는 걸 직접 볼 수 있어요.',
+    why: '김프 차익거래는 국내가 상대적으로 쌀 때 사서 비쌀 때 파는 것입니다. 아래 계산기에서 시점을 바꿔가며 직접 확인해보세요.',
   },
   {
     q: '오늘 김프가 크게 벌어졌습니다. 이 상태는 얼마나 갈까요?',
@@ -646,24 +661,24 @@ const QUIZ = [
       null,
       '반감기는 비트코인 발행량과 관련된 일정이고, 김프가 좁혀지는 속도와는 관계가 없습니다.',
     ],
-    why: '벌어진 김프는 사람들이 그 차이를 노리고 들어오면서 좁혀집니다. 며칠씩 유지된다는 보장이 없고, 밤사이에 사라지기도 합니다.',
+    why: '벌어진 김프는 사람들이 그 차이를 노리고 들어오면서 좁혀집니다. 기회가 있어도 오래 열려 있지는 않습니다.',
   },
   {
-    q: '김프 차익거래에서 수익을 깎는 것으로 볼 수 없는 것은?',
+    q: '김프로 3%를 벌었다고 계산했습니다. 실제로 손에 남는 돈을 줄이는 것으로 볼 수 없는 것은?',
     opts: [
-      '거래 수수료',
+      '사고팔 때 내는 거래 수수료',
+      '그사이 원/달러 환율이 움직인 폭',
       '해외 거래소로 송금하는 데 걸리는 시간',
-      '출금 한도와 심사 지연',
       '국내 거래소의 접속자 수',
     ],
     ans: 3,
     hints: [
-      '수수료는 사고팔 때 양쪽에서 빠져나가는 실제 비용이에요. 아래 계산기에서 직접 조절해볼 수 있습니다.',
+      '수수료는 양쪽에서 빠져나가는 실제 비용이에요. 아래 계산기에서 직접 조절해볼 수 있습니다.',
+      '해외에서 받은 달러를 원화로 바꿀 때 환율이 불리하게 움직였다면 그만큼 줄어듭니다. 유리하게 움직이면 오히려 늘어나기도 해요.',
       '송금하는 동안에도 김프는 움직여요. 도착했을 때 이미 좁혀져 있으면 그만큼이 비용이 됩니다.',
-      '원하는 만큼 원할 때 꺼낼 수 없다면, 기회를 놓치는 것도 비용입니다.',
       null,
     ],
-    why: '앞의 세 가지는 실제로 수익을 깎습니다. 특히 송금 시간은 그 사이 김프가 좁혀질 수 있어 눈에 안 보이는 비용입니다. 아래 체크리스트에서 여섯 가지를 하나씩 확인해보세요.',
+    why: '앞의 세 가지는 실제로 수익을 깎습니다. 환율은 그중 하나로, 불리하게 움직이면 줄고 유리하게 움직이면 늘어납니다. 아래 체크리스트에서 나머지 요인들도 확인해보세요.',
   },
 ];
 const quizDone = new Array(QUIZ.length).fill(false);
@@ -693,7 +708,10 @@ function renderQuiz(){
       if (oi === it.ans) {
         btn.classList.add('correct');
         quizDone[qi] = true;
+        // 오답에만 힌트가 붙고 정답에는 아무 설명이 없으면, 다 맞힌 사람은
+        // 배우는 것 없이 지나간다. 정답 자리에도 왜 그런지를 남긴다.
         msg.textContent = '정답이에요!';
+        if (it.why) msg.appendChild(whyNode(it.why));
         msg.className = 'quiz-msg ok';
         document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.disabled = true);
         checkUnlock();
@@ -713,6 +731,14 @@ function renderQuiz(){
 }
 
 // 이전에 고른 오답의 표시와 힌트를 지운다.
+// 해설 상자. renderQuiz 와 reserveHintSpace 가 같은 모양을 써야 예약한 높이가 맞는다.
+function whyNode(text){
+  const el = document.createElement('span');
+  el.className = 'quiz-why';
+  el.textContent = text;
+  return el;
+}
+
 function clearHints(qi){
   document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(b => b.classList.remove('wrong'));
   QUIZ[qi].hints.forEach((h, oi) => {
@@ -741,6 +767,15 @@ function reserveHintSpace(){
       max = Math.max(max, q.offsetHeight);
       el.hidden = wasHidden; el.innerHTML = prev;
     });
+    // 정답 해설도 같은 카드 안에서 자리를 차지한다. 같이 재두지 않으면
+    // 정답을 맞히는 순간 카드가 늘어나 아래 내용이 밀린다.
+    if (it.why) {
+      const msg = q.querySelector('.quiz-msg');
+      msg.textContent = '정답이에요!';
+      msg.appendChild(whyNode(it.why));
+      max = Math.max(max, q.offsetHeight);
+      msg.textContent = '';   // 예약 시점의 msg 는 항상 비어 있다
+    }
     if (max > 0) q.style.minHeight = max + 'px';   // 레이아웃을 못 재는 환경(테스트 등)에서는 건너뛴다
   });
 }

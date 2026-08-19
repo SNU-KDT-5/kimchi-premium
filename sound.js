@@ -139,7 +139,7 @@
   //
   //   자주 울리는 것일수록 조용해야 층이 무너지지 않는다.
   var FILES = {
-    'say-frog': ['assets/sfx/say-frog.wav', 1.00, 90],   // 김프로그 말풍선
+    'say-frog': ['assets/sfx/say-frog.wav', 2.20, 90],   // 김프로그 말풍선 (원본이 작게 녹음돼 있어 키운다)
     'say-rat':  ['assets/sfx/say-rat.wav',  1.00, 90],   // 김프랫 말풍선
     step:       ['assets/sfx/step.wav',     1.27, 120],  // 걷는 발소리
     dash:       ['assets/sfx/dash.wav',     0.95, 60],   // 김프랫 달리기 (연타)
@@ -229,6 +229,9 @@
     try { localStorage.setItem(KEY, enabled ? '1' : '0'); } catch (e) {}
     if (enabled) loadAll();
     paint();
+    // 음악도 이 토글 하나에 묶인다. 끄면 멈추고, 켜면 원래 틀려던 곡부터 다시.
+    if (enabled) { if (wantTrack) { crossfade(wantTrack, wantRestart); wantRestart = false; } }
+    else stopMusic();
     if (enabled && fromUser) play('say-frog');   // 켠 순간 소리로 확인시켜 준다
   }
 
@@ -289,13 +292,94 @@
 
   // 다른 탭으로 가면 소리를 멈춘다
   document.addEventListener('visibilitychange', function () {
-    if (!ctx) return;
-    if (document.hidden) ctx.suspend();
-    else if (enabled) ctx.resume();
+    if (document.hidden) {
+      if (ctx) ctx.suspend();
+      Object.keys(els).forEach(function (k) { els[k].pause(); });
+    } else if (enabled) {
+      if (ctx) ctx.resume();
+      if (curTrack && els[curTrack]) {
+        var p = els[curTrack].play(); if (p && p.catch) p.catch(function () {});
+      }
+    }
   });
+
+  // ══════════════════════════════════════════════════════════
+  // 배경음악 — 효과음과 달리 길어서 <audio> 로 흘려 보낸다.
+  //   · 토글 하나로 효과음과 함께 켜고 꺼진다.
+  //   · 곡을 바꿀 땐 겹쳐 페이드한다. 이전 곡은 멈춘 자리를 기억했다가
+  //     돌아올 때 이어서 튼다 — 처음부터 다시 틀면 리셋된 느낌이 난다.
+  // ══════════════════════════════════════════════════════════
+  //   [파일, 음량, 들어올 때 페이드(ms)]. 페이드가 0이면 곧바로 제 음량으로 시작한다.
+  var TRACKS = {
+    main: ['assets/bgm/main.m4a', 0.16, 900],   // 시작화면부터 끝까지 깔리는 곡
+    rat:  ['assets/bgm/rat.m4a',  0.13, 0]      // 김프랫 구간 — 바로 시작
+  };
+  var FADE = 900;                          // 기본으로 겹치는 시간(ms)
+  var QUICK_OUT = 250;                     // 새 곡이 바로 시작할 땐 옛 곡을 빨리 뺀다
+  var els = {}, curTrack = null, fadeTimer = null;
+
+  function trackEl(name) {
+    if (els[name]) return els[name];
+    var a = new Audio();
+    a.src = TRACKS[name][0];
+    a.loop = true;
+    a.preload = 'none';
+    a.volume = 0;
+    els[name] = a;
+    return a;
+  }
+
+  // from 을 줄이면서 to 를 키운다. to 가 없으면 그냥 줄여서 멈춘다.
+  function crossfade(to, restart) {
+    clearInterval(fadeTimer);
+    var from = curTrack && curTrack !== to ? els[curTrack] : null;
+    var next = to ? trackEl(to) : null;
+    var goal = to ? TRACKS[to][1] : 0;
+    if (next) {
+      if (restart) { try { next.currentTime = 0; } catch (e) {} }
+      next.volume = next.volume || 0;
+      var p = next.play();
+      if (p && p.catch) p.catch(function (e) { api.lastError = e; });
+    }
+    curTrack = to;
+    // 새 곡이 곧바로 들어오는 경우엔 제 음량을 바로 얹고, 옛 곡만 빠르게 뺀다.
+    var inMs = to && TRACKS[to][2] !== undefined ? TRACKS[to][2] : FADE;
+    var outMs = inMs === 0 ? QUICK_OUT : FADE;
+    if (next && inMs === 0) next.volume = goal;
+    var t0 = Date.now(), v0 = from ? from.volume : 0, w0 = next ? next.volume : 0;
+    fadeTimer = setInterval(function () {
+      var now = Date.now() - t0;
+      if (from) from.volume = Math.max(0, v0 * (1 - Math.min(now / outMs, 1)));
+      if (next && inMs > 0) {
+        var k = Math.min(now / inMs, 1);
+        next.volume = Math.min(1, w0 + (goal - w0) * k);
+      }
+      if (now >= Math.max(inMs, outMs)) {
+        clearInterval(fadeTimer); fadeTimer = null;
+        if (from) from.pause();                 // currentTime 은 그대로 — 돌아올 때 이어진다
+      }
+    }, 40);
+  }
+
+  // 바깥에서 부르는 것. 이름을 주면 그 곡으로, null 이면 음악을 끈다.
+  //   restart 를 주면 이어서가 아니라 처음부터 다시 튼다
+  function music(name, restart) {
+    if (!enabled) { wantTrack = name; wantRestart = !!restart; return; }
+    if (name === curTrack && !restart) return;
+    wantTrack = name; wantRestart = false;
+    crossfade(name, restart);
+  }
+  var wantTrack = null, wantRestart = false;
+
+  function stopMusic() {
+    clearInterval(fadeTimer); fadeTimer = null;
+    Object.keys(els).forEach(function (k) { els[k].pause(); els[k].volume = 0; });
+    curTrack = null;
+  }
 
   var api = {
     play: play,
+    music: music,
     load: loadAll,
     isOn: function () { return enabled; },
     chosen: function () { return chosen; },   // 아직 안 정했으면 켜라고 권할 수 있다

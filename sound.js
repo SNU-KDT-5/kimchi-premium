@@ -149,18 +149,27 @@
     dread:      ['assets/sfx/dread.wav',    0.70, 400],  // 포돌이 등장
     siren:      ['assets/sfx/siren.wav',    0.75, 400]   // 마지막 후레쉬
   };
-  var buffers = {}, fetching = {};
+  var buffers = {}, fetching = {}, waiting = {};
 
-  function load(name) {
-    if (!FILES[name] || buffers[name] !== undefined || fetching[name]) return;
+  // 다 받아 온 순간 기다리던 재생을 흘려 보낸다
+  function flush(name) {
+    var q = waiting[name]; waiting[name] = null;
+    if (q) for (var i = 0; i < q.length; i++) { try { q[i](); } catch (e) {} }
+  }
+
+  function load(name, done) {
+    if (!FILES[name]) return;
+    if (buffers[name] !== undefined) { if (done) done(); return; }
+    if (done) (waiting[name] = waiting[name] || []).push(done);
+    if (fetching[name]) return;
     fetching[name] = true;
     fetch(FILES[name][0])
       .then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); })
       .then(function (b) {
         return new Promise(function (ok, no) { ctx.decodeAudioData(b, ok, no); });
       })
-      .then(function (buf) { buffers[name] = buf; })
-      .catch(function () { buffers[name] = null; });   // 실패하면 합성음으로 간다
+      .then(function (buf) { buffers[name] = buf; flush(name); })
+      .catch(function () { buffers[name] = null; flush(name); });   // 실패하면 합성음으로 간다
   }
   function loadAll() { if (ready()) Object.keys(FILES).forEach(load); }
 
@@ -193,8 +202,19 @@
     try {
       var t = ctx.currentTime + 0.005;
       if (buffers[name]) { playFile(name, t, rate); return; }
-      if (FILES[name]) load(name);                      // 아직 안 받았으면 받아 두고
-      if (SFX[name]) SFX[name](t);                      // 이번 판은 합성음으로
+      if (FILES[name]) {
+        // 아직 안 받았으면 받아 두고, 준비되는 대로 울린다.
+        // 소리를 켜자마자 누르면 파일이 아직 안 와 있어서 그냥 지나가 버린다.
+        // 다만 너무 늦게 도착한 건 이미 지나간 장면의 소리라 버린다.
+        var asked = Date.now();
+        load(name, function () {
+          if (!enabled || !buffers[name]) return;
+          if (Date.now() - asked > 1500) return;
+          playFile(name, ctx.currentTime + 0.005, rate);
+        });
+        return;
+      }
+      if (SFX[name]) SFX[name](t);                      // 파일이 아예 없는 것만 합성음으로
     } catch (e) { api.lastError = e; }
   }
 

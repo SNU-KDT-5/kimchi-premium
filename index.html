@@ -509,7 +509,12 @@
     // 그래서 DOM 이 다 만들어진 뒤에 붙인다.
     function initStartScreen() {
       var scr = document.getElementById('startScreen');
-      if (!scr) return;
+      if (!scr) {
+        // 잠금은 이 함수 밖에서 미리 걸어 뒀다. 시작화면이 없으면 풀어 줄 사람이
+        // 아무도 없으므로 여기서 풀어야 한다 — 안 그러면 스크롤이 영영 잠긴다.
+        document.documentElement.style.overflow = '';
+        return;
+      }
       var go = document.getElementById('startGo');
       var card = document.getElementById('chartWrap');
       // 소리 토글(평소엔 화면 좌하단 고정)을 시작화면 동안만 배너 오른쪽 위로 데려온다
@@ -536,14 +541,14 @@
         if (fab && fab.contains(e.target)) return;   // 소리 토글을 누른 건 '시작' 이 아니다
         start();
       });
-      go.addEventListener('click', function (e) { e.stopPropagation(); start(); });
+      if (go) go.addEventListener('click', function (e) { e.stopPropagation(); start(); });
 
       // 버튼에 마우스를 올릴 때 스치는 소리.
       //   · 1.5배속으로 줄인다 — 원래 661ms 라 호버치고는 길다.
       //   · 700ms 안에는 다시 울리지 않는다. 버튼 위에서 마우스를 흔들면
       //     기본 간격(200ms)으로는 드르륵거린다.
       var lastHover = 0;
-      go.addEventListener('mouseenter', function () {
+      if (go) go.addEventListener('mouseenter', function () {
         var now = Date.now();
         if (now - lastHover < 700) return;
         lastHover = now;
@@ -558,10 +563,16 @@
       }
       paintTip();
       if (fab) fab.addEventListener('click', function () { setTimeout(paintTip, 0); });
+      // 아무 데서나 Enter/Space 로 시작할 수 있게 하되, 누를 것이 이미 있는
+      // 자리(네비 링크·버튼·입력칸)에서는 손대지 않는다. 안 그러면 Tab 으로
+      // 네비 링크에 간 사람이 Enter 를 눌러도 링크 대신 이야기가 시작된다.
       window.addEventListener('keydown', function (e) {
         if (gone) return;
-        if (fab && e.target === fab) return;         // 토글은 자기 기본 동작에 맡긴다
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(); }
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var t = e.target, tag = (t && t.tagName || '').toLowerCase();
+        if (tag === 'a' || tag === 'button' || tag === 'input' ||
+            tag === 'select' || tag === 'textarea' || (t && t.isContentEditable)) return;
+        e.preventDefault(); start();
       });
     }
 

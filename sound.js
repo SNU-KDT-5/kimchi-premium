@@ -161,11 +161,11 @@
 
   function mount() {
     if (btn) return true;
-    var bar = document.querySelector('.topnav-inner');
-    if (!bar) return false;
+    // topnav-inner 안에 넣지 않는다 — 탭 버튼들의 x좌표가 이 버튼 유무에 따라
+    // 페이지마다 달라지는 걸 막기 위해, 화면에 독립적으로 떠 있는 버튼으로 둔다.
     btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'topnav-sound';
+    btn.className = 'sound-fab';
     btn.innerHTML =
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
         '<path class="spk" d="M4 9.4h3.4L12 5.2v13.6L7.4 14.6H4z"/>' +
@@ -174,7 +174,7 @@
         '<path class="slash" d="M15.6 9.6l5 4.8m0-4.8l-5 4.8"/>' +
       '</svg>';
     btn.addEventListener('click', function () { setOn(!enabled, true); });
-    bar.appendChild(btn);
+    document.body.appendChild(btn);
     paint();
     return true;
   }

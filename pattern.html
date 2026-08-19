@@ -59,7 +59,7 @@
     fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none;
     transition: font-size 0.12s ease;
   }
-  .band-label.label-hot { font-size: 15px; }
+  .band-label.label-hot { font-size: 17px; }
 
   .event-dot {
     fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer;
@@ -76,7 +76,7 @@
     stroke: var(--panel); stroke-width: 3; paint-order: stroke; stroke-linejoin: round;
     transition: font-size 0.12s ease;
   }
-  .event-label.label-hot { font-size: 14.5px; }
+  .event-label.label-hot { font-size: 16.5px; }
   /* 라벨을 좌우로 밀어냈을 때 어느 대상의 이름인지 이어주는 선입니다. */
   .leader { fill: none; stroke: var(--dim); stroke-width: 1; opacity: 0.55; pointer-events: none; }
 
@@ -84,14 +84,52 @@
   .hover-guide { stroke: var(--dim); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
   .hover-dot { fill: var(--text); stroke: var(--panel); stroke-width: 2; pointer-events: none; }
 
+  /* 주간 그래프를 살펴보는 동안 마우스를 따라다니는 작은 탐색 렌즈입니다.
+     그래프를 실제로 확대하지 않고, 가까운 사건명과 기존 안내 반응을 함께 강조합니다. */
+  #overviewBlock { position: relative; }
+  .overview-lens {
+    position: absolute; z-index: 2; width: 24px; height: 24px;
+    border: 1px solid var(--frog); border-radius: 50%;
+    background: var(--frog-bg);
+    pointer-events: none; opacity: 0;
+    transform: translate(-50%, -50%) scale(0.82);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    will-change: left, top;
+  }
+  .overview-lens::after {
+    content: ''; position: absolute; width: 8px; height: 1px;
+    right: -6px; bottom: 0; border-radius: 999px;
+    background: var(--frog); transform: rotate(45deg); transform-origin: left center;
+  }
+  .overview-lens.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  @media (hover: none), (pointer: coarse) { .overview-lens { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .overview-lens { transition: none; } }
+
   .pat-hint {
     font-size: 0.78rem; color: var(--dim); margin-top: var(--sp-3);
     display: flex; align-items: center; gap: 6px;
   }
   /* 안내 문구 앞의 작은 개구리 아이콘. 도움말 버튼(.frog-help)과 달리 얼굴 안쪽을
      초록으로 채운 버전이라, 단순 점보다 눈에 잘 띄면서도 클릭 가능한 버튼처럼 보이지 않습니다. */
-  .pat-hint .hint-frog { width: 15px; height: 15px; color: var(--frog); flex: none; display: inline-block; }
+  .pat-hint .hint-frog {
+    width: 15px; height: 15px; color: var(--frog); flex: none; display: inline-block;
+    position: relative;
+  }
   .pat-hint .hint-frog svg { width: 100%; height: 100%; display: block; }
+  /* 안내 문구를 놓치지 않도록 개구리 주변의 링만 천천히 퍼져 나갑니다. */
+  .pat-hint .hint-frog::after {
+    content: ''; position: absolute; inset: -3px; border: 1.5px solid currentColor;
+    border-radius: 50%; pointer-events: none;
+    animation: hintFrogGlow 2.6s ease-out infinite;
+  }
+  @keyframes hintFrogGlow {
+    0%       { transform: scale(0.7); opacity: 0; }
+    15%      { opacity: 0.55; }
+    55%, 100% { transform: scale(1.45); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pat-hint .hint-frog::after { animation: none; display: none; }
+  }
 
   /* ── 상세 (구간·하루 공통) ── */
   /* 안내 문구(.pat-hint)에서 이 구분선까지의 간격이 너무 크게 느껴져서 위쪽만 줄였습니다. */
@@ -175,9 +213,10 @@
     background: var(--panel2); border: 1px solid var(--border);
     border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5) var(--sp-3);
   }
-  .zoom-title { font-size: 0.74rem; font-weight: 700; color: var(--mut); letter-spacing: .04em; margin-bottom: var(--sp-1); }
+  /* 제목과 바로 아래 범례가 붙어 보이지 않도록 미니 차트 제목과 비슷한 여유를 둡니다. */
+  .zoom-title { font-size: 0.74rem; font-weight: 700; color: var(--mut); letter-spacing: .04em; margin-bottom: var(--sp-2); }
   /* 확대 차트에서 눈에 먼저 들어와야 하는 것:
-     ① 이 기간에 김프가 가장 크게 움직인 구간 ② 그 최저·최고점 ③ 사건이 있었던 날 */
+     ① 사건 전후 확대 범위에서 가장 크게 움직인 구간 ② 그 최저·최고점 ③ 사건이 있었던 날 */
   /* 방향 색 — 오름은 빨강, 내림은 파랑(국내 시세 표기 관행)입니다.
      이 색은 "변화"에만 쓰고, 김프 수준값 같은 방향 없는 숫자에는 쓰지 않습니다. */
   :root { --down: #2f5d9e; --down-bg: rgba(47, 93, 158, 0.12); --down-line: rgba(47, 93, 158, 0.3); }
@@ -192,7 +231,16 @@
   .swing-arrow-halo { stroke: var(--panel2); stroke-width: 7; fill: none; opacity: 0.95; stroke-linecap: round; }
 
   .peak-dot { fill: var(--dir); stroke: var(--panel); stroke-width: 2; }
-  .peak-halo { fill: none; stroke: var(--dir); stroke-width: 1.5; opacity: 0.35; }
+  /* 최저·최고 위치를 놓치지 않도록 바깥 링만 천천히 반짝입니다. */
+  .peak-halo {
+    fill: none; stroke: var(--dir); stroke-width: 1.5; opacity: 0.35;
+    transform-box: fill-box; transform-origin: center;
+    animation: peakGlow 1.8s ease-in-out infinite;
+  }
+  @keyframes peakGlow {
+    0%, 100% { transform: scale(0.9); opacity: 0.22; }
+    50%      { transform: scale(1.35); opacity: 0.72; }
+  }
 
   /* 숫자 카드를 눌렀을 때 확대 차트의 연결된 점에서 잠깐 번지는 링 효과입니다. */
   .zoom-ping {
@@ -205,6 +253,7 @@
     from { transform: scale(0.3); opacity: 0.9; }
     to   { transform: scale(3.4); opacity: 0; }
   }
+  @media (prefers-reduced-motion: reduce) { .peak-halo { animation: none; } }
 
   /* 사건일·촉발일은 amber로 통일해 "그날"이라는 걸 드러냅니다. */
   .marker-line { stroke: var(--amber); stroke-width: 1.6; stroke-dasharray: 3 3; }
@@ -223,6 +272,8 @@
     font-size: 10.5px; font-weight: 800; font-family: var(--font-mono);
     fill: var(--text); pointer-events: none;
   }
+  /* 김프 확대 차트의 최대 변화·촉발일·최저·최고 태그는 한 단계 크게 표시합니다. */
+  .zoom-wrap .tag-text { font-size: 12px; }
   .tag-text--dir { fill: var(--dir); }
   .tag-text--accent { fill: var(--accent); }
   .tag-text--amber { fill: var(--amber); }
@@ -256,7 +307,7 @@
   .mini-area--fx { fill: var(--accent-bg); }
   .mini-area--btc { fill: var(--frog-bg); }
   .mini-tag-text {
-    font-size: 9px; font-weight: 800; font-family: var(--font-mono); pointer-events: none;
+    font-size: 12px; font-weight: 800; font-family: var(--font-mono); pointer-events: none;
   }
 
   /* 환율·BTC는 같은 기간의 실제 움직임을 각자 축으로 그립니다. */
@@ -340,8 +391,7 @@
     <div class="eyebrow mono">패턴분석</div>
     <h1>김프는 언제 가장 크게 흔들렸을까</h1>
     <p>
-      여기서 보는 김프는 <b>환율까지 반영해서 계산한 값</b>이에요.
-      2017년부터 지금까지 어떻게 흘러왔는지, 먼저 큰 흐름부터 보여드려요.
+      2017년부터 지금까지 김프가 어떻게 오르내렸는지 한눈에 볼 수 있어요. 여기서 보는 김프는 <b>환율까지 반영해서 계산한 값</b>이에요.
     </p>
   </div>
 
@@ -388,6 +438,7 @@
       <div id="overviewBlock" hidden>
         <svg id="overview" viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg"
              aria-label="주간 평균 김프 추이와 주요 사건 위치"></svg>
+        <span id="overviewLens" class="overview-lens" aria-hidden="true"></span>
         <p class="pat-hint">
           <span class="hint-frog" aria-hidden="true"></span>
           음영 구간이나 점을 누르면 아래에서 그때 김프·환율·BTC가 어떻게 움직였는지 자세히 볼 수 있어요.
@@ -476,6 +527,7 @@
   const chartEmpty = document.getElementById('chartEmpty');
   const overviewBlock = document.getElementById('overviewBlock');
   const overviewSvg = document.getElementById('overview');
+  const overviewLens = document.getElementById('overviewLens');
   const detail = document.getElementById('detail');
 
   // 이 차트를 보고 있는 시점을 왼쪽에 작게 표시해, 데이터 기준점을 알려줍니다.
@@ -512,8 +564,8 @@
       title: '2017년 말 김프 대폭등',
       what: '두 달 남짓한 사이 김프가 -0.2%에서 +57.6%까지 올라, 사상 최고 수준에 닿았어요. ' +
             '국내와 해외에서 BTC 가격이 모두 올랐지만, 오르는 폭은 서로 달랐어요.',
-      why: '국내 BTC는 188% 올랐지만 해외는 87% 올랐어요. 이 차이가 그대로 김프가 되었어요. ' +
-           '환율은 거의 움직이지 않았어요. 한 번의 발표 때문이라기보다, 여러 주 동안 국내 개인들이 사려는 움직임이 쌓인 결과예요.'
+      why: '국내 BTC가 188% 오르는 동안 해외는 87% 올라, 국내외 가격 차이가 커졌어요. **이 차이가 김프 상승으로 이어졌어요.** ' +
+           '환율은 거의 움직이지 않았어요. 특정한 한 사건 때문이라기보다, 여러 주 동안 국내 개인들이 사려는 움직임이 쌓인 결과예요.'
     },
     {
       id: 'w-park-regulation',
@@ -523,8 +575,8 @@
       chartLabel: '박상기 규제 충격',
       title: '박상기 거래소 폐쇄 발언과 규제 충격',
       what: '법무부장관이 거래소 폐쇄를 검토한다고 말한 1월 11일 이후, 김프가 +57.6%에서 -4.9%까지 62.5%p 줄었어요.',
-      why: '한 달 동안 국내 BTC는 62%, 해외는 38% 떨어졌어요. 국내 가격이 더 크게 떨어진 만큼 ' +
-           '김프도 사라졌고, 환율의 영향은 거의 없었어요. 발언 뒤에도 규제에 대한 걱정이 이어지면서 하락 폭이 ' +
+      why: '한 달 동안 국내 BTC는 62%, 해외는 38% 떨어졌어요. **국내 가격이 더 크게 내려간 만큼 김프도 줄었고,** ' +
+           '환율의 영향은 거의 없었어요. 발언 뒤에도 규제에 대한 걱정이 이어지면서 하락 폭이 ' +
            '여러 달 동안 더 커졌어요.'
     },
     {
@@ -535,7 +587,7 @@
       title: '역프에서 급등까지, 2021년 상반기 김프 반전',
       what: '한때 -6%로 역프였던 김프가 두 달여 만에 +21%까지 바뀌었어요.',
       why: '환율은 거의 그대로였지만, 국내 BTC가 92% 오르는 동안 해외는 49% 올랐어요. ' +
-           '국내에서 사려는 움직임이 더 앞서가면서 가격 차이가 벌어졌어요.'
+           '**국내에서 사려는 움직임이 더 앞서가면서 가격 차이가 벌어졌고, 김프도 함께 커졌어요.**'
     },
     {
       id: 'w-ftx-normalize',
@@ -561,7 +613,7 @@
             '3일이었어요. 높은 김프가 두 달 넘게 이어졌고, 같은 기간 BTC(원화)는 52% 올랐어요.',
       why: '미국 현물 비트코인 ETF가 승인된 1월 10일부터 시작된 상승장에서 국내 가격이 더 크게 움직였어요. ' +
            '2월 중순 저점부터 3월 고점까지 국내 BTC가 38% 오르는 동안 해외는 24% 올랐어요. ' +
-           '환율은 이 기간 5% 올라 원화 가치가 약해졌고, 이는 김프를 낮추는 방향으로 작용했어요. 그래서 실제 가격 차이는 ' +
+           '이 차이가 높은 김프로 이어졌어요. **환율은 이 기간 5% 올라 원화 가치가 약해졌고, 이는 김프를 낮추는 방향으로 작용했어요.** 그래서 실제 가격 차이는 ' +
            '김프 수치보다 더 컸어요.'
     },
     {
@@ -572,8 +624,8 @@
       chartLabel: 'ATH FOMO→진정',
       title: '비트코인 ATH와 국내 매수세, 그리고 진정',
       what: '비트코인이 사상 최고가를 새로 쓰던 시기에 김프가 +8%대까지 올랐어요. 그 뒤 한 달여 동안 다시 차분해졌어요.',
-      why: '관세 문제로 세계 시장에서 큰 청산이 일어난 10월 10일, 해외 가격은 11% 떨어졌지만 국내 가격은 4% 떨어졌어요. 그래서 가격 차이가 ' +
-           '벌어졌고, 이후 국내 가격도 뒤늦게 따라 내려가면서 다시 좁혀졌어요.'
+      why: '관세 문제로 세계 시장에서 큰 청산이 일어난 10월 10일, 해외 가격은 11% 떨어졌지만 국내 가격은 4% 떨어졌어요. ' +
+           '**이 낙폭 차이로 김프가 벌어졌고,** 이후 국내 가격도 뒤늦게 따라 내려가면서 다시 좁혀졌어요.'
     }
   ];
 
@@ -584,26 +636,26 @@
       chartLabel: '코로나19 쇼크',
       title: '코로나19 팬데믹 쇼크',
       what: '세계 금융시장이 크게 불안해지면서 BTC 가격이 급락한 날이에요. 그런데 김프는 오히려 +8.7%까지 올랐어요.',
-      why: '**김프가 올랐다고 해서 국내 가격이 괜찮았던 것은 아니에요.** 일주일 동안 국내도 41% 떨어졌고, ' +
-           '해외는 47% 떨어졌어요. 해외 가격이 더 크게 떨어진 그 차이만큼 김프가 벌어졌어요.'
+      why: '일주일 동안 국내 가격은 41%, 해외 가격은 47% 떨어졌어요. 해외 가격의 하락 폭이 국내보다 컸고, 이 가격 차이가 김프 상승으로 나타났어요. ' +
+           '**그렇다고 국내 가격이 괜찮았던 것은 아니에요.**'
     },
     {
       id: 'd-eunsungsoo-2021',
       date: '2021-04-22',
-      chartLabel: '은성수 발언',
+      chartLabel: '거래소 폐쇄 발언',
       title: '은성수 거래소 폐쇄 발언',
       what: '금융위원장이 거래소를 폐쇄할 수도 있다고 말한 뒤, 투자 심리가 위축되면서 김프가 +13%에서 +4%로 좁혀졌어요.',
-      why: '일주일 동안 국내 가격은 25%, 해외 가격은 18% 떨어졌어요. 국내 가격이 더 크게 떨어진 만큼 ' +
-           '김프가 줄었고, 환율은 거의 그대로였어요.'
+      why: '일주일 동안 국내 가격은 25%, 해외 가격은 18% 떨어졌어요. **국내 가격이 더 크게 내려간 만큼 ' +
+           '김프가 줄었고,** 환율은 거의 그대로였어요.'
     },
     {
       id: 'd-519-2021',
       date: '2021-05-19',
-      chartLabel: '5·19 크래시',
+      chartLabel: '5·19 시장 급락',
       title: '5·19 크래시와 중국 채굴 전면 금지',
       what: '중국의 채굴 단속 발표와 겹치면서 세계 시장이 크게 떨어진 날이에요. 김프는 +21%까지 올랐어요.',
-      why: '일주일 동안 해외 가격은 26%, 국내 가격은 19% 떨어졌어요. 해외 가격이 더 크게 떨어진 만큼 김프가 ' +
-           '벌어졌어요. 국내 가격도 크게 떨어진 날이에요.'
+      why: '일주일 동안 해외 가격은 26%, 국내 가격은 19% 떨어졌어요. **국내 가격이 해외보다 덜 내려가면서 김프가 벌어졌어요.** ' +
+           '국내 가격도 크게 떨어진 날이에요.'
     },
     {
       id: 'd-terra-2022',
@@ -612,7 +664,7 @@
       title: '테라·루나 UST 디페깅',
       what: '스테이블코인 UST의 가치가 기준에서 벗어나는 디페깅이 일어나면서, 루나 생태계가 무너지고 세계 시장도 크게 흔들렸어요. ' +
             'BTC(원화)도 일주일 동안 20% 떨어졌는데, 김프는 +9%까지 올랐어요.',
-      why: '해외 가격이 27% 떨어지며 더 크게 내려갔기 때문이에요. ' +
+      why: '해외 가격이 27% 떨어지는 동안 국내 가격은 그보다 덜 내려가 김프가 올랐어요. ' +
            '**국내 가격도 떨어졌지만, 해외 가격보다 덜 떨어진 거예요.**'
     },
     {
@@ -623,8 +675,8 @@
       milestone: true,
       what: '비상계엄이 선포된 날이에요. 하루 마감 가격인 종가로 계산한 김프는 -0.7%로 변화가 작았지만, ' +
             '하루 중에는 한때 -34.4%까지 내려갔다가 다시 돌아왔어요.',
-      why: '**종가만 보면 국내 가격, 해외 가격, 환율이 거의 함께 움직여서 김프 변화가 없어요.** ' +
-           '선포 직후 짧은 시간 동안 국내 가격만 급락했다가 회복했기 때문에, 종가 차트에는 이 움직임이 나타나지 않아요.'
+      why: '**종가만 보면 국내 가격, 해외 가격, 환율이 거의 함께 움직여 김프 변화가 거의 없어요.** ' +
+           '다만 선포 직후 짧은 시간 동안 국내 가격만 급락했다가 회복했기 때문에, 종가 차트에는 이 움직임이 나타나지 않아요.'
     }
   ];
 
@@ -682,7 +734,7 @@
 
   // ---------------------------------------------------------------------
   // 라벨 배치
-  //   사건이 몰린 구간(2017년 말/박상기, 은성수/5·19)은 라벨이 겹치므로
+  //   사건이 몰린 구간(2017년 말/박상기, 거래소 폐쇄 발언/5·19)은 라벨이 겹치므로
   //   좌우로 밀어 떨어뜨리고, 밀어낸 라벨은 연결선으로 대상을 가리킵니다.
   // ---------------------------------------------------------------------
   function textWidth(text, size) {
@@ -822,11 +874,11 @@
     const newLabels = [];
 
     // 구간 라벨 위치를 먼저 잡습니다(겹치면 좌우로 밀어냄).
-    // 마우스를 가까이 대면 라벨이 커지므로(label-hot, 15px), 넓힌 폭 기준으로
+    // 마우스를 가까이 대면 라벨이 커지므로(label-hot, 17px), 넓힌 폭 기준으로
     // 자리를 잡아야 커진 상태에서도 옆 라벨과 안 겹칩니다.
     const labelBoxes = periods.map(function (p) {
       const cx = (ox(yearOf(p.start)) + ox(yearOf(p.end))) / 2;
-      return { cx: cx, w: textWidth(p.chartLabel, 15) };
+      return { cx: cx, w: textWidth(p.chartLabel, 17) };
     });
     const labelX = spreadX(labelBoxes, 14, OV.left, OV.W - OV.right);
     const labelY = OV.top - 22;
@@ -849,7 +901,9 @@
       overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx2, x2: bx2, y1: OV.top, y2: OV.top + plotH }));
 
       const cx = (bx1 + bx2) / 2;
-      if (Math.abs(labelX[i] - cx) > 2) {
+      // 라벨이 아주 조금 움직인 경우까지 선을 그리면 2024 ETF처럼 연결 관계가
+      // 분명한 구간에도 불필요한 선이 생기므로, 충분히 멀어진 경우에만 표시합니다.
+      if (Math.abs(labelX[i] - cx) > 12) {
         overviewSvg.appendChild(el('polyline', {
           class: 'leader',
           points: [labelX[i], labelY + 5, cx, OV.top - 3].join(' ')
@@ -887,8 +941,8 @@
 
     // 일봉 사건 점은 주간 평균선 위에 얹어 선과 붙게 합니다.
     // (그날 실제 김프는 상세 카드에서 보여줍니다.)
-    // 마우스로 가까이 대면 커지는 라벨(label-hot, 14.5px) 기준으로 자리를 넉넉히 잡았더니
-    // 사건들이 몰린 구간(은성수 발언·5·19 크래시·테라·루나)에서 점과 라벨을 잇는 선이
+    // 마우스로 가까이 대면 커지는 라벨(label-hot, 16.5px) 기준으로 자리를 넉넉히 잡았더니
+    // 사건들이 몰린 구간(거래소 폐쇄 발언·5·19 시장 급락·테라·루나)에서 점과 라벨을 잇는 선이
     // 너무 길게 늘어졌습니다. 기본 크기(11.5px) 기준으로 되돌리고, 호버로 커졌을 때
     // 살짝 붙어 보이는 정도는 감수합니다.
     const dotPos = events.map(function (e) {
@@ -900,14 +954,14 @@
       return { cx: ox(ey), cy: oy(near.premium), w: textWidth(e.chartLabel, 11.5) };
     });
     const dotLabelX = spreadX(dotPos, 12, OV.left, OV.W - OV.right);
-    // 시간상 가까운 사건(예: 은성수 발언 · 5·19 크래시)도 세로로 단을 나누지 않고,
+    // 시간상 가까운 사건(예: 거래소 폐쇄 발언 · 5·19 시장 급락)도 세로로 단을 나누지 않고,
     // 모두 같은 높이(자기 점 위 18px)에 두고 좌우로만 나란히 늘어놓습니다.
     const dotLabelY = dotPos.map(function (d) {
       return d.cy - 18;
     });
     // 위 자리 계산은 "자기 자신의 점" 기준으로만 잡아서, 시간상 아주 가까운 사건끼리는
-    // 한쪽 라벨이 다른 쪽 사건의 점과 겹칠 수 있습니다(예: 은성수 발언 라벨이 27일 뒤
-    // 5·19 크래시의 점과 거의 같은 자리에 놓임). 화살표·연결선 모양이 아니라 라벨 위치
+    // 한쪽 라벨이 다른 쪽 사건의 점과 겹칠 수 있습니다(예: 거래소 폐쇄 발언 라벨이 27일 뒤
+    // 5·19 시장 급락의 점과 거의 같은 자리에 놓임). 화살표·연결선 모양이 아니라 라벨 위치
     // 자체의 문제라, 다른 사건의 점과 너무 가까운 라벨은 그 점을 피해 한 단 더 밀어냅니다.
     // 라벨은 항상 자기 점보다 위(작은 y)에 두는 규칙이라, 아래로 밀면 오히려 자기 점과
     // 부딪힐 수 있습니다. 그래서 충돌을 피할 땐 늘 위쪽(더 작은 y)으로만 밀어냅니다.
@@ -1058,9 +1112,35 @@
     hoverGroup.style.display = '';
   }
 
-  overviewSvg.addEventListener('mousemove', function (e) { updateOverviewHover(e.clientX); });
+  // 렌즈는 SVG 전체가 아니라 실제 데이터가 그려진 영역 안에서만 보입니다.
+  // 마우스 좌표는 화면 픽셀, 그래프 여백은 viewBox 좌표라 현재 표시 크기에 맞춰 환산합니다.
+  function updateOverviewLens(e) {
+    const svgRect = overviewSvg.getBoundingClientRect();
+    const blockRect = overviewBlock.getBoundingClientRect();
+    if (!svgRect.width || !svgRect.height) return;
+
+    const localX = e.clientX - svgRect.left;
+    const localY = e.clientY - svgRect.top;
+    const plotLeft = OV.left / OV.W * svgRect.width;
+    const plotRight = (OV.W - OV.right) / OV.W * svgRect.width;
+    const plotTop = OV.top / OV.H * svgRect.height;
+    const plotBottom = (OV.H - OV.bottom) / OV.H * svgRect.height;
+    const isInsidePlot = localX >= plotLeft && localX <= plotRight &&
+      localY >= plotTop && localY <= plotBottom;
+
+    overviewLens.classList.toggle('is-visible', isInsidePlot);
+    if (!isInsidePlot) return;
+    overviewLens.style.left = (e.clientX - blockRect.left) + 'px';
+    overviewLens.style.top = (e.clientY - blockRect.top) + 'px';
+  }
+
+  overviewSvg.addEventListener('mousemove', function (e) {
+    updateOverviewHover(e.clientX);
+    updateOverviewLens(e);
+  });
   overviewSvg.addEventListener('mouseleave', function () {
     if (hoverGroup) hoverGroup.style.display = 'none';
+    overviewLens.classList.remove('is-visible');
     overviewLabels.forEach(function (item) { item.el.classList.remove('label-hot'); });
   });
 
@@ -1074,8 +1154,8 @@
   // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
   function drawTag(svg, x, y, text, variant, extra) {
     const suffix = variant ? ' tag-box--' + variant : '';
-    const w = textWidth(text, 10.5) + 16;
-    const h = 19;
+    const w = textWidth(text, 12) + 18;
+    const h = 22;
     const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
     svg.appendChild(el('rect', {
       class: 'tag-box' + suffix + (extra ? ' ' + extra : ''),
@@ -1083,7 +1163,7 @@
     }));
     const t = el('text', {
       class: 'tag-text' + (variant ? ' tag-text--' + variant : '') + (extra ? ' ' + extra : ''),
-      x: cx, y: y + 3.6, 'text-anchor': 'middle'
+      x: cx, y: y + 4.1, 'text-anchor': 'middle'
     });
     t.textContent = text;
     svg.appendChild(t);
@@ -1176,7 +1256,7 @@
   //
   // 전체 기간에서 이 선을 넘는 날은 13일인데, 12일은 2017-12~2018-02에 몰려
   // 있어 모두 구간(주봉) 카드 영역입니다. 사건 카드 당일이 걸리는 건 비상계엄
-  // 하나뿐입니다. 10으로 낮추면 5·19 크래시(18.7%p)가 함께 걸립니다.
+  // 하나뿐입니다. 10으로 낮추면 5·19 시장 급락(18.7%p)이 함께 걸립니다.
   const LOW_GAP = 20;
 
   // 모든 변화 화살표는 길이·방향과 상관없이 같은 느린 속도로 그립니다.
@@ -1209,8 +1289,8 @@
     const plotTop = ZOOM.top;
     const plotBottom = ZOOM.H - ZOOM.bottom;
 
-
-    // 이 기간의 최저·최고와, 그 둘 사이(= 가장 크게 움직인 구간)를 먼저 구합니다.
+    // 사건 전후를 함께 보여주는 확대 범위에서 최저·최고를 찾습니다.
+    // 촉발 직전 고점부터 이후 저점까지 보여주려는 팀의 기존 기준을 유지합니다.
     let minI = 0, maxI = 0;
     values.forEach(function (v, i) {
       if (v < values[minI]) minI = i;
@@ -1227,7 +1307,7 @@
     // 접어둡니다. 둘을 같이 켜면 서로 시선을 뺏습니다.
     const showSwing = !hasDip && swingTo > swingFrom && Math.abs(swing) > 0.5;
 
-    // ① 가장 크게 움직인 구간을 배경으로 깔아 시선을 먼저 잡습니다.
+    // ① 사건 전후 확대 범위에서 가장 크게 움직인 구간을 기존 방향색 배경으로 강조합니다.
     if (showSwing) {
       svg.insertBefore(el('rect', {
         class: 'swing-band ' + dirClass,
@@ -1325,7 +1405,8 @@
 
     // 최대 변화폭은 구간 위쪽에 한 번 더 못박아 둡니다.
     if (showSwing && swingTo > swingFrom && Math.abs(swing) > 0.5) {
-      drawTag(svg, (g.px(swingFrom) + g.px(swingTo)) / 2, plotTop - 14,
+      // 커진 태그 박스가 하이라이트 배경에 붙어 보이지 않도록 위로 조금 띄웁니다.
+      drawTag(svg, (g.px(swingFrom) + g.px(swingTo)) / 2, plotTop - 18,
         '가장 큰 변화 ' + fmtPP(swing), 'dir', dirClass);
     }
 
@@ -1402,8 +1483,8 @@
   // 절대 금액은 계열마다 단위가 달라 한 축에 겹칠 수 없기 때문입니다.
   // 미니 차트 전용 작은 값 태그. 좌우로 붙잡아 차트 밖으로 안 나가게 합니다.
   function drawMiniTag(x, y, text, variant, width, rightMargin) {
-    const w = textWidth(text, 9) + 10;
-    const h = 15;
+    const w = textWidth(text, 12) + 14;
+    const h = 20;
     const cx = Math.max(10 + w / 2, Math.min(x, width - rightMargin - w / 2));
     const g = el('g', { class: 'mini-tag' });
     // 색깔 있는 태그 배경(tag-box--variant)을 쓰면 옅은 배경색 위에서 묻혀 보이니 글자는
@@ -1414,7 +1495,7 @@
     }));
     const t = el('text', {
       class: 'mini-tag-text tag-text tag-text--' + variant,
-      x: cx, y: y + 3.2, 'text-anchor': 'middle'
+      x: cx, y: y + 4.1, 'text-anchor': 'middle'
     });
     t.textContent = text;
     g.appendChild(t);
@@ -1577,9 +1658,18 @@
       const from = Math.max(0, s - padL);
       const to = Math.min(market.dates.length - 1, e + padR);
 
+      // 촉발일은 시작일과 같더라도 차트 안에서 정확한 위치를 확인할 수 있게 표시합니다.
+      // 다만 상세 상단 날짜에서는 같은 날짜를 두 번 적지 않습니다.
+      const hasMiddleTrigger = p.triggerDate && p.triggerDate !== p.start;
+      const triggerIndex = p.triggerDate ? findIndex(p.triggerDate) : null;
+
       // 구간 카드는 여러 주에 걸친 흐름이 본론이라, 하루 안의 급락은 넣지 않습니다
       // (2018년 초처럼 급락일이 여럿인 구간에서는 표시가 뒤엉킵니다).
-      const z = renderZoom(from, to, p.triggerDate ? findIndex(p.triggerDate) : null, '촉발일', null);
+      const z = renderZoom(
+        from, to,
+        triggerIndex,
+        '촉발일', null
+      );
       const fxNet = renderMini('fxChart', 'fxValue', 'fxRate', from, to, 'fx-line');
       const btcNet = renderMini('btcChart', 'btcValue', 'btcPrice', from, to, 'btc-line');
 
@@ -1592,11 +1682,12 @@
       document.getElementById('dTitle').textContent = p.title;
       kind.textContent = '여러 주에 걸친 사건';
       kind.className = 'badge badge-neutral';
-      // 촉발일이 있으면 시작~촉발~종료를 한 흐름으로 이어 붙여서, 촉발일이
-      // 그 기간 "안"의 한 시점이라는 걸 한눈에 보이게 합니다.
-      document.getElementById('dDate').textContent = p.triggerDate
+      // 중간 촉발일은 시작~촉발~종료로 보여주고, 시작일과 같으면 시작일 옆에 표시합니다.
+      document.getElementById('dDate').textContent = hasMiddleTrigger
         ? p.start + ' → ' + p.triggerDate + '(촉발) → ' + p.end
-        : p.start + ' ~ ' + p.end;
+        : p.triggerDate === p.start
+          ? p.start + '(촉발) → ' + p.end
+          : p.start + ' ~ ' + p.end;
       const head = document.getElementById('dHeadline');
       head.textContent = fmtPP(swing);
       // 변화폭이라 방향 색을 씁니다(오름 빨강 / 내림 파랑).
@@ -1605,10 +1696,9 @@
       document.getElementById('dHeadlineSub').hidden = true;
       document.getElementById('dHeadlineLabel').textContent = '최대 김프 변화폭';
       setDesc(p);
-      // 날짜 구간은 위 배지·아래 눈금 등 다른 곳에도 이미 나와 있어서 빼되,
-      // 총 며칠인지는 여기 말고 딱히 나오는 곳이 없어서 괄호로 남겨둡니다.
+      // 기간 선택과 사건일 선택의 확대 기준이 다르므로 괄호 안에서 기준을 구분합니다.
       document.getElementById('zoomTitle').textContent =
-        '이 사건의 김프 움직임 (' + (to - from + 1) + '일)';
+        '전후 김프 흐름 (선택 기간 포함)';
 
       // 숫자 카드를 누르면 확대 차트가 화면에 보이도록 이동한 뒤 대응 지점을 강조합니다.
       const jumpToZoom = function (indices) {
@@ -1664,7 +1754,7 @@
       }
 
       setDesc(ev);
-      document.getElementById('zoomTitle').textContent = '사건 전후 김프 움직임 (전후 약 2주)';
+      document.getElementById('zoomTitle').textContent = '전후 김프 흐름 (사건일 기준 약 2주)';
 
       // 급락일에는 "1·3·7일 전 대비"가 전부 0.1%p라서 오히려 오해를 키웁니다.
       if (dipIdx !== null) {
@@ -1784,12 +1874,12 @@
   const HELP = {
     fx: {
       title: '환율 그래프 읽는 법',
-      body: '<b>기간 첫날을 0%</b>로 둔 환율 변화율이에요. 숫자는 기간 전체의 변화율을 뜻해요. ' +
-            '주말·공휴일에는 <b>직전 영업일 환율</b>을 이어서 사용해요.'
+      body: '<b>기간 첫날을 0%</b>로 둔 환율 변화율이에요. <b>그래프 오른쪽 위의 숫자</b>는 선택한 기간 전체의 환율 변화율을 뜻해요. ' +
+            '그리고 주말·공휴일에는 <b>직전 영업일 환율</b>을 이어서 사용해요.'
     },
     btc: {
       title: 'BTC 그래프 읽는 법',
-      body: '<b>기간 첫날을 0%</b>로 둔 업비트 BTC 종가 변화율이에요. 숫자는 기간 전체의 변화율을 뜻해요.'
+      body: '<b>기간 첫날을 0%</b>로 둔 업비트 BTC 종가 변화율이에요. <b>그래프 오른쪽 위의 숫자</b>는 선택한 기간 전체의 BTC 가격 변화율을 뜻해요.'
     }
   };
 

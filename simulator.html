@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>과거 매수 시뮬레이터</title>
+<title>KIMPLOG</title>
+<link rel="icon" type="image/svg+xml" href="assets/face-smile.svg">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
@@ -140,6 +141,13 @@
 
   .cal-picked-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
   .cal-picked-label { font-size: 0.76rem; color: var(--mut); }
+  /* 오늘로 이동 — 있는지도 모르게 작고 옅게, 라벨 옆에 붙여둔다 */
+  .cal-today-btn {
+    background: none; border: none; padding: 0; margin-left: var(--sp-2);
+    font-family: var(--font-body); font-size: 0.68rem; color: var(--dim);
+    text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+  }
+  .cal-today-btn:hover { color: var(--frog); }
   .cal-picked-value { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 800; color: var(--text); }
 
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
@@ -332,7 +340,7 @@
         <!-- 왼쪽: 달력 -->
         <div>
           <div class="cal-picked-row">
-            <span class="cal-picked-label">선택한 날짜</span>
+            <span class="cal-picked-label">선택한 날짜 <button class="cal-today-btn" id="calToday" type="button" title="오늘로 이동">오늘</button></span>
             <span class="cal-picked-value" id="pickedDate">-</span>
           </div>
           <div class="cal-nav">
@@ -871,6 +879,16 @@ document.getElementById('calYearSelect').addEventListener('change', (e) => {
   goToMonthNo(parseInt(e.target.value) * 12 + calMonth);
   renderCalendar();
 });
+// 오늘로 이동 — 고를 수 있는 가장 최근 날(마지막 인덱스 = 오늘은 매도 시점이라 그 하나 앞)로 점프한다
+document.getElementById('calToday').addEventListener('click', () => {
+  if (!dataReady) return;
+  selectedIdx = Math.max(0, DATES.length - 2);
+  const picked = dateFromIdx(selectedIdx);
+  calYear = picked.getFullYear();
+  calMonth = picked.getMonth();
+  renderCalendar();
+  renderAll();
+});
 
 // ④+⑥ 계산 & 렌더
 function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
@@ -1093,9 +1111,9 @@ function loadData(){
       if (DATES.length < 2) throw new Error('no-overlap:KRW-BTC');
 
       TODAY = parseYmd(DATES[DATES.length - 1]);
-      // 기본값: 매수 시점으로 고를 수 있는 가장 최근 날(오늘 바로 전날). 마지막 인덱스(오늘)는
-      // 매도 시점으로 취급돼 매수로 못 고르므로 그 하나 앞을 쓴다.
-      selectedIdx = Math.max(0, DATES.length - 2);
+      // 기본값: 그래프에 프리미엄·환율 변화가 보일 만큼은 지난 시점 (마지막 날에서 60칸 앞).
+      // 달력을 열자마자 "오늘"이 보고 싶으면 옆의 오늘 버튼으로 바로 이동할 수 있다.
+      selectedIdx = Math.max(0, DATES.length - 1 - 60);
 
       const picked = dateFromIdx(selectedIdx);
       calYear = picked.getFullYear();

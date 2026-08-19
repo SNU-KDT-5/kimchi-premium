@@ -42,5 +42,13 @@ jobs:
             echo "변경 사항 없음 - 커밋을 건너뜁니다."
           else
             git commit -m "chore: update kimchi premium data ($(date -u +'%Y-%m-%d'))"
-            git push
+            # 커밋·푸시 사이에 원격이 앞서갈 수 있으므로(다른 push와의 경합),
+            # 실패하면 최신 main 위로 리베이스해 몇 번 재시도한다.
+            for i in 1 2 3 4 5; do
+              if git push; then break; fi
+              echo "push 실패 — 원격과 다시 맞추고 재시도합니다 ($i/5)"
+              git fetch origin main
+              git rebase origin/main
+              sleep $((RANDOM % 5 + 1))
+            done
           fi

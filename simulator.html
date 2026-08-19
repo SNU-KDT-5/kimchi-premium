@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>과거 매수 시뮬레이터</title>
+<title>KIMPLOG</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="assets/face-smile.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
@@ -67,8 +70,12 @@
 
   /* 잠금 안내는 잠긴 영역 "밖"에 둔다. 안에 두면 같이 흐려져서 못 읽는다.
      겉모습은 .intro-banner 를 그대로 쓰고 색만 바꾼다(타이포 스케일 유지). */
-  .lock-notice { background: var(--amber-bg); border-color: var(--border2); }
+  /* 잠금 배너 하나가 상태에 따라 얼굴·색·문구를 바꿔 낀다 — 잠겼을 때(호박색)와
+     풀렸을 때(그린) 둘 다 이 한 자리에서만 보여주고, 안의 .intro-banner(③ 섹션 안내)는 두지 않는다 */
+  .lock-notice { background: var(--amber-bg); border-color: var(--border2); margin-top: var(--sp-6); }
   .lock-notice .intro-banner-title { color: var(--amber); }
+  .lock-notice.unlocked { background: var(--frog-bg); border-color: var(--frog-line); }
+  .lock-notice.unlocked .intro-banner-title { color: var(--frog); }
 
   .unlock-toast {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.92);
@@ -86,7 +93,7 @@
      "확인함"(aria-pressed)과 "설명 펼치기"(aria-expanded)는 뜻이 다르므로
      한 버튼에 두 상태를 얹지 않고 컨트롤을 둘로 나눈다. */
   .risk-list { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .risk-item { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: flex-start; }
+  .risk-item { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
   .risk-item.checked { border-color: var(--frog); background: var(--frog-bg); }
   .risk-check, .risk-head {
     background: none; border: none; padding: 0; margin: 0; cursor: pointer;
@@ -96,10 +103,14 @@
   .risk-mark { font-family: var(--font-mono); font-size: 0.9rem; color: var(--dim); }
   .risk-item.checked .risk-mark { color: var(--frog); }
   .risk-head { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: var(--sp-2); }
-  .risk-title { font-size: 0.9rem; font-weight: 700; }
+  .risk-title { font-size: 0.86rem; font-weight: 600; }
   .risk-head::after { content: '▾'; font-size: 0.68rem; color: var(--dim); flex: none; transition: transform .15s; }
   .risk-head[aria-expanded="true"]::after { transform: rotate(180deg); }
-  .risk-desc { flex-basis: 100%; font-size: 0.78rem; color: var(--mut); line-height: 1.65; }
+  .risk-desc {
+    flex-basis: 100%; font-size: 0.78rem; color: var(--mut); line-height: 1.65;
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: var(--sp-3) var(--sp-4); margin-top: var(--sp-1);
+  }
   .risk-progress { font-size: 0.78rem; font-weight: 600; color: var(--mut); margin-top: var(--sp-4); text-align: center; }
   .risk-progress.done { color: var(--frog); }
   /* 근거 문단은 .caption 을 쓰되, 여러 줄이라 가운데 정렬만 푼다 */
@@ -114,7 +125,8 @@
   .src-details > summary::-webkit-details-marker { display: none; }
   .src-details > summary::after { content: '▾'; font-size: 0.68rem; transition: transform .15s; }
   .src-details[open] > summary::after { transform: rotate(180deg); }
-  .src-details .calc-footnote { margin-top: var(--sp-3); }
+  .src-details .calc-footnote { font-size: 0.78rem; color: var(--mut); line-height: 1.65; margin-top: var(--sp-3); }
+  .src-details .calc-footnote:first-of-type { margin-top: var(--sp-4); }
 
   .intro-banner {
     display: flex; gap: var(--sp-3); align-items: flex-start;
@@ -131,6 +143,13 @@
 
   .cal-picked-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
   .cal-picked-label { font-size: 0.76rem; color: var(--mut); }
+  /* 오늘로 이동 — 있는지도 모르게 작고 옅게, 라벨 옆에 붙여둔다 */
+  .cal-today-btn {
+    background: none; border: none; padding: 0; margin-left: var(--sp-2);
+    font-family: var(--font-body); font-size: 0.68rem; color: var(--dim);
+    text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+  }
+  .cal-today-btn:hover { color: var(--frog); }
   .cal-picked-value { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 800; color: var(--text); }
 
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
@@ -165,11 +184,13 @@
   .cal-cell:hover:not(.empty):not(.future):not(.nodata) { border-color: var(--frog); }
   .cal-cell.selected { background: var(--frog); border-color: var(--frog); color: #fff; font-weight: 800; }
 
-  .cal-presets { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+  /* 항상 3개가 한 줄 — 줄바꿈도, 글자 줄임도 하지 않는다. 폭이 모자라면 줄 자체가 가로 스크롤된다 */
+  .cal-presets { display: flex; flex-wrap: nowrap; gap: var(--sp-2); margin-top: var(--sp-3); overflow-x: auto; }
   .cal-preset {
+    flex: none;
     background: var(--panel2); border: 1px solid var(--border2); border-radius: var(--r-pill);
     padding: 5px var(--sp-3); font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
-    color: var(--mut); cursor: pointer; line-height: 1.4;
+    color: var(--mut); cursor: pointer; line-height: 1.4; white-space: nowrap;
   }
   .cal-preset:hover { border-color: var(--frog); color: var(--text); }
   .cal-preset.active { background: var(--frog-bg); border-color: var(--frog); color: var(--frog); }
@@ -278,7 +299,7 @@
   <div class="header">
     <div class="eyebrow mono">시뮬레이터</div>
     <h1>당신이 그때 샀다면, 지금은 어떨까</h1>
-    <p>먼저 김프를 제대로 이해했는지 간단히 확인해요. 그다음 아래 달력에서 과거 시점을 골라 직접 계산해볼 수 있습니다.</p>
+    <p>먼저 김프를 제대로 이해했는지 간단히 확인해요. <br> 그 다음 아래 달력에서 과거 시점을 골라 직접 계산해 볼 수 있습니다.</p>
   </div>
 
   <!-- ② 이해도 확인 -->
@@ -306,7 +327,7 @@
   <!-- 잠금 안내 — 잠긴 섹션 밖에 둬야 흐려지지 않는다.
        진행 상황·해제 알림을 여기 한 곳에서만 읽어준다(라이브 영역이 둘이면 겹쳐 읽힌다). -->
   <div class="intro-banner lock-notice" id="lockNotice" role="status" aria-live="polite" hidden>
-    <img class="intro-banner-icon" src="assets/face-smile.svg" alt="">
+    <img class="intro-banner-icon" id="lockNoticeIcon" src="assets/face-sad.svg" alt="">
     <div>
       <div class="intro-banner-title" id="lockNoticeTitle">-</div>
       <div class="intro-banner-text" id="lockNoticeText">-</div>
@@ -315,21 +336,13 @@
 
   <!-- ③ 매수 시점 선택 + 투입 정보 (퀴즈 통과 전 잠김) -->
   <div class="section-block sim-lock" id="pickSection" hidden>
-    <div class="intro-banner">
-      <img class="intro-banner-icon" src="assets/face-happy.svg" alt="">
-      <div>
-        <div class="intro-banner-title">자, 이제 진짜로 계산해볼 시간이에요!</div>
-        <div class="intro-banner-text">아래 달력에서 날짜 하나만 골라보세요. 그날 샀다고 치고 지금까지 들고 있었다면 실제로 얼마가 남았을지 계산해드릴게요.
-          프리미엄이 뭔지 환율이 어땠는지 몰라도 괜찮아요! 숫자는 저희가 다 채워드립니다, 개굴!</div>
-      </div>
-    </div>
     <div class="section-label">③ 매수 시점 선택</div>
     <div class="card">
       <div class="pick-grid">
         <!-- 왼쪽: 달력 -->
         <div>
           <div class="cal-picked-row">
-            <span class="cal-picked-label">선택한 날짜</span>
+            <span class="cal-picked-label">선택한 날짜 <button class="cal-today-btn" id="calToday" type="button" title="오늘로 이동">오늘</button></span>
             <span class="cal-picked-value" id="pickedDate">-</span>
           </div>
           <div class="cal-nav">
@@ -387,7 +400,7 @@
 
   <!-- ⑤ 리스크 체크리스트 (잠김 — 계산 결과를 본 뒤 읽어야 뜻이 통한다) -->
   <div class="section-block sim-lock" id="riskSection" hidden>
-    <div class="section-label">⑤ 계산에 안 들어간 것들</div>
+    <div class="section-label">⑤ 계산에 들어가지 않은 것들</div>
     <div class="card">
       <p class="section-intro">이 사이트가 보여주는 수치는 <b>과거 데이터를 가정한 참고용 계산 결과</b>이며, 예측이나 투자 권유가 아닙니다.
         게다가 위 계산은 <b>사고파는 순간이 동시에 이뤄지고 그 사이에 아무 마찰도 없다</b>고 본 값입니다.
@@ -602,16 +615,23 @@ function applyLockState(){
 // 아래에 뭐가 있고 왜 안 열리는지 알 수 없다.
 function updateLockNotice(){
   const box = document.getElementById('lockNotice');
+  const icon = document.getElementById('lockNoticeIcon');
   const title = document.getElementById('lockNoticeTitle');
   const text = document.getElementById('lockNoticeText');
 
   if (isUnlocked()) {
-    // 라이브 영역이라 숨기기 전에 문구를 바꿔야 스크린리더가 읽는다.
-    title.textContent = '계산기가 열렸어요!';
-    text.textContent = '아래 달력에서 매수 시점을 골라보세요.';
-    setTimeout(() => { box.hidden = true; }, 2200);
+    // ③ 섹션 안에 따로 있던 "자, 이제 계산해볼 시간이에요" 배너를 없애고
+    // 이 배너 하나가 얼굴·색·문구를 바꿔 그 역할까지 맡는다. 계속 떠 있는다
+    // (unlock-toast 팝업은 "방금 풀렸다"는 순간 알림, 이건 "지금부터 뭘 하면 되는지" 안내로 역할이 다르다).
+    box.hidden = false;
+    box.classList.add('unlocked');
+    icon.src = 'assets/face-happy.svg';
+    title.textContent = '자, 이제 진짜로 계산해볼 시간이에요!';
+    text.textContent = '아래 달력에서 날짜 하나만 골라보세요. 그날 샀다고 치고 지금까지 들고 있었다면 실제로 얼마가 남았을지 계산해드릴게요. 프리미엄이 뭔지 환율이 어땠는지 몰라도 괜찮아요! 숫자는 저희가 다 채워드립니다, 개굴!';
     return;
   }
+  box.classList.remove('unlocked');
+  icon.src = 'assets/face-sad.svg';
 
   // 실패는 "아직 로딩 중"과 다르다. !dataReady 하나로 뭉쳐 두면 이미 끝나버린
   // 요청을 계속 기다리라고 안내하게 되고, 위 오류 안내와 정면으로 어긋난다.
@@ -861,6 +881,16 @@ document.getElementById('calYearSelect').addEventListener('change', (e) => {
   goToMonthNo(parseInt(e.target.value) * 12 + calMonth);
   renderCalendar();
 });
+// 오늘로 이동 — 고를 수 있는 가장 최근 날(마지막 인덱스 = 오늘은 매도 시점이라 그 하나 앞)로 점프한다
+document.getElementById('calToday').addEventListener('click', () => {
+  if (!dataReady) return;
+  selectedIdx = Math.max(0, DATES.length - 2);
+  const picked = dateFromIdx(selectedIdx);
+  calYear = picked.getFullYear();
+  calMonth = picked.getMonth();
+  renderCalendar();
+  renderAll();
+});
 
 // ④+⑥ 계산 & 렌더
 function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(2) + '%'; }
@@ -1083,7 +1113,9 @@ function loadData(){
       if (DATES.length < 2) throw new Error('no-overlap:KRW-BTC');
 
       TODAY = parseYmd(DATES[DATES.length - 1]);
-      selectedIdx = Math.max(0, DATES.length - 1 - 60);   // 기본값: 마지막 날에서 60칸 앞
+      // 기본값: 그래프에 프리미엄·환율 변화가 보일 만큼은 지난 시점 (마지막 날에서 60칸 앞).
+      // 달력을 열자마자 "오늘"이 보고 싶으면 옆의 오늘 버튼으로 바로 이동할 수 있다.
+      selectedIdx = Math.max(0, DATES.length - 1 - 60);
 
       const picked = dateFromIdx(selectedIdx);
       calYear = picked.getFullYear();

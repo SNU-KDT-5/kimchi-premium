@@ -306,31 +306,34 @@ body {
 .topnav-tab:hover { color: var(--text); background: var(--panel2); }
 .topnav-tab.active { color: var(--frog); background: var(--frog-bg); font-weight: 700; }
 
-/* 소리 토글 — sound.js 를 부른 페이지에만 생긴다 (버튼은 sound.js 가 끼워 넣음) */
-.topnav-sound {
-  position: relative;
-  flex: none; display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; padding: 0; margin-left: var(--sp-1);
-  background: transparent; border: 0; border-radius: var(--r-pill);
+/* 소리 토글 — sound.js 를 부른 페이지에만 생긴다 (버튼은 sound.js 가 끼워 넣음).
+   상단 네비 안에 넣으면 버튼 유무에 따라 탭들의 x좌표가 페이지마다 달라지므로,
+   챗봇 버튼(.chat-fab)처럼 화면에 독립적으로 떠 있는 버튼으로 반대쪽 구석에 둔다. */
+.sound-fab {
+  position: fixed; left: var(--sp-6); bottom: var(--sp-6); z-index: 200;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; padding: 0;
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-pill);
+  box-shadow: var(--shadow-sm);
   color: var(--mut); cursor: pointer;
-  transition: color .15s ease, background-color .15s ease;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .15s ease;
 }
-.topnav-sound:hover { color: var(--text); background: var(--panel2); }
-.topnav-sound.is-on { color: var(--frog); background: var(--frog-bg); }
-.topnav-sound svg { width: 19px; height: 19px; display: block; }
-.topnav-sound svg path {
+.sound-fab:hover { color: var(--text); background: var(--panel2); transform: translateY(-2px); }
+.sound-fab.is-on { color: var(--frog); background: var(--frog-bg); border-color: var(--frog-line); }
+.sound-fab svg { width: 20px; height: 20px; display: block; }
+.sound-fab svg path {
   fill: none; stroke: currentColor; stroke-width: 1.9;
   stroke-linecap: round; stroke-linejoin: round;
   transition: opacity .15s ease;
 }
-.topnav-sound .spk { fill: currentColor; stroke-width: 1.4; }
+.sound-fab .spk { fill: currentColor; stroke-width: 1.4; }
 /* 꺼져 있으면 빗금, 켜져 있으면 음파 */
-.topnav-sound .wave { opacity: 0; }
-.topnav-sound.is-on .wave { opacity: 1; }
-.topnav-sound.is-on .slash { opacity: 0; }
+.sound-fab .wave { opacity: 0; }
+.sound-fab.is-on .wave { opacity: 1; }
+.sound-fab.is-on .slash { opacity: 0; }
 /* 아직 켤지 말지 정한 적이 없을 때만 — 한 번 정하면 영영 멈춘다 */
-.topnav-sound.is-ask { color: var(--frog); }
-.topnav-sound.is-ask::after {
+.sound-fab.is-ask { color: var(--frog); }
+.sound-fab.is-ask::after {
   content: ''; position: absolute; inset: -1px; border-radius: var(--r-pill);
   border: 2px solid var(--frog); pointer-events: none;
   animation: topnav-sound-ask 2.2s ease-out infinite;
@@ -340,7 +343,7 @@ body {
   70%, 100% { opacity: 0;   transform: scale(1.45); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .topnav-sound.is-ask::after { animation: none; opacity: .5; }
+  .sound-fab.is-ask::after { animation: none; opacity: .5; }
 }
 
 @media (max-width: 768px) {

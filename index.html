@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>USDT 김치프리미엄 관측소</title>
+  <title>KIMPLOG</title>
+  <!-- SVG는 최신 브라우저용, 나머지는 Safari 탭 미리보기 등 SVG를 안 쓰는 곳을 위한 폴백 -->
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="assets/face-smile.svg">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
@@ -62,6 +66,13 @@
     .topnav { background: transparent; border-bottom-color: transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
     .topnav.scrolled { background: var(--panel); border-bottom-color: var(--border); box-shadow: var(--shadow-sm); }
 
+    /* 인트로(스크롤 전) 배경이 투명해서, 이때만 탭 글자를 옅게 눌러 존재감을 줄인다.
+       스크롤해서 nav가 배경을 되찾으면 다른 페이지와 같은 톤으로 돌아온다 */
+    .topnav:not(.scrolled) .topnav-tab { color: var(--dim); transition: color .25s ease, background-color .25s ease; }
+    .topnav:not(.scrolled) .topnav-tab:hover { color: var(--mut); }
+    .topnav:not(.scrolled) .topnav-tab.active { color: var(--mut); background: transparent; font-weight: 600; }
+
+    /* 김프랫의 첫 두 대사를 스크롤로 넘기느라 이 장면만 길다 (980 → 1120vh) */
     .kf-scrolly { position: relative; height: 1120vh; }
     .kf-scrolly2 { height: 520vh; }
     .kf-scrolly3 { height: 820vh; }

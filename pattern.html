@@ -56,10 +56,10 @@
   .band:hover, .band.active { fill: rgba(196, 138, 31, 0.26); }
   .band-edge { stroke: var(--border2); stroke-width: 1; pointer-events: none; }
   .band-label {
-    fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none;
+    fill: var(--text); font-size: 17px; font-weight: 700; pointer-events: none;
     transition: font-size 0.12s ease;
   }
-  .band-label.label-hot { font-size: 17px; }
+  .band-label.label-hot { font-size: 21px; }
 
   .event-dot {
     fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer;
@@ -384,8 +384,8 @@
 
   /* 넓은 데스크톱에서는 장기 차트의 사건명을 한 단계 키워 바로 읽기 쉽게 합니다. */
   @media (min-width: 1100px) {
-    .band-label { font-size: 14px; }
-    .band-label.label-hot { font-size: 19px; }
+    .band-label { font-size: 19px; }
+    .band-label.label-hot { font-size: 23px; }
     .event-label { font-size: 13px; }
     .event-label.label-hot { font-size: 18px; }
   }
@@ -457,7 +457,7 @@
     .mini-tag-text--mobile-scale { font-size: 10.5px; }
     /* 데스크톱과 같은 왼쪽 위 꼬리 모양을 유지합니다. */
     .frog-bubble::before {
-      display: block; left: 16px; right: auto;
+      display: block; left: var(--frog-bubble-arrow-left, 16px); right: auto;
     }
     .frog-bubble.frog-bubble--above::before {
       top: auto; bottom: -7px;
@@ -479,6 +479,13 @@
       stroke-width: clamp(3px, calc(5px - 0.3125vw), 4px);
     }
     .event-label.label-hot { font-size: calc(var(--responsive-label-size) + 4px); }
+  }
+
+  /* 700~768px에서는 JS의 배치 폭과 같은 값으로 구간 라벨을 17px까지 보간합니다. */
+  @media (min-width: 700px) and (max-width: 767px) {
+    .band-label {
+      --responsive-label-size: calc(4.227941vw - 15.470588px);
+    }
   }
 </style>
 </head>
@@ -1014,9 +1021,13 @@
     const blendLayout = function (from, to) {
       return from + (to - from) * layoutProgress;
     };
-    const bandLabelSize = isResponsiveOverview
-      ? Math.max(12, Math.min(36 - responsiveWidth * 0.03125, 26))
-      : (isLargeOverview ? 19 : 17);
+    const mobileBandLabelSize = Math.max(12, Math.min(36 - responsiveWidth * 0.03125, 26));
+    const desktopBandLabelSize = isLargeOverview ? 19 : 17;
+    // 700px에서 쓰던 모바일 크기(14.125px)를 768px의 데스크톱 크기(17px)까지
+    // CSS와 같은 비율로 보간해, textWidth()의 배치 폭도 실제 글자와 함께 변하게 합니다.
+    const bandLabelSize = mobileWidth < 700
+      ? mobileBandLabelSize
+      : (mobileWidth < 768 ? blendLayout(14.125, 17) : desktopBandLabelSize);
     const eventLabelSize = isResponsiveOverview
       ? Math.max(11.5, Math.min(33 - responsiveWidth * 0.028125, 24))
       : (isLargeOverview ? 13 : 11.5);
@@ -2119,6 +2130,7 @@
       bubble.style.removeProperty('--frog-bubble-left');
       bubble.style.removeProperty('--frog-bubble-top');
       bubble.style.removeProperty('--frog-bubble-width');
+      bubble.style.removeProperty('--frog-bubble-arrow-left');
       bubble.style.visibility = '';
       bubble.classList.remove('frog-bubble--above');
       return;
@@ -2129,9 +2141,16 @@
     const arrowCenter = 22;
     const btnRect = btn.getBoundingClientRect();
     const btnCenter = btnRect.left + btnRect.width / 2;
-    const left = Math.max(margin, btnCenter - arrowCenter);
-    const bubbleWidth = Math.min(260, window.innerWidth - margin - left);
+    // 말풍선 폭을 먼저 뷰포트 기준으로 확보한 뒤 위치를 제한합니다. 오른쪽 끝에 있는
+    // 개구리도 남은 공간만큼 말풍선이 찌그러지지 않게 하기 위함입니다.
+    const availableWidth = Math.max(0, window.innerWidth - margin * 2);
+    const bubbleWidth = Math.min(260, availableWidth);
+    const maxLeft = Math.max(margin, window.innerWidth - margin - bubbleWidth);
+    const left = Math.max(margin, Math.min(btnCenter - arrowCenter, maxLeft));
+    // 말풍선 위치와 별개로 꼬리만 버튼 쪽으로 옮기되, 둥근 모서리 안쪽에 붙잡아 둡니다.
+    const arrowLeft = Math.max(10, Math.min(btnCenter - left - 6, bubbleWidth - 22));
     bubble.style.setProperty('--frog-bubble-width', bubbleWidth + 'px');
+    bubble.style.setProperty('--frog-bubble-arrow-left', arrowLeft + 'px');
     const bubbleRect = bubble.getBoundingClientRect();
     const bubbleHeight = bubbleRect.height;
 

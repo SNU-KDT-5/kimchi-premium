@@ -452,9 +452,16 @@
     .frog-bubble .frog-bubble-close { font-size: clamp(0.7rem, 2.8vw, 0.76rem); }
     /* 넓은 김프 SVG는 모바일에서 더 많이 축소됩니다. 최대 변화·촉발일·사건일 태그를
        함께 보정해, 제목보다는 작고 미니 차트의 최고·최저 태그와는 비슷하게 보이게 합니다. */
-    .zoom-wrap .tag-text--mobile-scale { font-size: 22px; }
+    .zoom-wrap .tag-text--mobile-scale {
+      font-size: clamp(12px, calc(78.6px - 9vw), 21px);
+    }
     .zoom-wrap .tag-box--mobile-scale { stroke-width: 1.8; }
     .mini-tag-text--mobile-scale { font-size: 10.5px; }
+    /* 환율·BTC가 좁은 2열로 바뀌는 구간에서는 SVG도 함께 줄어듭니다.
+       최고·최저 태그가 갑자기 작아지지 않도록 실제 축소 폭만큼 글자를 보정합니다. */
+    .mini-tag-text--compact-grid-scale {
+      font-size: clamp(12px, calc(78.6px - 9vw), 21px);
+    }
     /* 데스크톱과 같은 왼쪽 위 꼬리 모양을 유지합니다. */
     .frog-bubble::before {
       display: block; left: var(--frog-bubble-arrow-left, 16px); right: auto;
@@ -1249,9 +1256,12 @@
     overviewLabels = newLabels;
   }
 
-  // 창 너비가 바뀔 때 사건명 크기와 위치를 함께 다시 계산합니다.
+  // 창 너비가 바뀔 때 사건명뿐 아니라 열린 상세 차트도 같은 너비 기준으로 다시 계산합니다.
+  // 큰 화면에서 연 상세 태그가 창을 줄인 뒤에도 이전 크기로 남는 문제를 막습니다.
   const refreshOverviewLayout = function () {
-    if (market && !overviewBlock.hidden) renderOverview();
+    if (!market || overviewBlock.hidden) return;
+    if (selection) select(selection.type, selection.index);
+    else renderOverview();
   };
   let overviewResizeFrame = 0;
   window.addEventListener('resize', function () {
@@ -1378,22 +1388,28 @@
   // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
   function drawTag(svg, x, y, text, variant, extra) {
     const suffix = variant ? ' tag-box--' + variant : '';
-    const mobileScaled = window.matchMedia('(max-width: 640px)').matches;
-    const fontSize = mobileScaled ? 22 : 12;
-    const w = textWidth(text, fontSize) + (mobileScaled ? 26 : 18);
-    const h = mobileScaled ? 32 : 22;
+    const screenWidth = window.innerWidth;
+    const mobileScaled = screenWidth <= 739;
+    const fontSize = Math.max(12, Math.min(78.6 - screenWidth * 0.09, 21));
+    // SVG의 viewBox 비율이 달라 같은 숫자를 써도 실제 화면 크기가 달라집니다.
+    // 아래 미니 차트의 최고·최저 태그와 화면상 높이·여백이 같아지도록 구간별로 맞춥니다.
+    const paddingX = Math.max(14, Math.min(28.8 - screenWidth * 0.02, 16));
+    const w = textWidth(text, fontSize) + paddingX;
+    const h = Math.max(20, Math.min(108.8 - screenWidth * 0.12, 32));
+    const cornerRadius = Math.max(4, Math.min(18.8 - screenWidth * 0.02, 6));
+    const textOffset = Math.max(4.1, Math.min(29.26 - screenWidth * 0.034, 7.5));
     const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
     const cy = mobileScaled
       ? Math.max(h / 2 + 2, Math.min(y, ZOOM.H - h / 2 - 2))
       : y;
     svg.appendChild(el('rect', {
       class: 'tag-box' + suffix + (mobileScaled ? ' tag-box--mobile-scale' : '') + (extra ? ' ' + extra : ''),
-      x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: mobileScaled ? 6 : 5
+      x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: cornerRadius
     }));
     const t = el('text', {
       class: 'tag-text' + (variant ? ' tag-text--' + variant : '') +
         (mobileScaled ? ' tag-text--mobile-scale' : '') + (extra ? ' ' + extra : ''),
-      x: cx, y: cy + (mobileScaled ? 7.5 : 4.1), 'text-anchor': 'middle'
+      x: cx, y: cy + textOffset, 'text-anchor': 'middle'
     });
     t.textContent = text;
     svg.appendChild(t);
@@ -1713,10 +1729,18 @@
   // 절대 금액은 계열마다 단위가 달라 한 축에 겹칠 수 없기 때문입니다.
   // 미니 차트 전용 작은 값 태그. 좌우로 붙잡아 차트 밖으로 안 나가게 합니다.
   function drawMiniTag(x, y, text, variant, width, rightMargin) {
-    const mobileScaled = window.matchMedia('(max-width: 640px)').matches;
-    const fontSize = mobileScaled ? 10.5 : 12;
-    const w = textWidth(text, fontSize) + (mobileScaled ? 12 : 14);
-    const h = mobileScaled ? 16 : 20;
+    const screenWidth = window.innerWidth;
+    const mobileScaled = screenWidth <= 640;
+    const compactGridScaled = screenWidth > 640 && screenWidth <= 739;
+    const compactFontSize = Math.max(12, Math.min(78.6 - screenWidth * 0.09, 21));
+    const fontSize = compactGridScaled ? compactFontSize : (mobileScaled ? 10.5 : 12);
+    const compactPadding = Math.max(14, Math.min(28.8 - screenWidth * 0.02, 16));
+    const paddingX = compactGridScaled ? compactPadding : (mobileScaled ? 12 : 14);
+    const w = textWidth(text, fontSize) + paddingX;
+    const compactHeight = Math.max(20, Math.min(108.8 - screenWidth * 0.12, 32));
+    const h = compactGridScaled ? compactHeight : (mobileScaled ? 16 : 20);
+    const compactTextOffset = Math.max(4.1, Math.min(29.26 - screenWidth * 0.034, 7.5));
+    const textOffset = compactGridScaled ? compactTextOffset : (mobileScaled ? 3.6 : 4.1);
     const cx = Math.max(10 + w / 2, Math.min(x, width - rightMargin - w / 2));
     const g = el('g', { class: 'mini-tag' });
     // 색깔 있는 태그 배경(tag-box--variant)을 쓰면 옅은 배경색 위에서 묻혀 보이니 글자는
@@ -1727,8 +1751,9 @@
     }));
     const t = el('text', {
       class: 'mini-tag-text tag-text tag-text--' + variant +
-        (mobileScaled ? ' mini-tag-text--mobile-scale' : ''),
-      x: cx, y: y + (mobileScaled ? 3.6 : 4.1), 'text-anchor': 'middle'
+        (mobileScaled ? ' mini-tag-text--mobile-scale' : '') +
+        (compactGridScaled ? ' mini-tag-text--compact-grid-scale' : ''),
+      x: cx, y: y + textOffset, 'text-anchor': 'middle'
     });
     t.textContent = text;
     g.appendChild(t);

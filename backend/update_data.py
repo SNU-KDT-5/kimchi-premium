@@ -39,9 +39,9 @@ logging.basicConfig(
 logger = logging.getLogger("update_data")
 
 BASE_DIR = Path(__file__).resolve().parent
-CURRENT_JSON_PATH = BASE_DIR / "data" / "current.json"
-HISTORY_JSON_PATH = BASE_DIR / "data" / "history.json"
-EVENTS_JSON_PATH = BASE_DIR / "data" / "events.json"
+CURRENT_JSON_PATH = BASE_DIR.parent / "data" / "current.json"
+HISTORY_JSON_PATH = BASE_DIR.parent / "data" / "history.json"
+EVENTS_JSON_PATH = BASE_DIR.parent / "data" / "events.json"
 
 UPBIT_CANDLES_URL = "https://api.upbit.com/v1/candles/days"
 FRANKFURTER_URL_TEMPLATE = "https://api.frankfurter.dev/v1/{start}..{end}"

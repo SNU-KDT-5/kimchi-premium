@@ -25,7 +25,7 @@
   fab.type = 'button';
   fab.className = 'chat-fab';
   fab.setAttribute('aria-label', '김프로그 챗봇 열기');
-  fab.innerHTML = '<img src="assets/face-smile.svg" alt="">';
+  fab.innerHTML = '<img src="../assets/face-smile.svg" alt="">';
   document.body.appendChild(fab);
 
   const panel = document.createElement('div');
@@ -33,7 +33,7 @@
   panel.innerHTML =
     '<div class="chat-panel-head">' +
       '<button type="button" class="chat-panel-close" aria-label="닫기">✕</button>' +
-      '<div class="chat-panel-mascot-wrap"><img class="chat-panel-mascot" src="assets/body.svg" alt=""></div>' +
+      '<div class="chat-panel-mascot-wrap"><img class="chat-panel-mascot" src="../assets/body.svg" alt=""></div>' +
       '<div class="chat-panel-greeting">개굴! 도움이 필요하신가요?</div>' +
       '<div class="chat-panel-sub">김치프리미엄, 편하게 물어보세요</div>' +
     '</div>' +

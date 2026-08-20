@@ -56,10 +56,10 @@
   .band:hover, .band.active { fill: rgba(196, 138, 31, 0.26); }
   .band-edge { stroke: var(--border2); stroke-width: 1; pointer-events: none; }
   .band-label {
-    fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none;
+    fill: var(--text); font-size: 17px; font-weight: 700; pointer-events: none;
     transition: font-size 0.12s ease;
   }
-  .band-label.label-hot { font-size: 17px; }
+  .band-label.label-hot { font-size: 21px; }
 
   .event-dot {
     fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer;
@@ -285,8 +285,12 @@
     display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px;
     font-size: 0.72rem; color: var(--dim); margin: 0 0 var(--sp-2);
   }
+  .zoom-legend__item {
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
   .zoom-legend .swatch {
-    width: 11px; height: 11px; border-radius: 3px; margin-right: -8px;
+    width: 11px; height: 11px; border-radius: 3px; flex: none;
     background: var(--dir-bg); border: 1px solid var(--dir); display: inline-block;
   }
   .zoom-legend .swatch--amber { background: var(--amber-bg); border-color: var(--amber); }
@@ -344,21 +348,25 @@
     width: 260px; max-width: min(260px, 76vw);
     background: var(--panel); border: 1px solid var(--border2); border-radius: var(--r-md);
     box-shadow: var(--shadow-lg); padding: var(--sp-4) var(--sp-5);
-    font-size: 0.82rem; font-weight: 400; color: var(--mut); line-height: 1.75; text-align: left;
+    font-size: 0.82rem; font-weight: 400; color: var(--mut); line-height: 1.75;
+    text-align: justify; text-justify: inter-character;
   }
   .frog-bubble::before {
     content: ''; position: absolute; top: -7px; left: 16px; width: 12px; height: 12px;
     background: var(--panel); border-left: 1px solid var(--border2); border-top: 1px solid var(--border2);
     transform: rotate(45deg);
   }
-  .frog-bubble h5 { font-size: 0.86rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2); }
+  .frog-bubble h5 {
+    font-size: 0.86rem; font-weight: 800; color: var(--text); margin-bottom: var(--sp-2);
+    text-align: left;
+  }
   .frog-bubble b { color: var(--text); }
   .frog-bubble .frog-bubble-close {
     display: block; margin-top: var(--sp-3); padding: 0; border: none; background: none;
     font-family: var(--font-body); font-size: 0.76rem; color: var(--dim); cursor: pointer;
+    text-align: left;
   }
   .frog-bubble .frog-bubble-close:hover { color: var(--text); }
-  @media (max-width: 560px) { .frog-bubble { left: auto; right: -10px; } .frog-bubble::before { left: auto; right: 16px; } }
   .mini-value { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; }
   .mini-value--fx { color: var(--accent); }
   .mini-value--btc { color: var(--frog); }
@@ -374,9 +382,110 @@
   .stat-card .value { line-height: 1.25; }
   .detail-note { font-size: 0.78rem; color: var(--dim); margin-top: var(--sp-4); line-height: 1.7; }
 
+  /* 넓은 데스크톱에서는 장기 차트의 사건명을 한 단계 키워 바로 읽기 쉽게 합니다. */
+  @media (min-width: 1100px) {
+    .band-label { font-size: 19px; }
+    .band-label.label-hot { font-size: 23px; }
+    .event-label { font-size: 13px; }
+    .event-label.label-hot { font-size: 18px; }
+  }
+
   @media (max-width: 640px) {
+    /* 모바일에서는 카드 안쪽 공간을 조금 넓혀 긴 안내 문구와 차트 라벨을 읽기 쉽게 합니다. */
+    .section-block > .card { padding-left: var(--sp-4); padding-right: var(--sp-4); }
     .mini-grid { grid-template-columns: 1fr; }
-    .detail-headline { text-align: left; }
+
+    /* 최대 김프 변화폭은 데스크톱과 같은 정보 위계를 유지하며 오른쪽에 맞춥니다. */
+    .detail-headline { margin-left: auto; text-align: right; }
+
+    /* 범례 네 항목은 원래 이름을 유지한 채 모바일에서만 2열 × 2행으로 배치합니다. */
+    .chart-legend {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start; column-gap: 6px; row-gap: var(--sp-2);
+    }
+    .chart-legend__item { min-width: 0; gap: 4px; white-space: nowrap; }
+    .chart-legend__text {
+      min-width: 0; font-size: clamp(0.5rem, 2.25vw, 0.65rem);
+      line-height: 1.25; letter-spacing: -0.04em; white-space: nowrap;
+    }
+    .chart-legend__line { width: 12px; }
+    .chart-legend__band { width: 12px; height: 8px; }
+    .chart-legend__dot { width: 7px; height: 7px; }
+
+    /* 축소된 장기 차트에서도 사건 점이 보이고 눌리도록 점과 투명 클릭 영역을 함께 키웁니다. */
+    .event-dot { r: 8px; }
+    .event-dot.dot-hot { r: 11px; }
+    .event-hitbox { r: 24px; }
+
+    /* 빈 상태의 두 문장은 각각 한 줄씩만 보이게 하고, 좁은 화면에서는 글자만 유연하게 줄입니다. */
+    .detail-empty:not([hidden]) { padding-left: 0; padding-right: 0; }
+    .detail-empty__badge {
+      box-sizing: border-box; width: fit-content; max-width: calc(100% - 24px);
+      padding-left: var(--sp-3); padding-right: var(--sp-3);
+      font-size: clamp(0.56rem, 2.65vw, 0.75rem);
+      letter-spacing: -0.025em; white-space: nowrap;
+    }
+
+    /* 출처는 위 카드의 안쪽 정렬선에 맞추고 긴 주소도 폭 안에서 줄바꿈합니다. */
+    .pattern-source {
+      box-sizing: border-box; width: 100%; max-width: 100%;
+      margin-left: 0; margin-right: 0;
+      padding-left: var(--sp-4); padding-right: var(--sp-4);
+      overflow-wrap: anywhere; word-break: keep-all;
+    }
+  }
+
+  /* 좁은 화면에서도 데스크톱처럼 개구리 바로 아래에서 말풍선이 시작됩니다. */
+  @media (max-width: 739px) {
+    .frog-bubble {
+      position: fixed; left: var(--frog-bubble-left, 16px); right: auto;
+      top: var(--frog-bubble-top, 16px);
+      box-sizing: border-box; width: var(--frog-bubble-width, 260px); max-width: calc(100vw - 32px);
+      max-height: calc(100dvh - 32px); overflow-y: auto;
+      padding: clamp(12px, 3.6vw, 16px) clamp(14px, 4.5vw, 20px);
+      font-size: clamp(0.72rem, 3vw, 0.82rem); line-height: 1.65;
+      transform: none;
+      white-space: normal; overflow-wrap: anywhere; word-break: normal;
+      overscroll-behavior: contain;
+    }
+    .frog-bubble h5 { font-size: clamp(0.76rem, 3.2vw, 0.86rem); }
+    .frog-bubble .frog-bubble-close { font-size: clamp(0.7rem, 2.8vw, 0.76rem); }
+    /* 넓은 김프 SVG는 모바일에서 더 많이 축소됩니다. 최대 변화·촉발일·사건일 태그를
+       함께 보정해, 제목보다는 작고 미니 차트의 최고·최저 태그와는 비슷하게 보이게 합니다. */
+    .zoom-wrap .tag-text--mobile-scale { font-size: 22px; }
+    .zoom-wrap .tag-box--mobile-scale { stroke-width: 1.8; }
+    .mini-tag-text--mobile-scale { font-size: 10.5px; }
+    /* 데스크톱과 같은 왼쪽 위 꼬리 모양을 유지합니다. */
+    .frog-bubble::before {
+      display: block; left: var(--frog-bubble-arrow-left, 16px); right: auto;
+    }
+    .frog-bubble.frog-bubble--above::before {
+      top: auto; bottom: -7px;
+      border-left: 0; border-top: 0;
+      border-right: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
+    }
+  }
+
+  /* 사건명은 화면 폭에 따라 부드럽게 줄어, 특정 중간 너비에서만 커지지 않게 합니다. */
+  @media (max-width: 767px) {
+    .band-label {
+      --responsive-label-size: clamp(12px, calc(36px - 3.125vw), 26px);
+      font-size: var(--responsive-label-size);
+    }
+    .band-label.label-hot { font-size: calc(var(--responsive-label-size) + 4px); }
+    .event-label {
+      --responsive-label-size: clamp(11.5px, calc(33px - 2.8125vw), 24px);
+      font-size: var(--responsive-label-size);
+      stroke-width: clamp(3px, calc(5px - 0.3125vw), 4px);
+    }
+    .event-label.label-hot { font-size: calc(var(--responsive-label-size) + 4px); }
+  }
+
+  /* 700~768px에서는 JS의 배치 폭과 같은 값으로 구간 라벨을 17px까지 보간합니다. */
+  @media (min-width: 700px) and (max-width: 767px) {
+    .band-label {
+      --responsive-label-size: calc(4.227941vw - 15.470588px);
+    }
   }
 </style>
 </head>
@@ -404,19 +513,19 @@
       <div class="chart-legend">
         <span class="chart-legend__item">
           <span class="chart-legend__line"></span>
-          <span>환율조정 BTC 김프 (주간 평균)</span>
+          <span class="chart-legend__text">환율조정 BTC 김프 (주간 평균)</span>
         </span>
         <span class="chart-legend__item">
           <span class="chart-legend__band"></span>
-          <span>여러 주에 걸친 사건</span>
+          <span class="chart-legend__text">여러 주에 걸친 사건</span>
         </span>
         <span class="chart-legend__item">
           <span class="chart-legend__dot"></span>
-          <span>하루 만에 끝난 사건</span>
+          <span class="chart-legend__text">하루 만에 끝난 사건</span>
         </span>
         <span class="chart-legend__item">
           <span class="chart-legend__dot chart-legend__dot--milestone"></span>
-          <span>환율까지 함께 흔든 사건</span>
+          <span class="chart-legend__text">환율까지 함께 흔든 사건</span>
         </span>
       </div>
 
@@ -476,9 +585,15 @@
           <div class="zoom-wrap">
             <div class="zoom-title" id="zoomTitle">-</div>
             <p class="zoom-legend">
-              <span class="swatch dir-up"></span>김프가 가장 크게 오른 구간
-              <span class="swatch dir-down"></span>가장 크게 내린 구간
-              <span class="swatch swatch--amber"></span>사건일·촉발일
+              <span class="zoom-legend__item">
+                <span class="swatch dir-up"></span><span>김프가 가장 크게 오른 구간</span>
+              </span>
+              <span class="zoom-legend__item">
+                <span class="swatch dir-down"></span><span>가장 크게 내린 구간</span>
+              </span>
+              <span class="zoom-legend__item">
+                <span class="swatch swatch--amber"></span><span>사건일·촉발일</span>
+              </span>
             </p>
             <svg id="zoom" viewBox="0 0 1000 270" xmlns="http://www.w3.org/2000/svg"
                  aria-label="선택한 시기의 김프 추이"></svg>
@@ -514,7 +629,7 @@
     </div>
   </div>
 
-<p class="caption" style="margin-top: var(--sp-8); text-align: center;">
+<p class="caption pattern-source" style="margin-top: var(--sp-8); text-align: center;">
   데이터 출처: 업비트 종가(KRW-BTC), <span id="foreignSourceLabel">해외 거래소</span> 종가(BTC-USD), 환율은 ECB 기준
 </p>
 </div>
@@ -764,6 +879,36 @@
     return xs;
   }
 
+  // 모바일에서는 큰 사건명을 두 단으로 나눠 배치합니다.
+  // 같은 단의 라벨끼리만 좌우 간격을 계산해 불필요하게 멀리 밀리지 않게 합니다.
+  function spreadXByRows(items, rows, gap, lo, hi) {
+    const xs = new Array(items.length);
+    Array.from(new Set(rows)).forEach(function (row) {
+      const indexes = [];
+      items.forEach(function (_, i) {
+        if (rows[i] === row) indexes.push(i);
+      });
+      const rowItems = indexes.map(function (i) { return items[i]; });
+      const rowX = spreadX(rowItems, gap, lo, hi);
+      // 왼쪽 끝 라벨을 화면 안으로 당긴 뒤 다시 겹칠 수 있어, 마지막으로 간격을 재확인합니다.
+      for (let i = 1; i < rowItems.length; i++) {
+        const minX = rowX[i - 1] + rowItems[i - 1].w / 2 + gap + rowItems[i].w / 2;
+        if (rowX[i] < minX) rowX[i] = minX;
+      }
+      if (rowItems.length) {
+        const last = rowItems.length - 1;
+        const overflowRight = rowX[last] + rowItems[last].w / 2 - hi;
+        if (overflowRight > 0) {
+          for (let i = 0; i < rowX.length; i++) rowX[i] -= overflowRight;
+        }
+      }
+      indexes.forEach(function (itemIndex, rowIndex) {
+        xs[itemIndex] = rowX[rowIndex];
+      });
+    });
+    return xs;
+  }
+
   // ---------------------------------------------------------------------
   // SVG 유틸
   // ---------------------------------------------------------------------
@@ -841,6 +986,7 @@
   let ovHover = null;
   let hoverGroup = null;
   let overviewLabels = [];   // [{ el, cx }] — 구간·사건 이름표. 가까운 것을 마우스오버로 키웁니다.
+  let overviewEventPoints = []; // 가까운 사건 점의 클릭 영역이 겹칠 때 실제 터치 위치와 비교합니다.
 
   // 개요 차트 전용 작은 값 태그(마우스오버용). 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
   function drawOverviewTag(x, y, text) {
@@ -863,11 +1009,38 @@
 
   function renderOverview() {
     const weekly = market.weekly;
+    // 모바일은 폭이 넓어질수록 SVG도 함께 커지므로, 글자와 간격을 연속적으로 줄입니다.
+    // 700~768px에서는 두 단 배치를 데스크톱 한 단 배치로 조금씩 이동시킵니다.
+    const isMobileOverview = window.matchMedia('(max-width: 767px)').matches;
+    const mobileWidth = window.innerWidth;
+    const isResponsiveOverview = window.matchMedia('(max-width: 767px)').matches;
+    const isLargeOverview = window.matchMedia('(min-width: 1100px)').matches;
+    const responsiveWidth = Math.max(320, Math.min(mobileWidth, 768));
+    const mobileProgress = Math.max(0, Math.min((mobileWidth - 320) / 320, 1));
+    const layoutProgress = Math.max(0, Math.min((mobileWidth - 700) / 68, 1));
+    const blendLayout = function (from, to) {
+      return from + (to - from) * layoutProgress;
+    };
+    const mobileBandLabelSize = Math.max(12, Math.min(36 - responsiveWidth * 0.03125, 26));
+    const desktopBandLabelSize = isLargeOverview ? 19 : 17;
+    // 700px에서 쓰던 모바일 크기(14.125px)를 768px의 데스크톱 크기(17px)까지
+    // CSS와 같은 비율로 보간해, textWidth()의 배치 폭도 실제 글자와 함께 변하게 합니다.
+    const bandLabelSize = mobileWidth < 700
+      ? mobileBandLabelSize
+      : (mobileWidth < 768 ? blendLayout(14.125, 17) : desktopBandLabelSize);
+    const eventLabelSize = isResponsiveOverview
+      ? Math.max(11.5, Math.min(33 - responsiveWidth * 0.028125, 24))
+      : (isLargeOverview ? 13 : 11.5);
+    const compactPlotTop = 102 - 26 * mobileProgress;
+    const plotTop = isMobileOverview ? blendLayout(compactPlotTop, OV.top) : OV.top;
+    const compactBandLabelY = [30 - 8 * mobileProgress, 76 - 28 * mobileProgress];
+    // 첫째 단의 사건들은 점이 주로 차트 아래쪽에 있어, 둘째 단보다 낮게 두어 연결 거리를 줄입니다.
+    const compactEventLabelY = [plotTop + 120, plotTop + 80];
     const plotW = OV.W - OV.left - OV.right;
-    const plotH = OV.H - OV.top - OV.bottom;
+    const plotH = OV.H - plotTop - OV.bottom;
     const x0 = weekly[0].year, x1 = weekly[weekly.length - 1].year;
     const ox = y => OV.left + (y - x0) / (x1 - x0) * plotW;
-    const oy = v => OV.top + plotH - (v - OV.minY) / (OV.maxY - OV.minY) * plotH;
+    const oy = v => plotTop + plotH - (v - OV.minY) / (OV.maxY - OV.minY) * plotH;
     const yearOf = ds => market.year[findIndex(ds)];
 
     overviewSvg.replaceChildren();
@@ -878,10 +1051,19 @@
     // 자리를 잡아야 커진 상태에서도 옆 라벨과 안 겹칩니다.
     const labelBoxes = periods.map(function (p) {
       const cx = (ox(yearOf(p.start)) + ox(yearOf(p.end))) / 2;
-      return { cx: cx, w: textWidth(p.chartLabel, 17) };
+      return { cx: cx, w: textWidth(p.chartLabel, bandLabelSize) };
     });
-    const labelX = spreadX(labelBoxes, 14, OV.left, OV.W - OV.right);
-    const labelY = OV.top - 22;
+    const bandRows = periods.map(function (_, i) { return i % 2; });
+    const compactLabelX = spreadXByRows(labelBoxes, bandRows, 18, OV.left, OV.W - OV.right);
+    const desktopLabelX = spreadX(labelBoxes, 14, OV.left, OV.W - OV.right);
+    const labelX = periods.map(function (_, i) {
+      return isMobileOverview ? blendLayout(compactLabelX[i], desktopLabelX[i]) : desktopLabelX[i];
+    });
+    const labelY = periods.map(function (_, i) {
+      return isMobileOverview
+        ? blendLayout(compactBandLabelY[i % 2], plotTop - 22)
+        : plotTop - 22;
+    });
 
     periods.forEach(function (p, i) {
       const bx1 = ox(yearOf(p.start)), bx2 = ox(yearOf(p.end));
@@ -891,14 +1073,14 @@
 
       const rect = el('rect', {
         class: 'band' + (active ? ' active' : ''),
-        x: bx1 + inset, y: OV.top,
+        x: bx1 + inset, y: plotTop,
         width: Math.max(bx2 - bx1 - inset * 2, 2), height: plotH
       });
       rect.addEventListener('click', function () { select('period', i); });
       overviewSvg.appendChild(rect);
 
-      overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx1, x2: bx1, y1: OV.top, y2: OV.top + plotH }));
-      overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx2, x2: bx2, y1: OV.top, y2: OV.top + plotH }));
+      overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx1, x2: bx1, y1: plotTop, y2: plotTop + plotH }));
+      overviewSvg.appendChild(el('line', { class: 'band-edge', x1: bx2, x2: bx2, y1: plotTop, y2: plotTop + plotH }));
 
       const cx = (bx1 + bx2) / 2;
       // 라벨이 아주 조금 움직인 경우까지 선을 그리면 2024 ETF처럼 연결 관계가
@@ -906,10 +1088,10 @@
       if (Math.abs(labelX[i] - cx) > 12) {
         overviewSvg.appendChild(el('polyline', {
           class: 'leader',
-          points: [labelX[i], labelY + 5, cx, OV.top - 3].join(' ')
+          points: [labelX[i], labelY[i] + (isMobileOverview ? 10 : 5), cx, plotTop - 3].join(' ')
         }));
       }
-      const label = el('text', { class: 'band-label', x: labelX[i], y: labelY, 'text-anchor': 'middle' });
+      const label = el('text', { class: 'band-label', x: labelX[i], y: labelY[i], 'text-anchor': 'middle' });
       label.textContent = p.chartLabel;
       overviewSvg.appendChild(label);
       // 라벨이 겹침 방지로 밀려난 위치(labelX[i])가 아니라, 실제 구간 위치(cx)를 기준으로
@@ -927,7 +1109,7 @@
     });
     for (let y = 2018; y <= Math.floor(x1); y++) {
       overviewSvg.appendChild(el('line', {
-        class: 'axis-line', x1: ox(y), x2: ox(y), y1: OV.top, y2: OV.top + plotH, opacity: 0.35
+        class: 'axis-line', x1: ox(y), x2: ox(y), y1: plotTop, y2: plotTop + plotH, opacity: 0.35
       }));
       const t = el('text', { class: 'axis-label', x: ox(y), y: OV.H - 8, 'text-anchor': 'middle' });
       t.textContent = y;
@@ -951,14 +1133,15 @@
       for (const w of weekly) {
         if (Math.abs(w.year - ey) < Math.abs(near.year - ey)) near = w;
       }
-      return { cx: ox(ey), cy: oy(near.premium), w: textWidth(e.chartLabel, 11.5) };
+      return { cx: ox(ey), cy: oy(near.premium), w: textWidth(e.chartLabel, eventLabelSize) };
     });
-    const dotLabelX = spreadX(dotPos, 12, OV.left, OV.W - OV.right);
-    // 시간상 가까운 사건(예: 거래소 폐쇄 발언 · 5·19 시장 급락)도 세로로 단을 나누지 않고,
-    // 모두 같은 높이(자기 점 위 18px)에 두고 좌우로만 나란히 늘어놓습니다.
-    const dotLabelY = dotPos.map(function (d) {
-      return d.cy - 18;
+    overviewEventPoints = dotPos.map(function (d, index) {
+      return { cx: d.cx, cy: d.cy, index: index };
     });
+    const eventRows = events.map(function (_, i) { return i % 2; });
+    const compactDotLabelX = spreadXByRows(dotPos, eventRows, 18, OV.left, OV.W - OV.right);
+    const desktopDotLabelX = spreadX(dotPos, 12, OV.left, OV.W - OV.right);
+    const desktopDotLabelY = dotPos.map(function (d) { return d.cy - 18; });
     // 위 자리 계산은 "자기 자신의 점" 기준으로만 잡아서, 시간상 아주 가까운 사건끼리는
     // 한쪽 라벨이 다른 쪽 사건의 점과 겹칠 수 있습니다(예: 거래소 폐쇄 발언 라벨이 27일 뒤
     // 5·19 시장 급락의 점과 거의 같은 자리에 놓임). 화살표·연결선 모양이 아니라 라벨 위치
@@ -970,10 +1153,10 @@
       dotPos.forEach(function (d, i) {
         dotPos.forEach(function (other, j) {
           if (i === j) return;
-          const dx = Math.abs(dotLabelX[i] - other.cx);
-          const dy = Math.abs(dotLabelY[i] - other.cy);
+          const dx = Math.abs(desktopDotLabelX[i] - other.cx);
+          const dy = Math.abs(desktopDotLabelY[i] - other.cy);
           if (dx < d.w / 2 + 8 && dy < 14) {
-            dotLabelY[i] = Math.min(dotLabelY[i], other.cy - 16);
+            desktopDotLabelY[i] = Math.min(desktopDotLabelY[i], other.cy - 16);
           }
         });
       });
@@ -987,9 +1170,9 @@
     dotPos.forEach(function (d, i) {
       bandRanges.forEach(function (b) {
         if (d.cx >= b.x1 && d.cx <= b.x2) return;
-        const left = dotLabelX[i] - d.w / 2, right = dotLabelX[i] + d.w / 2;
+        const left = desktopDotLabelX[i] - d.w / 2, right = desktopDotLabelX[i] + d.w / 2;
         if (right > b.x1 - 6 && left < b.x2 + 6) {
-          dotLabelX[i] = d.cx <= b.x1 ? b.x1 - 6 - d.w / 2 : b.x2 + 6 + d.w / 2;
+          desktopDotLabelX[i] = d.cx <= b.x1 ? b.x1 - 6 - d.w / 2 : b.x2 + 6 + d.w / 2;
         }
       });
     });
@@ -998,21 +1181,32 @@
     // 급등 직후 몇 주가 계속 높은 경우) 그 부분과 겹칠 수 있습니다. 라벨 폭 범위 안의
     // 실제 선 높이를 다시 확인해서, 선이 너무 가까이 오면 한 번 더 위로 밀어냅니다.
     dotPos.forEach(function (d, i) {
-      const x1 = dotLabelX[i] - d.w / 2 - 4, x2 = dotLabelX[i] + d.w / 2 + 4;
+      const x1 = desktopDotLabelX[i] - d.w / 2 - 4, x2 = desktopDotLabelX[i] + d.w / 2 + 4;
       let lineMinY = Infinity;
       weekly.forEach(function (p) {
         const x = ox(p.year);
         if (x >= x1 && x <= x2) lineMinY = Math.min(lineMinY, oy(p.premium));
       });
-      const labelBottom = dotLabelY[i] + 5;
+      const labelBottom = desktopDotLabelY[i] + 5;
       if (lineMinY < labelBottom + 10) {
-        dotLabelY[i] -= (labelBottom + 10 - lineMinY);
+        desktopDotLabelY[i] -= (labelBottom + 10 - lineMinY);
       }
       // 사건 간 충돌 회피와 주간 선 회피가 둘 다 위로만 밀어내기 때문에, 누적되면
       // 라벨이 viewBox 위로 넘어가 잘립니다(루트 svg의 overflow 기본값이 hidden).
-      // 지금 데이터에서는 상단에 여유가 있어 안 드러나지만, 초반 주간 값이 더
-      // 높아지면 나타나는 종류라 마지막에 한 번 붙잡아 둡니다.
-      dotLabelY[i] = Math.max(dotLabelY[i], 12);
+      desktopDotLabelY[i] = Math.max(desktopDotLabelY[i], 12);
+    });
+
+    // 700~768px에서는 모바일의 두 단 배치에서 데스크톱 겹침 방지 결과까지
+    // 한 번에 이어 줍니다. 경계 너비에서 사건명이 갑자기 튀지 않게 하기 위함입니다.
+    const dotLabelX = events.map(function (_, i) {
+      return isMobileOverview
+        ? blendLayout(compactDotLabelX[i], desktopDotLabelX[i])
+        : desktopDotLabelX[i];
+    });
+    const dotLabelY = dotPos.map(function (_, i) {
+      return isMobileOverview
+        ? blendLayout(compactEventLabelY[i % 2], desktopDotLabelY[i])
+        : desktopDotLabelY[i];
     });
 
     events.forEach(function (e, i) {
@@ -1024,9 +1218,13 @@
       // 연결선 없이 점 위에 바로 얹어 둡니다. 많이 밀려났을 때만 선으로 이어줍니다.
       // 선을 이을 때는 대각선으로 비스듬히 잇지 않고, 점에서 가로로 먼저 나온 뒤
       // 라벨 쪽에서 세로로 꺾어 올라가는 직각(ㄱ자) 모양으로 그립니다.
-      if (Math.hypot(lx - cx, ly - (cy - 18)) > 14) {
+      const needsLeader = isMobileOverview
+        ? Math.abs(lx - cx) > 18
+        : Math.hypot(lx - cx, ly - (cy - 18)) > 14;
+      if (needsLeader) {
         overviewSvg.appendChild(el('polyline', {
-          class: 'leader', points: [lx, ly + 5, lx, cy - 8, cx, cy - 8].join(' ')
+          class: 'leader',
+          points: [lx, ly + (isMobileOverview ? Math.max(6, Math.round(eventLabelSize * 0.4)) : 5), lx, cy - 8, cx, cy - 8].join(' ')
         }));
       }
       const label = el('text', { class: 'event-label', x: lx, y: ly, 'text-anchor': 'middle' });
@@ -1050,12 +1248,22 @@
     });
 
     // 마우스오버 안내선·점·태그를 담을 그룹입니다. 아래 mousemove 핸들러가 채웁니다.
-    ovHover = { ox: ox, oy: oy, weekly: weekly, x0: x0, x1: x1, plotTop: OV.top, plotBottom: OV.top + plotH };
+    ovHover = { ox: ox, oy: oy, weekly: weekly, x0: x0, x1: x1, plotTop: plotTop, plotBottom: plotTop + plotH };
     hoverGroup = el('g', { class: 'ov-hover-group' });
     hoverGroup.style.display = 'none';
     overviewSvg.appendChild(hoverGroup);
     overviewLabels = newLabels;
   }
+
+  // 창 너비가 바뀔 때 사건명 크기와 위치를 함께 다시 계산합니다.
+  const refreshOverviewLayout = function () {
+    if (market && !overviewBlock.hidden) renderOverview();
+  };
+  let overviewResizeFrame = 0;
+  window.addEventListener('resize', function () {
+    if (overviewResizeFrame) cancelAnimationFrame(overviewResizeFrame);
+    overviewResizeFrame = requestAnimationFrame(refreshOverviewLayout);
+  });
 
   // 가장 가까운 구간·사건 이름표만 커지게 하고, 나머지는 원래 크기로 되돌립니다.
   function updateLabelHover(mx) {
@@ -1138,6 +1346,28 @@
     updateOverviewHover(e.clientX);
     updateOverviewLens(e);
   });
+  // 가까운 사건 점의 투명 클릭 영역이 겹쳐도, 실제로 누른 위치에서 가장 가까운 사건을 엽니다.
+  overviewSvg.addEventListener('click', function (e) {
+    const target = e.target;
+    if (!target.classList ||
+        (!target.classList.contains('event-dot') && !target.classList.contains('event-hitbox'))) return;
+    const rect = overviewSvg.getBoundingClientRect();
+    if (!rect.width || !rect.height || !overviewEventPoints.length) return;
+    const mx = (e.clientX - rect.left) * (OV.W / rect.width);
+    const my = (e.clientY - rect.top) * (OV.H / rect.height);
+    let nearest = overviewEventPoints[0];
+    let nearestDist = Math.hypot(nearest.cx - mx, nearest.cy - my);
+    overviewEventPoints.forEach(function (point) {
+      const dist = Math.hypot(point.cx - mx, point.cy - my);
+      if (dist < nearestDist) {
+        nearest = point;
+        nearestDist = dist;
+      }
+    });
+    e.preventDefault();
+    e.stopPropagation();
+    select('event', nearest.index);
+  }, true);
   overviewSvg.addEventListener('mouseleave', function () {
     if (hoverGroup) hoverGroup.style.display = 'none';
     overviewLens.classList.remove('is-visible');
@@ -1154,16 +1384,22 @@
   // 값이 적힌 작은 태그. 차트 밖으로 나가지 않게 좌우로 붙잡아 둡니다.
   function drawTag(svg, x, y, text, variant, extra) {
     const suffix = variant ? ' tag-box--' + variant : '';
-    const w = textWidth(text, 12) + 18;
-    const h = 22;
+    const mobileScaled = window.matchMedia('(max-width: 640px)').matches;
+    const fontSize = mobileScaled ? 22 : 12;
+    const w = textWidth(text, fontSize) + (mobileScaled ? 26 : 18);
+    const h = mobileScaled ? 32 : 22;
     const cx = Math.max(ZOOM.left + w / 2, Math.min(x, ZOOM.W - ZOOM.right - w / 2));
+    const cy = mobileScaled
+      ? Math.max(h / 2 + 2, Math.min(y, ZOOM.H - h / 2 - 2))
+      : y;
     svg.appendChild(el('rect', {
-      class: 'tag-box' + suffix + (extra ? ' ' + extra : ''),
-      x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 5
+      class: 'tag-box' + suffix + (mobileScaled ? ' tag-box--mobile-scale' : '') + (extra ? ' ' + extra : ''),
+      x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: mobileScaled ? 6 : 5
     }));
     const t = el('text', {
-      class: 'tag-text' + (variant ? ' tag-text--' + variant : '') + (extra ? ' ' + extra : ''),
-      x: cx, y: y + 4.1, 'text-anchor': 'middle'
+      class: 'tag-text' + (variant ? ' tag-text--' + variant : '') +
+        (mobileScaled ? ' tag-text--mobile-scale' : '') + (extra ? ' ' + extra : ''),
+      x: cx, y: cy + (mobileScaled ? 7.5 : 4.1), 'text-anchor': 'middle'
     });
     t.textContent = text;
     svg.appendChild(t);
@@ -1483,8 +1719,10 @@
   // 절대 금액은 계열마다 단위가 달라 한 축에 겹칠 수 없기 때문입니다.
   // 미니 차트 전용 작은 값 태그. 좌우로 붙잡아 차트 밖으로 안 나가게 합니다.
   function drawMiniTag(x, y, text, variant, width, rightMargin) {
-    const w = textWidth(text, 12) + 14;
-    const h = 20;
+    const mobileScaled = window.matchMedia('(max-width: 640px)').matches;
+    const fontSize = mobileScaled ? 10.5 : 12;
+    const w = textWidth(text, fontSize) + (mobileScaled ? 12 : 14);
+    const h = mobileScaled ? 16 : 20;
     const cx = Math.max(10 + w / 2, Math.min(x, width - rightMargin - w / 2));
     const g = el('g', { class: 'mini-tag' });
     // 색깔 있는 태그 배경(tag-box--variant)을 쓰면 옅은 배경색 위에서 묻혀 보이니 글자는
@@ -1494,8 +1732,9 @@
       x: cx - w / 2, y: y - h / 2, width: w, height: h, rx: 4
     }));
     const t = el('text', {
-      class: 'mini-tag-text tag-text tag-text--' + variant,
-      x: cx, y: y + 4.1, 'text-anchor': 'middle'
+      class: 'mini-tag-text tag-text tag-text--' + variant +
+        (mobileScaled ? ' mini-tag-text--mobile-scale' : ''),
+      x: cx, y: y + (mobileScaled ? 3.6 : 4.1), 'text-anchor': 'middle'
     });
     t.textContent = text;
     g.appendChild(t);
@@ -1885,6 +2124,49 @@
 
   let openFrog = null;
 
+  // 모바일에서도 데스크톱처럼 왼쪽 위 꼬리가 개구리와 바로 이어지게 합니다.
+  function placeFrogBubble(btn, bubble) {
+    if (!window.matchMedia('(max-width: 739px)').matches) {
+      bubble.style.removeProperty('--frog-bubble-left');
+      bubble.style.removeProperty('--frog-bubble-top');
+      bubble.style.removeProperty('--frog-bubble-width');
+      bubble.style.removeProperty('--frog-bubble-arrow-left');
+      bubble.style.visibility = '';
+      bubble.classList.remove('frog-bubble--above');
+      return;
+    }
+
+    const margin = 16;
+    const gap = 12;
+    const arrowCenter = 22;
+    const btnRect = btn.getBoundingClientRect();
+    const btnCenter = btnRect.left + btnRect.width / 2;
+    // 말풍선 폭을 먼저 뷰포트 기준으로 확보한 뒤 위치를 제한합니다. 오른쪽 끝에 있는
+    // 개구리도 남은 공간만큼 말풍선이 찌그러지지 않게 하기 위함입니다.
+    const availableWidth = Math.max(0, window.innerWidth - margin * 2);
+    const bubbleWidth = Math.min(260, availableWidth);
+    const maxLeft = Math.max(margin, window.innerWidth - margin - bubbleWidth);
+    const left = Math.max(margin, Math.min(btnCenter - arrowCenter, maxLeft));
+    // 말풍선 위치와 별개로 꼬리만 버튼 쪽으로 옮기되, 둥근 모서리 안쪽에 붙잡아 둡니다.
+    const arrowLeft = Math.max(10, Math.min(btnCenter - left - 6, bubbleWidth - 22));
+    bubble.style.setProperty('--frog-bubble-width', bubbleWidth + 'px');
+    bubble.style.setProperty('--frog-bubble-arrow-left', arrowLeft + 'px');
+    const bubbleRect = bubble.getBoundingClientRect();
+    const bubbleHeight = bubbleRect.height;
+
+    const belowTop = btnRect.bottom + gap;
+    const aboveTop = btnRect.top - gap - bubbleHeight;
+    const showAbove = belowTop + bubbleHeight > window.innerHeight - margin && aboveTop >= margin;
+    const maxTop = window.innerHeight - margin - bubbleHeight;
+    const top = showAbove
+      ? aboveTop
+      : Math.max(margin, Math.min(belowTop, maxTop));
+    bubble.style.setProperty('--frog-bubble-left', left + 'px');
+    bubble.style.setProperty('--frog-bubble-top', top + 'px');
+    bubble.classList.toggle('frog-bubble--above', showAbove);
+    bubble.style.visibility = '';
+  }
+
   function closeFrogHelp() {
     if (!openFrog) return;
     openFrog.btn.setAttribute('aria-expanded', 'false');
@@ -1927,7 +2209,9 @@
         if (isOpen) return;
         btn.setAttribute('aria-expanded', 'true');
         btn.innerHTML = FROG_OPEN;
+        bubble.style.visibility = 'hidden';
         bubble.hidden = false;
+        placeFrogBubble(btn, bubble);
         openFrog = { btn: btn, bubble: bubble };
       });
 
@@ -1952,6 +2236,15 @@
   }
 
   mountFrogHelp();
+
+  // 열린 상태에서 화면 방향이나 스크롤 위치가 바뀌어도 꼬리가 개구리를 따라가게 합니다.
+  const refreshOpenFrogPosition = function () {
+    if (openFrog && !openFrog.bubble.hidden) {
+      placeFrogBubble(openFrog.btn, openFrog.bubble);
+    }
+  };
+  window.addEventListener('resize', refreshOpenFrogPosition);
+  window.addEventListener('scroll', refreshOpenFrogPosition, { passive: true });
 
   const hintFrog = document.querySelector('.pat-hint .hint-frog');
   if (hintFrog) hintFrog.innerHTML = FROG_FILLED;

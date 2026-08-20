@@ -288,8 +288,13 @@
       window.removeEventListener('pointerdown', wake, true);
       window.removeEventListener('keydown', wake, true);
     };
+    var wakePending = false;            // 앞선 시도의 결과를 아직 기다리는 중인가
     var wake = function () {
       ready();
+      // 기다리는 중이면 아무것도 하지 않는다. curTrack 은 play() 를 부르는 순간
+      // 이미 차므로, 여기서 그냥 넘어가면 리스너를 떼 버리고 나중에 그 약속이
+      // 거절됐을 때 다시 걸 기회가 사라진다.
+      if (wakePending) return;
       if (wantTrack && !curTrack) {
         var started = crossfade(wantTrack, wantRestart);
         var mySeq = playSeq;              // 방금 그 요청의 세대
@@ -297,8 +302,11 @@
         // 첫 조작에서도 거절될 수 있다(자동재생 말고도 로드 실패·미지원 형식).
         // 그때 리스너를 떼면 다음 조작에서 다시 걸 기회가 사라진다.
         if (started && started.then) {
-          started.then(function () { if (mySeq === playSeq) offWake(); },
-                       function () { /* 실패 — 다음 조작을 기다린다 */ });
+          wakePending = true;
+          started.then(
+            function () { wakePending = false; if (mySeq === playSeq) offWake(); },
+            function () { wakePending = false; /* 실패 — 다음 조작을 기다린다 */ }
+          );
           return;
         }
       }

@@ -37,7 +37,11 @@
 (function (global) {
   'use strict';
 
-  var HISTORY_URL = '/data/history.json';
+  var HISTORY_URL = (function () {
+    var script = document.currentScript;
+    var base = script ? script.src : '';
+    return new URL('../data/history.json', base).href;
+  })();
 
   var historyPromise = null;
 

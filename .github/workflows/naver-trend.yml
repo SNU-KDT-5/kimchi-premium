@@ -45,7 +45,7 @@ jobs:
         env:
           NCP_API_KEY_ID: ${{ secrets.NCP_API_KEY_ID }}
           NCP_API_KEY: ${{ secrets.NCP_API_KEY }}
-        run: python3 fetch_naver_trend.py
+        run: python3 backend/fetch_naver_trend.py
 
       - name: 바뀐 내용이 있으면 커밋
         run: |

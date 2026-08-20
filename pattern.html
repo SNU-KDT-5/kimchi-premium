@@ -56,10 +56,10 @@
   .band:hover, .band.active { fill: rgba(196, 138, 31, 0.26); }
   .band-edge { stroke: var(--border2); stroke-width: 1; pointer-events: none; }
   .band-label {
-    fill: var(--text); font-size: 17px; font-weight: 700; pointer-events: none;
+    fill: var(--text); font-size: 12px; font-weight: 700; pointer-events: none;
     transition: font-size 0.12s ease;
   }
-  .band-label.label-hot { font-size: 21px; }
+  .band-label.label-hot { font-size: 17px; }
 
   .event-dot {
     fill: var(--accent); stroke: var(--panel); stroke-width: 2; cursor: pointer;
@@ -384,8 +384,8 @@
 
   /* 넓은 데스크톱에서는 장기 차트의 사건명을 한 단계 키워 바로 읽기 쉽게 합니다. */
   @media (min-width: 1100px) {
-    .band-label { font-size: 19px; }
-    .band-label.label-hot { font-size: 23px; }
+    .band-label { font-size: 14px; }
+    .band-label.label-hot { font-size: 19px; }
     .event-label { font-size: 13px; }
     .event-label.label-hot { font-size: 18px; }
   }
@@ -481,12 +481,6 @@
     .event-label.label-hot { font-size: calc(var(--responsive-label-size) + 4px); }
   }
 
-  /* 700~768px에서는 JS의 배치 폭과 같은 값으로 구간 라벨을 17px까지 보간합니다. */
-  @media (min-width: 700px) and (max-width: 767px) {
-    .band-label {
-      --responsive-label-size: calc(4.227941vw - 15.470588px);
-    }
-  }
 </style>
 </head>
 <body>
@@ -1023,8 +1017,8 @@
     };
     const mobileBandLabelSize = Math.max(12, Math.min(36 - responsiveWidth * 0.03125, 26));
     const desktopBandLabelSize = isLargeOverview ? 19 : 17;
-    // 700px에서 쓰던 모바일 크기(14.125px)를 768px의 데스크톱 크기(17px)까지
-    // CSS와 같은 비율로 보간해, textWidth()의 배치 폭도 실제 글자와 함께 변하게 합니다.
+    // 700px에서 쓰던 모바일 배치 폭(14.125px)을 데스크톱의 확대 상태 여유 폭(17px)까지
+    // 보간합니다. 화면에 보이는 기본 글자는 CSS에서 12px로 자연스럽게 이어집니다.
     const bandLabelSize = mobileWidth < 700
       ? mobileBandLabelSize
       : (mobileWidth < 768 ? blendLayout(14.125, 17) : desktopBandLabelSize);

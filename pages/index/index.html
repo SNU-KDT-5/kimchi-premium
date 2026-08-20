@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KIMPLOG</title>
   <!-- SVG는 최신 브라우저용, 나머지는 Safari 탭 미리보기 등 SVG를 안 쓰는 곳을 위한 폴백 -->
-  <link rel="icon" href="../assets/favicon.ico" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="../assets/face-smile.svg">
-  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="icon" href="../../assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="../../assets/face-smile.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared/shared.css">
-  <link rel="preload" as="image" href="../assets/%EA%B9%80%ED%94%84%EB%A1%9C%EA%B7%B8%20%EC%8B%9C%EC%9E%91%20%EB%B0%B0%EA%B2%BD-%EC%8B%9C%EC%9E%91%ED%99%94%EB%A9%B4.jpg">
+  <link rel="stylesheet" href="../../shared/shared.css">
+  <link rel="preload" as="image" href="../../assets/%EA%B9%80%ED%94%84%EB%A1%9C%EA%B7%B8%20%EC%8B%9C%EC%9E%91%20%EB%B0%B0%EA%B2%BD-%EC%8B%9C%EC%9E%91%ED%99%94%EB%A9%B4.jpg">
   <!--
     ============================================================
     온보딩 — 김프로그 스크롤 스토리
@@ -493,9 +493,9 @@
 </head>
 <body>
   <div id="topnav-root"></div>
-  <script src="../shared/nav.js"></script>
-  <script src="../shared/sound.js"></script>
-  <script src="../chatbot/chatbot-widget.js"></script>
+  <script src="../../shared/nav.js"></script>
+  <script src="../../shared/sound.js"></script>
+  <script src="../../chatbot/chatbot-widget.js"></script>
 
   <script>
     // ══════════════════════════════════════════════════════════
@@ -601,7 +601,7 @@
           <!-- 시작화면. 누르면 사라지고 스크롤 스토리가 시작된다 -->
           <div class="kf-start" id="startScreen" role="dialog" aria-modal="true" aria-label="김프로그 시작하기">
             <div class="kf-start-art">
-              <img src="../assets/%EA%B9%80%ED%94%84%EB%A1%9C%EA%B7%B8%20%EC%8B%9C%EC%9E%91%20%EB%B0%B0%EA%B2%BD-%EC%8B%9C%EC%9E%91%ED%99%94%EB%A9%B4.jpg" alt="김프로그 — 김치 프리미엄을 배달하는 개구리">
+              <img src="../../assets/%EA%B9%80%ED%94%84%EB%A1%9C%EA%B7%B8%20%EC%8B%9C%EC%9E%91%20%EB%B0%B0%EA%B2%BD-%EC%8B%9C%EC%9E%91%ED%99%94%EB%A9%B4.jpg" alt="김프로그 — 김치 프리미엄을 배달하는 개구리">
               <button class="kf-start-go" id="startGo" type="button">시작하기</button>
             </div>
             <div class="kf-start-tip" id="startTip">
@@ -647,51 +647,51 @@
 
             <!-- 김프로그: 발밑이 원점 -->
             <g id="frogG">
-              <image id="frogStand" href="../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
-              <image id="frogRun" href="../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
+              <image id="frogStand" href="../../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
+              <image id="frogRun" href="../../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
               <g id="kimchiG">
-                <image id="kimchiImg" href="../assets/%EA%B9%80%EC%B9%98.svg"></image>
+                <image id="kimchiImg" href="../../assets/%EA%B9%80%EC%B9%98.svg"></image>
               </g>
             </g>
             </g>
 
             <!-- ══ 마지막 장면 ══ 김프로그 얼굴 → 거래소 두 곳 + 은행 + 김프랫 -->
             <image id="frogFace2" class="kf-fade" opacity="0"
-                   href="../assets/face-smile.svg" x="846" y="492" width="180" height="130"></image>
+                   href="../../assets/face-smile.svg" x="846" y="492" width="180" height="130"></image>
 
             <g class="kf-scene2 kf-fade" id="scene2" opacity="0">
               <!-- 해외거래소 (좌상 끝) — 로고 · 이름 · 그래프 순으로 쌓는다 -->
-              <image class="kf-logo" href="../assets/%EB%B0%94%EC%9D%B4%EB%82%B8%EC%8A%A4-%ED%81%AC%EB%A1%AD.jpg" x="86" y="6" width="200" height="81"></image>
+              <image class="kf-logo" href="../../assets/%EB%B0%94%EC%9D%B4%EB%82%B8%EC%8A%A4-%ED%81%AC%EB%A1%AD.jpg" x="86" y="6" width="200" height="81"></image>
               <text class="kf-panel-label" x="186" y="116" text-anchor="middle">해외거래소</text>
               <g id="miniAbroad" transform="translate(24 128) scale(0.30)"></g>
 
               <!-- 국내거래소 (우상 끝) -->
-              <image class="kf-logo" href="../assets/%EC%97%85%EB%B9%84%ED%8A%B8%20%EB%A1%9C%EA%B3%A0.jpg" x="758" y="6" width="200" height="81"></image>
+              <image class="kf-logo" href="../../assets/%EC%97%85%EB%B9%84%ED%8A%B8%20%EB%A1%9C%EA%B3%A0.jpg" x="758" y="6" width="200" height="81"></image>
               <text class="kf-panel-label" x="858" y="116" text-anchor="middle">국내거래소</text>
               <g id="miniDomestic" transform="translate(696 128) scale(0.30)"></g>
 
               <!-- 은행 + 김프랫 (하단 끝). 김프랫을 뒤에 그려서 보따리가 은행 위로 겹친다 -->
-              <image href="../assets/%EC%9D%80%ED%96%89.png" x="470" y="474" width="176" height="169"></image>
+              <image href="../../assets/%EC%9D%80%ED%96%89.png" x="470" y="474" width="176" height="169"></image>
               <g id="ratG">
-                <image class="rat-sprite" id="spDollarStandS" href="../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A2%8C%2C%EC%86%8C%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spDollarStandM" href="../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A2%8C%2C%EC%A4%91%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spDollarStandL" href="../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A2%8C%2C%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spDollarRunS" href="../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A2%8C%2C%EC%86%8C%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spDollarRunM" href="../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A2%8C%2C%EC%A4%91%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spDollarRunL" href="../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A2%8C%2C%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spCoinStandS" href="../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%86%8C%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spCoinStandM" href="../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A4%91%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spCoinStandL" href="../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spCoinRunS" href="../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%9A%B0%2C%EC%86%8C%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spCoinRunM" href="../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%9A%B0%2C%EC%A4%91%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spCoinRunL" href="../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%9A%B0%2C%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spWonStandM" href="../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A4%91%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spWonStandL" href="../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spWonStandXL" href="../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%ED%8A%B9%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spWonRunM" href="../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A4%91%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spWonRunL" href="../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EB%8C%80%29.png" style="display:none"></image>
-                <image class="rat-sprite" id="spWonRunXL" href="../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%ED%8A%B9%EB%8C%80%29.png" style="display:none"></image>
-                <image id="podori" class="kf-fade" href="../assets/%ED%8F%AC%EB%8F%8C%EC%9D%B4.png" opacity="0"></image>
+                <image class="rat-sprite" id="spDollarStandS" href="../../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A2%8C%2C%EC%86%8C%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spDollarStandM" href="../../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A2%8C%2C%EC%A4%91%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spDollarStandL" href="../../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A2%8C%2C%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spDollarRunS" href="../../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A2%8C%2C%EC%86%8C%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spDollarRunM" href="../../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A2%8C%2C%EC%A4%91%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spDollarRunL" href="../../assets/%EB%8B%AC%EB%9F%AC%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A2%8C%2C%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spCoinStandS" href="../../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%86%8C%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spCoinStandM" href="../../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A4%91%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spCoinStandL" href="../../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spCoinRunS" href="../../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%9A%B0%2C%EC%86%8C%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spCoinRunM" href="../../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%9A%B0%2C%EC%A4%91%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spCoinRunL" href="../../assets/%EC%BD%94%EC%9D%B8%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%9A%B0%2C%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spWonStandM" href="../../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EC%A4%91%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spWonStandL" href="../../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spWonStandXL" href="../../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EC%8A%A4%ED%83%A0%EB%94%A9%28%ED%8A%B9%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spWonRunM" href="../../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EC%A4%91%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spWonRunL" href="../../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%EB%8C%80%29.png" style="display:none"></image>
+                <image class="rat-sprite" id="spWonRunXL" href="../../assets/%EC%9B%90%ED%99%94%20%EB%8F%84%EB%91%91%EC%A5%90%20%EB%9F%AC%EB%8B%9D%28%ED%8A%B9%EB%8C%80%29.png" style="display:none"></image>
+                <image id="podori" class="kf-fade" href="../../assets/%ED%8F%AC%EB%8F%8C%EC%9D%B4.png" opacity="0"></image>
                 <!-- 보따리가 커질 때 터지는 효과 -->
                 <g id="popG"></g>
                 <!-- 판 순간 떠오르는 '+김프' -->
@@ -733,11 +733,11 @@
             <path class="kf-line-price kf-fade" id="priceLine2" opacity="0"></path>
             <path class="kf-line-kimp" id="kimpLine2"></path>
             <g id="frog2">
-              <image id="f2Stand" href="../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
-              <image id="f2Run" href="../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
-              <g id="f2KimchiG"><image id="f2Kimchi" href="../assets/%EA%B9%80%EC%B9%98.svg"></image></g>
+              <image id="f2Stand" href="../../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
+              <image id="f2Run" href="../../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
+              <g id="f2KimchiG"><image id="f2Kimchi" href="../../assets/%EA%B9%80%EC%B9%98.svg"></image></g>
             </g>
-            <image id="f2Spill" href="../assets/%EC%A0%91%EC%8B%9C%EB%A5%BC%20%EC%97%8E%EC%9D%80%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.png" opacity="0"></image>
+            <image id="f2Spill" href="../../assets/%EC%A0%91%EC%8B%9C%EB%A5%BC%20%EC%97%8E%EC%9D%80%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.png" opacity="0"></image>
           </svg>
           <div class="kf-say is-hidden" id="say2"><span id="say2Text"></span></div>
         </div>
@@ -753,7 +753,7 @@
             <path class="kf-axis" d="M70 40 L70 580 L960 580"></path>
 
             <!-- 좌상단 테더 로고 -->
-            <image id="t3Logo" class="kf-fade" opacity="0" href="../assets/%ED%85%8C%EB%8D%94.png"
+            <image id="t3Logo" class="kf-fade" opacity="0" href="../../assets/%ED%85%8C%EB%8D%94.png"
                    x="88" y="46" width="180" height="65"></image>
 
             <!-- 1달러 고정선(검정) — 김프로그가 밟고 다니는 땅 -->
@@ -770,16 +770,16 @@
             <g id="t3Marks"></g>
 
             <!-- 머리만 있는 김프로그 + 그 옆에 쌓이는 김치 -->
-            <image id="t3Face" class="kf-fade" opacity="0" href="../assets/face-smile.svg"
+            <image id="t3Face" class="kf-fade" opacity="0" href="../../assets/face-smile.svg"
                    x="530" y="88" width="170" height="123"></image>
             <g id="t3Pile"></g>
 
             <!-- 시세선 위를 걷는 김프로그 -->
             <!-- 김치가 김프로그를 가리지 않도록 개구리보다 뒤에 그린다 -->
             <g id="t3Frog" opacity="0">
-              <g id="t3KimchiG"><image id="t3Kimchi" href="../assets/%EA%B9%80%EC%B9%98.svg"></image></g>
-              <image id="t3Stand" href="../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
-              <image id="t3Run" href="../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
+              <g id="t3KimchiG"><image id="t3Kimchi" href="../../assets/%EA%B9%80%EC%B9%98.svg"></image></g>
+              <image id="t3Stand" href="../../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg"></image>
+              <image id="t3Run" href="../../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg" style="display:none"></image>
             </g>
 
             <!-- 팔린 김치가 얼굴 옆으로 날아가는 중 -->
@@ -800,7 +800,7 @@
         <div class="kf-chart-wrap" id="chartWrap4">
           <svg class="kf-chart" id="chart4" viewBox="0 0 1080 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
             <g id="p4Panels" opacity="0"></g>
-            <image id="p4Face" class="kf-fade" opacity="0" href="../assets/face-smile.svg"></image>
+            <image id="p4Face" class="kf-fade" opacity="0" href="../../assets/face-smile.svg"></image>
           </svg>
           <div class="kf-say is-hidden" id="say4a"><span id="say4aText"></span></div>
         </div>
@@ -818,13 +818,13 @@
               <text class="kf-won" x="176" y="150" text-anchor="end">₩</text>
               <g id="p5Ticks"></g>
             </g>
-            <image id="p5Logo" class="kf-fade" opacity="0" href="../assets/%ED%85%8C%EB%8D%94.png"
+            <image id="p5Logo" class="kf-fade" opacity="0" href="../../assets/%ED%85%8C%EB%8D%94.png"
                    x="212" y="96" width="152" height="55"></image>
             <path class="kf-line-price" id="p5Rate"></path>
             <path class="kf-line-kimp" id="p5Kimp"></path>
             <text class="kf-line-label rate" id="p5RateLabel" opacity="0" text-anchor="start">환율</text>
             <text class="kf-line-label kimp" id="p5KimpLabel" opacity="0" text-anchor="middle">환율 + 김프</text>
-            <image id="p5Face" class="kf-fade" opacity="0" href="../assets/face-smile.svg"
+            <image id="p5Face" class="kf-fade" opacity="0" href="../../assets/face-smile.svg"
                    x="465" y="150" width="150" height="108"></image>
             <text class="kf-stamp kimp" id="p5StampA" x="426" y="228" text-anchor="end">김프</text>
             <text class="kf-stamp rate" id="p5StampB" x="654" y="228" text-anchor="start">환율</text>
@@ -839,11 +839,11 @@
 
   <!-- 마지막 — 포돌이 후레쉬가 화면을 덮으며 장면이 끝난다 -->
   <div class="kf-flash" id="flash" aria-hidden="true">
-    <img id="flashImg" src="../assets/%ED%8F%AC%EB%8F%8C%EC%9D%B4%20%ED%9B%84%EB%A0%88%EC%89%AC.jpg" alt="">
+    <img id="flashImg" src="../../assets/%ED%8F%AC%EB%8F%8C%EC%9D%B4%20%ED%9B%84%EB%A0%88%EC%89%AC.jpg" alt="">
   </div>
 
   <div class="idx-cta-wrap">
-    <a href="../pattern/pattern.html" class="idx-cta">시작해봐요! 개굴 <span class="arrow">→</span></a>
+    <a href="../../pages/pattern/pattern.html" class="idx-cta">시작해봐요! 개굴 <span class="arrow">→</span></a>
   </div>
 
   <script>

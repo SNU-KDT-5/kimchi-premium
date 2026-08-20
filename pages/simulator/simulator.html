@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KIMPLOG</title>
-<link rel="icon" href="../assets/favicon.ico" sizes="any">
-<link rel="icon" type="image/svg+xml" href="../assets/face-smile.svg">
-<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="icon" href="../../assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="../../assets/face-smile.svg">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../shared/shared.css">
-<script src="../shared/shared.js"></script>
+<link rel="stylesheet" href="../../shared/shared.css">
+<script src="../../shared/shared.js"></script>
 <style>
   /* ── 타이포 스케일 ────────────────────────────────────────────────
      shared.css 에는 font-size 토큰(--fs-*)이 없고 클래스별 값만 있다.
@@ -428,8 +428,8 @@
 <body>
 
 <div id="topnav-root"></div>
-<script src="../shared/nav.js"></script>
-<script src="../chatbot/chatbot-widget.js"></script>
+<script src="../../shared/nav.js"></script>
+<script src="../../chatbot/chatbot-widget.js"></script>
 
 <!-- 해제 순간에만 잠깐 뜨는 장식. 안내 자체는 #lockNotice 가 읽어준다. -->
 <div class="unlock-toast" id="unlockToast" aria-hidden="true"><span class="icon">🔓</span> 개굴, 계산기가 열렸어요!</div>
@@ -467,7 +467,7 @@
   <!-- 잠금 안내 — 잠긴 섹션 밖에 둬야 흐려지지 않는다.
        진행 상황·해제 알림을 여기 한 곳에서만 읽어준다(라이브 영역이 둘이면 겹쳐 읽힌다). -->
   <div class="intro-banner lock-notice" id="lockNotice" role="status" aria-live="polite" hidden>
-    <img class="intro-banner-icon" id="lockNoticeIcon" src="../assets/face-sad.svg" alt="">
+    <img class="intro-banner-icon" id="lockNoticeIcon" src="../../assets/face-sad.svg" alt="">
     <div>
       <div class="intro-banner-title" id="lockNoticeTitle">-</div>
       <div class="intro-banner-text" id="lockNoticeText">-</div>

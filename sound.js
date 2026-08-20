@@ -284,14 +284,23 @@
   //   music() 은 조작 전이라 거절당하는데, 그대로 두면 곡이 바뀌는 순간까지
   //   음악이 아예 없다.
   if (enabled) {
+    var offWake = function () {
+      window.removeEventListener('pointerdown', wake, true);
+      window.removeEventListener('keydown', wake, true);
+    };
     var wake = function () {
       ready();
       if (wantTrack && !curTrack) {
-        crossfade(wantTrack, wantRestart);
+        var started = crossfade(wantTrack, wantRestart);
         wantRestart = false;
+        // 첫 조작에서도 거절될 수 있다(자동재생 말고도 로드 실패·미지원 형식).
+        // 그때 리스너를 떼면 다음 조작에서 다시 걸 기회가 사라진다.
+        if (started && started.then) {
+          started.then(offWake, function () { /* 실패 — 다음 조작을 기다린다 */ });
+          return;
+        }
       }
-      window.removeEventListener('pointerdown', wake, true);
-      window.removeEventListener('keydown', wake, true);
+      offWake();
     };
     window.addEventListener('pointerdown', wake, true);
     window.addEventListener('keydown', wake, true);
@@ -337,15 +346,18 @@
   }
 
   // from 을 줄이면서 to 를 키운다. to 가 없으면 그냥 줄여서 멈춘다.
+  //   재생이 실제로 붙었는지는 비동기로 판가름 나므로, play() 의 약속을 돌려준다.
   function crossfade(to, restart) {
     clearInterval(fadeTimer);
     var from = curTrack && curTrack !== to ? els[curTrack] : null;
     var next = to ? trackEl(to) : null;
     var goal = to ? TRACKS[to][1] : 0;
+    var started = null;
     if (next) {
       if (restart) { try { next.currentTime = 0; } catch (e) {} }
       next.volume = next.volume || 0;
       var p = next.play();
+      started = p;
       if (p && p.catch) p.catch(function (e) {
         api.lastError = e;
         // 조작 전에는 브라우저가 재생을 막는다(NotAllowedError). 여기서 포기하면
@@ -372,6 +384,7 @@
         if (from) from.pause();                 // currentTime 은 그대로 — 돌아올 때 이어진다
       }
     }, 40);
+    return started;
   }
 
   // 바깥에서 부르는 것. 이름을 주면 그 곡으로, null 이면 음악을 끈다.

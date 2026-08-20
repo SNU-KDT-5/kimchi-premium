@@ -140,8 +140,8 @@
   //   자주 울리는 것일수록 조용해야 층이 무너지지 않는다.
   var FILES = {
     'say-frog': ['assets/sfx/say-frog.wav', 2.20, 90],   // 김프로그 말풍선 (원본이 작게 녹음돼 있어 키운다)
-    'say-rat':  ['assets/sfx/say-rat.wav',  1.00, 90],   // 김프랫 말풍선
-    step:       ['assets/sfx/step.wav',     1.27, 120],  // 걷는 발소리
+    'say-rat':  ['assets/sfx/say-rat.wav',  2.20, 90],   // 김프랫 말풍선 (say-frog 와 같은 파일 세기라 게인도 같이)
+    step:       ['assets/sfx/step.wav',     1.90, 120],  // 걷는 발소리 (배경음악에 묻혀서 올림)
     dash:       ['assets/sfx/dash.wav',     0.95, 60],   // 김프랫 달리기 (연타)
     stamp:      ['assets/sfx/stamp.wav',    1.16, 200],  // 도장이 쿵 찍힐 때
     pay:        ['assets/sfx/pay.wav',      0.68, 200],  // 보따리가 커질 때
@@ -172,7 +172,10 @@
       .then(function (buf) { buffers[name] = buf; flush(name); })
       .catch(function () { buffers[name] = null; flush(name); });   // 실패하면 합성음으로 간다
   }
-  function loadAll() { if (ready()) Object.keys(FILES).forEach(load); }
+  // forEach 는 콜백에 (값, 인덱스, 배열) 을 넘긴다. load(name, done) 에 그대로
+  // 물리면 인덱스가 done 자리에 들어가, 이미 받아 둔 파일에서 숫자를 함수로
+  // 부르려다 예외가 난다 (소리를 껐다 켤 때 setOn 이 통째로 죽었다).
+  function loadAll() { if (ready()) Object.keys(FILES).forEach(function (n) { load(n); }); }
 
   function playFile(name, t, rate) {
     playedAt[name] = Date.now();
@@ -278,17 +281,27 @@
     enabled = saved === '1';
   } catch (e) {}
 
-  // 저장된 설정이 '켜짐'이어도 브라우저는 첫 조작 전까지 소리를 막는다.
-  // 그래서 아무거나 처음 누를 때 딱 한 번 오디오를 깨워 둔다.
-  if (enabled) {
-    var wake = function () {
-      ready();
-      window.removeEventListener('pointerdown', wake, true);
-      window.removeEventListener('keydown', wake, true);
-    };
-    window.addEventListener('pointerdown', wake, true);
-    window.addEventListener('keydown', wake, true);
-  }
+  // 브라우저는 첫 조작 전까지 소리를 막는다. 그래서 무엇을 누르든 그때마다
+  // 오디오를 깨우고, 아직 못 튼 배경음악이 있으면 다시 건다.
+  //   효과음뿐 아니라 배경음악도 여기서 다시 시도한다. 페이지가 열리자마자 부른
+  //   music() 은 조작 전이라 거절당하는데, 그대로 두면 곡이 바뀌는 순간까지
+  //   음악이 아예 없다.
+  var wake = function () {
+    if (!enabled) return;               // 꺼져 있으면 아무것도 하지 않는다
+    ready();
+    // 아직 못 튼 곡이 있으면 지금 건다. curTrack 은 play() 를 부르는 순간 차므로
+    // 재생이 진행 중이거나 이미 붙어 있으면 여기서 그냥 지나간다.
+    // 거절되면 catch 가 curTrack 을 비우고, 그럼 다음 조작에서 다시 걸린다.
+    if (wantTrack && !curTrack) {
+      crossfade(wantTrack, wantRestart);
+      wantRestart = false;
+    }
+  };
+  // 리스너는 떼지 않는다. 떼는 시점을 재생 성공에 맞추려 들면, 약속이 늦게
+  // 도착하는 사이 새 요청이 끼어드는 경우를 일일이 막아야 한다. 그냥 두면
+  // 하는 일이 비교 두 번뿐이고, 언제 실패하든 다음 조작에서 늘 다시 걸린다.
+  window.addEventListener('pointerdown', wake, true);
+  window.addEventListener('keydown', wake, true);
 
   // 다른 탭으로 가면 소리를 멈춘다
   document.addEventListener('visibilitychange', function () {
@@ -311,12 +324,16 @@
   // ══════════════════════════════════════════════════════════
   //   [파일, 음량, 들어올 때 페이드(ms)]. 페이드가 0이면 곧바로 제 음량으로 시작한다.
   var TRACKS = {
-    main: ['assets/bgm/main.m4a', 0.16, 900],   // 시작화면부터 끝까지 깔리는 곡
+    main: ['assets/bgm/main.m4a', 0.12, 900],   // 시작화면부터 끝까지 깔리는 곡 (효과음 자리를 내주려고 낮춤)
     rat:  ['assets/bgm/rat.m4a',  0.13, 0]      // 김프랫 구간 — 바로 시작
   };
   var FADE = 900;                          // 기본으로 겹치는 시간(ms)
   var QUICK_OUT = 250;                     // 새 곡이 바로 시작할 땐 옛 곡을 빨리 뺀다
   var els = {}, curTrack = null, fadeTimer = null;
+  // 재생 요청 세대 번호. play() 의 약속은 늦게 도착할 수 있어서, 그 사이 새 요청이
+  // 들어왔으면 지난 요청의 뒤처리가 최신 상태를 덮어쓰면 안 된다.
+  // (후레쉬에서 music(null) 하고 1.5초 뒤 music('main') 하는 구간이 그렇다)
+  var playSeq = 0;
 
   function trackEl(name) {
     if (els[name]) return els[name];
@@ -330,16 +347,27 @@
   }
 
   // from 을 줄이면서 to 를 키운다. to 가 없으면 그냥 줄여서 멈춘다.
+  //   재생이 실제로 붙었는지는 비동기로 판가름 나므로, play() 의 약속을 돌려준다.
   function crossfade(to, restart) {
+    var seq = ++playSeq;
     clearInterval(fadeTimer);
     var from = curTrack && curTrack !== to ? els[curTrack] : null;
     var next = to ? trackEl(to) : null;
     var goal = to ? TRACKS[to][1] : 0;
+    var started = null;
     if (next) {
       if (restart) { try { next.currentTime = 0; } catch (e) {} }
       next.volume = next.volume || 0;
       var p = next.play();
-      if (p && p.catch) p.catch(function (e) { api.lastError = e; });
+      started = p;
+      if (p && p.catch) p.catch(function (e) {
+        if (seq !== playSeq) return;      // 이미 지난 요청 — 최신 상태를 건드리지 않는다
+        api.lastError = e;
+        // 조작 전에는 브라우저가 재생을 막는다(NotAllowedError). 여기서 포기하면
+        // 다음에 눌러도 영영 안 붙으므로, '아직 못 틀었다' 로 남겨 둔다.
+        // wake() 가 첫 조작 때 이 자리를 보고 다시 시도한다.
+        if (curTrack === to) curTrack = null;
+      });
     }
     curTrack = to;
     // 새 곡이 곧바로 들어오는 경우엔 제 음량을 바로 얹고, 옛 곡만 빠르게 뺀다.
@@ -359,6 +387,7 @@
         if (from) from.pause();                 // currentTime 은 그대로 — 돌아올 때 이어진다
       }
     }, 40);
+    return started;
   }
 
   // 바깥에서 부르는 것. 이름을 주면 그 곡으로, null 이면 음악을 끈다.

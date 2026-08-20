@@ -172,7 +172,10 @@
       .then(function (buf) { buffers[name] = buf; flush(name); })
       .catch(function () { buffers[name] = null; flush(name); });   // 실패하면 합성음으로 간다
   }
-  function loadAll() { if (ready()) Object.keys(FILES).forEach(load); }
+  // forEach 는 콜백에 (값, 인덱스, 배열) 을 넘긴다. load(name, done) 에 그대로
+  // 물리면 인덱스가 done 자리에 들어가, 이미 받아 둔 파일에서 숫자를 함수로
+  // 부르려다 예외가 난다 (소리를 껐다 켤 때 setOn 이 통째로 죽었다).
+  function loadAll() { if (ready()) Object.keys(FILES).forEach(function (n) { load(n); }); }
 
   function playFile(name, t, rate) {
     playedAt[name] = Date.now();
@@ -278,43 +281,27 @@
     enabled = saved === '1';
   } catch (e) {}
 
-  // 저장된 설정이 '켜짐'이어도 브라우저는 첫 조작 전까지 소리를 막는다.
-  // 그래서 아무거나 처음 누를 때 딱 한 번 오디오를 깨워 둔다.
+  // 브라우저는 첫 조작 전까지 소리를 막는다. 그래서 무엇을 누르든 그때마다
+  // 오디오를 깨우고, 아직 못 튼 배경음악이 있으면 다시 건다.
   //   효과음뿐 아니라 배경음악도 여기서 다시 시도한다. 페이지가 열리자마자 부른
   //   music() 은 조작 전이라 거절당하는데, 그대로 두면 곡이 바뀌는 순간까지
   //   음악이 아예 없다.
-  if (enabled) {
-    var offWake = function () {
-      window.removeEventListener('pointerdown', wake, true);
-      window.removeEventListener('keydown', wake, true);
-    };
-    var wakePending = false;            // 앞선 시도의 결과를 아직 기다리는 중인가
-    var wake = function () {
-      ready();
-      // 기다리는 중이면 아무것도 하지 않는다. curTrack 은 play() 를 부르는 순간
-      // 이미 차므로, 여기서 그냥 넘어가면 리스너를 떼 버리고 나중에 그 약속이
-      // 거절됐을 때 다시 걸 기회가 사라진다.
-      if (wakePending) return;
-      if (wantTrack && !curTrack) {
-        var started = crossfade(wantTrack, wantRestart);
-        var mySeq = playSeq;              // 방금 그 요청의 세대
-        wantRestart = false;
-        // 첫 조작에서도 거절될 수 있다(자동재생 말고도 로드 실패·미지원 형식).
-        // 그때 리스너를 떼면 다음 조작에서 다시 걸 기회가 사라진다.
-        if (started && started.then) {
-          wakePending = true;
-          started.then(
-            function () { wakePending = false; if (mySeq === playSeq) offWake(); },
-            function () { wakePending = false; /* 실패 — 다음 조작을 기다린다 */ }
-          );
-          return;
-        }
-      }
-      offWake();
-    };
-    window.addEventListener('pointerdown', wake, true);
-    window.addEventListener('keydown', wake, true);
-  }
+  var wake = function () {
+    if (!enabled) return;               // 꺼져 있으면 아무것도 하지 않는다
+    ready();
+    // 아직 못 튼 곡이 있으면 지금 건다. curTrack 은 play() 를 부르는 순간 차므로
+    // 재생이 진행 중이거나 이미 붙어 있으면 여기서 그냥 지나간다.
+    // 거절되면 catch 가 curTrack 을 비우고, 그럼 다음 조작에서 다시 걸린다.
+    if (wantTrack && !curTrack) {
+      crossfade(wantTrack, wantRestart);
+      wantRestart = false;
+    }
+  };
+  // 리스너는 떼지 않는다. 떼는 시점을 재생 성공에 맞추려 들면, 약속이 늦게
+  // 도착하는 사이 새 요청이 끼어드는 경우를 일일이 막아야 한다. 그냥 두면
+  // 하는 일이 비교 두 번뿐이고, 언제 실패하든 다음 조작에서 늘 다시 걸린다.
+  window.addEventListener('pointerdown', wake, true);
+  window.addEventListener('keydown', wake, true);
 
   // 다른 탭으로 가면 소리를 멈춘다
   document.addEventListener('visibilitychange', function () {

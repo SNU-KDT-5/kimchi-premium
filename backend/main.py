@@ -27,7 +27,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = "gemini-3.5-flash-lite"
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_PATH = BASE_DIR / "data" / "current.json"
+DATA_PATH = BASE_DIR.parent / "data" / "current.json"
 
 SESSION_CHAT_LIMIT = 10
 DAILY_CHAT_LIMIT = 100

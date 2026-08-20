@@ -292,11 +292,13 @@
       ready();
       if (wantTrack && !curTrack) {
         var started = crossfade(wantTrack, wantRestart);
+        var mySeq = playSeq;              // 방금 그 요청의 세대
         wantRestart = false;
         // 첫 조작에서도 거절될 수 있다(자동재생 말고도 로드 실패·미지원 형식).
         // 그때 리스너를 떼면 다음 조작에서 다시 걸 기회가 사라진다.
         if (started && started.then) {
-          started.then(offWake, function () { /* 실패 — 다음 조작을 기다린다 */ });
+          started.then(function () { if (mySeq === playSeq) offWake(); },
+                       function () { /* 실패 — 다음 조작을 기다린다 */ });
           return;
         }
       }
@@ -333,6 +335,10 @@
   var FADE = 900;                          // 기본으로 겹치는 시간(ms)
   var QUICK_OUT = 250;                     // 새 곡이 바로 시작할 땐 옛 곡을 빨리 뺀다
   var els = {}, curTrack = null, fadeTimer = null;
+  // 재생 요청 세대 번호. play() 의 약속은 늦게 도착할 수 있어서, 그 사이 새 요청이
+  // 들어왔으면 지난 요청의 뒤처리가 최신 상태를 덮어쓰면 안 된다.
+  // (후레쉬에서 music(null) 하고 1.5초 뒤 music('main') 하는 구간이 그렇다)
+  var playSeq = 0;
 
   function trackEl(name) {
     if (els[name]) return els[name];
@@ -348,6 +354,7 @@
   // from 을 줄이면서 to 를 키운다. to 가 없으면 그냥 줄여서 멈춘다.
   //   재생이 실제로 붙었는지는 비동기로 판가름 나므로, play() 의 약속을 돌려준다.
   function crossfade(to, restart) {
+    var seq = ++playSeq;
     clearInterval(fadeTimer);
     var from = curTrack && curTrack !== to ? els[curTrack] : null;
     var next = to ? trackEl(to) : null;
@@ -359,6 +366,7 @@
       var p = next.play();
       started = p;
       if (p && p.catch) p.catch(function (e) {
+        if (seq !== playSeq) return;      // 이미 지난 요청 — 최신 상태를 건드리지 않는다
         api.lastError = e;
         // 조작 전에는 브라우저가 재생을 막는다(NotAllowedError). 여기서 포기하면
         // 다음에 눌러도 영영 안 붙으므로, '아직 못 틀었다' 로 남겨 둔다.

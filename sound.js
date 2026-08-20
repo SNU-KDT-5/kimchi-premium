@@ -140,8 +140,8 @@
   //   자주 울리는 것일수록 조용해야 층이 무너지지 않는다.
   var FILES = {
     'say-frog': ['assets/sfx/say-frog.wav', 2.20, 90],   // 김프로그 말풍선 (원본이 작게 녹음돼 있어 키운다)
-    'say-rat':  ['assets/sfx/say-rat.wav',  1.00, 90],   // 김프랫 말풍선
-    step:       ['assets/sfx/step.wav',     1.27, 120],  // 걷는 발소리
+    'say-rat':  ['assets/sfx/say-rat.wav',  2.20, 90],   // 김프랫 말풍선 (say-frog 와 같은 파일 세기라 게인도 같이)
+    step:       ['assets/sfx/step.wav',     1.90, 120],  // 걷는 발소리 (배경음악에 묻혀서 올림)
     dash:       ['assets/sfx/dash.wav',     0.95, 60],   // 김프랫 달리기 (연타)
     stamp:      ['assets/sfx/stamp.wav',    1.16, 200],  // 도장이 쿵 찍힐 때
     pay:        ['assets/sfx/pay.wav',      0.68, 200],  // 보따리가 커질 때
@@ -280,9 +280,16 @@
 
   // 저장된 설정이 '켜짐'이어도 브라우저는 첫 조작 전까지 소리를 막는다.
   // 그래서 아무거나 처음 누를 때 딱 한 번 오디오를 깨워 둔다.
+  //   효과음뿐 아니라 배경음악도 여기서 다시 시도한다. 페이지가 열리자마자 부른
+  //   music() 은 조작 전이라 거절당하는데, 그대로 두면 곡이 바뀌는 순간까지
+  //   음악이 아예 없다.
   if (enabled) {
     var wake = function () {
       ready();
+      if (wantTrack && !curTrack) {
+        crossfade(wantTrack, wantRestart);
+        wantRestart = false;
+      }
       window.removeEventListener('pointerdown', wake, true);
       window.removeEventListener('keydown', wake, true);
     };
@@ -311,7 +318,7 @@
   // ══════════════════════════════════════════════════════════
   //   [파일, 음량, 들어올 때 페이드(ms)]. 페이드가 0이면 곧바로 제 음량으로 시작한다.
   var TRACKS = {
-    main: ['assets/bgm/main.m4a', 0.16, 900],   // 시작화면부터 끝까지 깔리는 곡
+    main: ['assets/bgm/main.m4a', 0.12, 900],   // 시작화면부터 끝까지 깔리는 곡 (효과음 자리를 내주려고 낮춤)
     rat:  ['assets/bgm/rat.m4a',  0.13, 0]      // 김프랫 구간 — 바로 시작
   };
   var FADE = 900;                          // 기본으로 겹치는 시간(ms)
@@ -339,7 +346,13 @@
       if (restart) { try { next.currentTime = 0; } catch (e) {} }
       next.volume = next.volume || 0;
       var p = next.play();
-      if (p && p.catch) p.catch(function (e) { api.lastError = e; });
+      if (p && p.catch) p.catch(function (e) {
+        api.lastError = e;
+        // 조작 전에는 브라우저가 재생을 막는다(NotAllowedError). 여기서 포기하면
+        // 다음에 눌러도 영영 안 붙으므로, '아직 못 틀었다' 로 남겨 둔다.
+        // wake() 가 첫 조작 때 이 자리를 보고 다시 시도한다.
+        if (curTrack === to) curTrack = null;
+      });
     }
     curTrack = to;
     // 새 곡이 곧바로 들어오는 경우엔 제 음량을 바로 얹고, 옛 곡만 빠르게 뺀다.

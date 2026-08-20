@@ -3,7 +3,7 @@
    ============================================================
    사용법: nav.js 바로 다음 줄에
 
-     <script src="../shared/sound.js"></script>
+     <script src="../../shared/sound.js"></script>
 
    · 토글 버튼은 이 파일이 상단 네비에 알아서 끼워 넣습니다.
      그래서 이 스크립트를 부른 페이지에만 버튼이 생깁니다.
@@ -139,16 +139,16 @@
   //
   //   자주 울리는 것일수록 조용해야 층이 무너지지 않는다.
   var FILES = {
-    'say-frog': ['../assets/sfx/say-frog.wav', 2.20, 90],   // 김프로그 말풍선 (원본이 작게 녹음돼 있어 키운다)
-    'say-rat':  ['../assets/sfx/say-rat.wav',  2.20, 90],   // 김프랫 말풍선 (say-frog 와 같은 파일 세기라 게인도 같이)
-    step:       ['../assets/sfx/step.wav',     1.90, 120],  // 걷는 발소리 (배경음악에 묻혀서 올림)
-    dash:       ['../assets/sfx/dash.wav',     0.95, 60],   // 김프랫 달리기 (연타)
-    stamp:      ['../assets/sfx/stamp.wav',    1.16, 200],  // 도장이 쿵 찍힐 때
-    pay:        ['../assets/sfx/pay.wav',      0.68, 200],  // 보따리가 커질 때
-    coin:       ['../assets/sfx/coin.wav',     0.66, 200],  // Sell!
-    splat:      ['../assets/sfx/splat.wav',    0.60, 300],  // 접시를 엎을 때
-    dread:      ['../assets/sfx/dread.wav',    0.70, 400],  // 포돌이 등장
-    siren:      ['../assets/sfx/siren.wav',    0.75, 400]   // 마지막 후레쉬
+    'say-frog': ['../../assets/sfx/say-frog.wav', 2.20, 90],   // 김프로그 말풍선 (원본이 작게 녹음돼 있어 키운다)
+    'say-rat':  ['../../assets/sfx/say-rat.wav',  2.20, 90],   // 김프랫 말풍선 (say-frog 와 같은 파일 세기라 게인도 같이)
+    step:       ['../../assets/sfx/step.wav',     1.90, 120],  // 걷는 발소리 (배경음악에 묻혀서 올림)
+    dash:       ['../../assets/sfx/dash.wav',     0.95, 60],   // 김프랫 달리기 (연타)
+    stamp:      ['../../assets/sfx/stamp.wav',    1.16, 200],  // 도장이 쿵 찍힐 때
+    pay:        ['../../assets/sfx/pay.wav',      0.68, 200],  // 보따리가 커질 때
+    coin:       ['../../assets/sfx/coin.wav',     0.66, 200],  // Sell!
+    splat:      ['../../assets/sfx/splat.wav',    0.60, 300],  // 접시를 엎을 때
+    dread:      ['../../assets/sfx/dread.wav',    0.70, 400],  // 포돌이 등장
+    siren:      ['../../assets/sfx/siren.wav',    0.75, 400]   // 마지막 후레쉬
   };
   var buffers = {}, fetching = {}, waiting = {};
 
@@ -324,8 +324,8 @@
   // ══════════════════════════════════════════════════════════
   //   [파일, 음량, 들어올 때 페이드(ms)]. 페이드가 0이면 곧바로 제 음량으로 시작한다.
   var TRACKS = {
-    main: ['../assets/bgm/main.m4a', 0.12, 900],   // 시작화면부터 끝까지 깔리는 곡 (효과음 자리를 내주려고 낮춤)
-    rat:  ['../assets/bgm/rat.m4a',  0.13, 0]      // 김프랫 구간 — 바로 시작
+    main: ['../../assets/bgm/main.m4a', 0.12, 900],   // 시작화면부터 끝까지 깔리는 곡 (효과음 자리를 내주려고 낮춤)
+    rat:  ['../../assets/bgm/rat.m4a',  0.13, 0]      // 김프랫 구간 — 바로 시작
   };
   var FADE = 900;                          // 기본으로 겹치는 시간(ms)
   var QUICK_OUT = 250;                     // 새 곡이 바로 시작할 땐 옛 곡을 빨리 뺀다

@@ -820,13 +820,13 @@ function updateLockNotice(){
     // (unlock-toast 팝업은 "방금 풀렸다"는 순간 알림, 이건 "지금부터 뭘 하면 되는지" 안내로 역할이 다르다).
     box.hidden = false;
     box.classList.add('unlocked');
-    icon.src = 'assets/face-happy.svg';
+    icon.src = '../../assets/face-happy.svg';
     title.textContent = '자, 이제 진짜로 계산해볼 시간이에요!';
     text.textContent = '아래 달력에서 살 날과 팔 날을 골라보세요. 그때 사서 그때 팔았다면 실제로 얼마가 남았을지 계산해드릴게요. 프리미엄이 뭔지 환율이 어땠는지 몰라도 괜찮아요! 숫자는 저희가 다 채워드립니다, 개굴!';
     return;
   }
   box.classList.remove('unlocked');
-  icon.src = 'assets/face-sad.svg';
+  icon.src = '../../assets/face-sad.svg';
 
   // 실패는 "아직 로딩 중"과 다르다. !dataReady 하나로 뭉쳐 두면 이미 끝나버린
   // 요청을 계속 기다리라고 안내하게 되고, 위 오류 안내와 정면으로 어긋난다.

@@ -2789,7 +2789,7 @@
         } else {
           flyWrap.setAttribute('opacity', 0);
         }
-        face.setAttribute('href', (flying >= 0 || p >= P_DONE) ? 'assets/face-happy.svg' : 'assets/face-smile.svg');
+        face.setAttribute('href', (flying >= 0 || p >= P_DONE) ? '../../assets/face-happy.svg' : '../../assets/face-smile.svg');
 
         // 말풍선은 얼굴 위 또는 김프로그 머리 위
         var anchor = SAYS.reduce(function (a, s) {
@@ -2915,12 +2915,12 @@
         var S = o.src;
         var frog = el('g', {});
         var kimchiG = el('g', {});
-        kimchiG.appendChild(el('image', { href: 'assets/%EA%B9%80%EC%B9%98.svg',
+        kimchiG.appendChild(el('image', { href: '../../assets/%EA%B9%80%EC%B9%98.svg',
           x: -S.kimchiAnchor.x * S.frogW, y: -S.kimchiAnchor.y * S.frogH,
           width: S.frogW, height: S.frogH }));
-        var stand = el('image', { href: 'assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg',
+        var stand = el('image', { href: '../../assets/%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg',
           x: -S.frogW / 2, y: -S.frogH, width: S.frogW, height: S.frogH });
-        var run = el('image', { href: 'assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg',
+        var run = el('image', { href: '../../assets/%EB%9B%B0%EB%8A%94%20%EB%B9%88%EC%A0%91%EC%8B%9C%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.svg',
           x: -S.frogW / 2, y: -S.frogH, width: S.frogW, height: S.frogH, style: 'display:none' });
         // 코인 쪽 김치는 작아서 앞에, 테더 쪽 김치는 커서 개구리 뒤에 둔다
         if (o.kimchiBehind) { frog.appendChild(kimchiG); frog.appendChild(stand); frog.appendChild(run); }
@@ -2929,7 +2929,7 @@
 
         var spill = null;
         if (o.spill) {
-          spill = el('image', { href: 'assets/%EC%A0%91%EC%8B%9C%EB%A5%BC%20%EC%97%8E%EC%9D%80%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.png',
+          spill = el('image', { href: '../../assets/%EC%A0%91%EC%8B%9C%EB%A5%BC%20%EC%97%8E%EC%9D%80%20%EA%B0%9C%EA%B5%AC%EB%A6%AC.png',
             x: S.end.x - S.spillW * 0.62, y: S.end.y - S.spillH * 0.92,
             width: S.spillW, height: S.spillH, opacity: 0 });
           inner.appendChild(spill);
@@ -2988,11 +2988,11 @@
       }
 
       var panelA = miniPanel({
-        logo: 'assets/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8-%ED%88%AC%EB%AA%85.png', logoAR: 1,
+        logo: '../../assets/%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8-%ED%88%AC%EB%AA%85.png', logoAR: 1,
         src: KF.coin, spill: true, kimchiBehind: false
       });
       var panelB = miniPanel({
-        logo: 'assets/%ED%85%8C%EB%8D%94.png', logoAR: 528 / 192, label: '1$',
+        logo: '../../assets/%ED%85%8C%EB%8D%94.png', logoAR: 528 / 192, label: '1$',
         src: KF.tether, spill: false, kimchiBehind: true, heap: true
       });
 
